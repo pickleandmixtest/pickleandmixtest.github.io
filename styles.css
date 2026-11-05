@@ -828,3 +828,39 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
     max-height:calc(100dvh - env(safe-area-inset-top,0px) - 82px)!important;
   }
 }
+
+
+/* La navegación secundaria debe ocupar toda la caja interior de la cabecera */
+.top > .party-subnav{
+  display:grid!important;
+  box-sizing:border-box!important;
+  position:relative!important;
+  inset:auto!important;
+  float:none!important;
+  width:100%!important;
+  min-width:100%!important;
+  max-width:100%!important;
+  margin:10px 0 0!important;
+  padding:0!important;
+  justify-self:stretch!important;
+  align-self:stretch!important;
+  transform:none!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  justify-content:stretch!important;
+  align-content:stretch!important;
+  justify-items:stretch!important;
+  gap:8px!important;
+}
+.top > .party-subnav.party-subnav-3{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+}
+.top > .party-subnav > button{
+  display:flex!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  flex:initial!important;
+  justify-self:stretch!important;
+  margin:0!important;
+}
