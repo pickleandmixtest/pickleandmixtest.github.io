@@ -189,7 +189,9 @@ function render(){
   if(msg){toast(msg);msg=''}
 }
 let PG={u:0,c:0};
-const FR={items:[],people:[],query:'',loading:false,searching:false,error:'',loaded:false};
+const HIST={items:[],stats:{played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0},loading:false,error:'',loaded:false};
+const PUB={id:null,profile:null,stats:null,history:[],error:'',loading:false,statsHidden:false,historyHidden:false};
+const FR={items:[],people:[],query:'',results:[],loading:false,searching:false,error:'',loaded:false,ranking:[],rankingLoading:false,activity:[],activityLoading:false};
 function initPong(cid,hid,pre){
   const c=document.getElementById(cid);if(!c)return;const x=c.getContext('2d'),d=window.devicePixelRatio||1,hint=hid&&document.getElementById(hid);
   let W=0,H=0,k=1,PW,PH,UY,CY,NY,RI,RP;if(!pre)PG.u=PG.c=0;const WIN=7,HIT=()=>PW/2+s.r*.7,s={m:'idle',bx:0,by:0,vx:0,vy:0,r:0,a:0,sp:300,ux:0,cx:0,t:0,dir:-1,err:0};
@@ -432,14 +434,16 @@ async function loadMyHistory(){
     if(e2)throw e2;
     const matchIds=[...new Set((mineLinks||[]).map(x=>x.match_id))];
     if(!matchIds.length){HIST.items=[];HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:sessionIds.length};HIST.loaded=true;return}
-    const [mr,lr,pr,sr]=await Promise.all([
+    const [mr,lr,sr]=await Promise.all([
       sbc.from('play_session_matches').select('id,session_id,match_number,cycle,court,phase,side_a_score,side_b_score,played_at').in('id',matchIds).order('played_at',{ascending:false}),
       sbc.from('play_match_players').select('match_id,session_player_id,side').in('match_id',matchIds),
-      sbc.from('play_session_players').select('id,player_name,user_id').in('id',[...new Set((lr.data||[]).map(x=>x.session_player_id))]),
       sbc.from('play_sessions').select('id,title,mode,created_at').in('id',sessionIds)
     ]);
-    for(const x of [mr,lr,pr,sr])if(x.error)throw x.error;
-    const allLinks=lr.data||[],playerMap=new Map((pr.data||[]).map(x=>[x.id,x])),sessionMap=new Map((sr.data||[]).map(x=>[x.id,x]));
+    for(const x of [mr,lr,sr])if(x.error)throw x.error;
+    const allLinks=lr.data||[];
+    const {data:playerRows,error:playerError}=await sbc.from('play_session_players').select('id,player_name,user_id').in('id',[...new Set(allLinks.map(x=>x.session_player_id))]);
+    if(playerError)throw playerError;
+    const playerMap=new Map((playerRows||[]).map(x=>[x.id,x])),sessionMap=new Map((sr.data||[]).map(x=>[x.id,x]));
     const myMap=new Map(mine.map(x=>[x.id,x])),items=(mr.data||[]).map(m=>{
       const mineLink=(mineLinks||[]).find(x=>x.match_id===m.id);if(!mineLink)return null;
       const ownSide=mineLink.side,won=ownSide==='a'?m.side_a_score>m.side_b_score:m.side_b_score>m.side_a_score;
