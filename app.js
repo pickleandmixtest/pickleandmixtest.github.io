@@ -465,7 +465,7 @@ async function createClub(form){
     if(!data)throw new Error('Supabase no devolvió el identificador del club.');
     await loadClubs();
     CL.selectedId=typeof data==='string'?data:data.id;
-    if(access_mode!=='open'){const modeUpdate=await sbc.from('clubs').update({access_mode}).eq('id',CL.selectedId);if(modeUpdate.error)throw modeUpdate.error}
+    if(access_mode!=='open'){const modeUpdate=await sbc.from('clubs').update({access_mode}).eq('id',CL.selectedId);if(modeUpdate.error)throw modeUpdate.error;const created=CL.items.find(x=>x.id===CL.selectedId);if(created)created.access_mode=access_mode}
     if(!CL.selectedId)throw new Error('No se recibió el identificador del club creado.');
     CL.createOpen=false;view='club-detail';render();await loadClubData(CL.selectedId);toast('Club creado. ¡Ya eres su administrador!');
     loadMyAchievements();
