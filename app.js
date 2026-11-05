@@ -486,7 +486,6 @@ function rotSummary(){
   <div class="sl"><span class="ic">👥</span><div>${ok?`Todos los jugadores jugarán <b>${pa(r.c)}</b>.`:`<b>${jug(r.n-r.ex)} ${pa(r.c)}</b> y <b>${r.ex===1?'1 jugará':r.ex+' jugarán'} ${r.c+1}</b>.`}</div></div>
   ${ok?'':`<div class="err">⚠️ Reparto desigual: algunos jugadores disputarán un partido más que otros. ${alts.length?`Para igualar el reparto, prueba con ${alts.join(' o ')} ciclos. `:''}Puedes empezar igualmente.</div>`}
   <div class="sl"><span class="ic">⏱</span><div>Duración estimada: <b>aprox. ${fmtMin(r.tot)}</b><br><span class="mut">${r.rounds} turnos de ~${Math.round(r.dur)} min + 2 min de transición, con ${r.P} partido${r.P>1?'s':''} a la vez. Estimación aproximada, no una garantía.</span></div></div></div>`}
-function linkedFriends(){if(!AU.user)return[];const ids=new Set(FR.items.filter(f=>f.status==='accepted').map(f=>f.requester_id===AU.user.id?f.addressee_id:f.requester_id));return FR.people.filter(p=>ids.has(p.id))}
 function vSetup(){const c=S.settings,n=S.players.length,per=Math.floor(n/4)||0,T=Math.floor(n/2),tot=FX()?fxTotal(T):(n>=4?Math.ceil(n*c.cycles/4):0);
   return`<h2>Prepara la quedada</h2><p class="lead">Añade a los jugadores y ajusta pistas, puntos${FX()?'':' y ciclos'}.</p>${modeSel()}
   <form class="card player-add" data-f="add"><label class="mut">Añadir jugadores</label><div class="row"><input name="n" autocomplete="off" placeholder="Nombre o @alias"><button class="btn sm fix">Añadir</button></div><div id="player-suggestions" class="player-suggestions" hidden></div><p class="hint">Usa un nombre normal para invitados o <b>@alias</b> para vincular a un amigo. Los invitados salen en el resultado de la quedada, pero sus estadísticas no se guardan en un perfil.</p>${nameErrBox()}</form>
@@ -744,12 +743,12 @@ const A={
   reset(){if(confirm('Se borrarán jugadores, partidos y resultados. ¿Seguro?')&&confirm('Última comprobación: ¿empezar una quedada nueva?')){S=fresh();SC={};ed=null;ct=1;tmp=null;view='home'}}
 };
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-a],[data-fa],[data-up],[data-sc],[data-ct],[data-del],[data-st],[data-pd],[data-edit],[data-mode],[data-pm]');if(!t)return;const d=t.dataset;
+  const t=e.target.closest('[data-a],[data-fa],[data-up],[data-linkplayer],[data-sc],[data-ct],[data-del],[data-st],[data-pd],[data-edit],[data-mode],[data-pm]');if(!t)return;const d=t.dataset;
   // Navegación explícita: no depende de las acciones genéricas del resto de la app.
   if(d.a==='friends'){view='friends';FR.error='';render();loadFriends();return}
   if(d.a==='profile'){view='profile';AU.profileSettingsOpen=false;render();if(AU.user){loadMyHistory();loadFriends()}return}
   if(d.fa){friendAction(d.fa,d.id);return}
-  if(d.linkplayer){const friend=linkedFriends().find(p=>p.id===d.linkplayer);if(friend&&!S.players.some(p=>p.userId===friend.id)&&!nameTaken(friend.display_name||friend.alias)){S.players.push({id:S.nid++,name:(friend.display_name||friend.alias||'Jugador').slice(0,24),userId:friend.id,status:'active'});save()}else if(friend&&S.players.some(p=>p.userId===friend.id))toast('Ese amigo ya está en la quedada.');render();return}
+  if(d.linkplayer){const friend=linkedFriends().find(p=>p.id===d.linkplayer);if(friend&&!S.players.some(p=>p.userId===friend.id)){let name=(friend.display_name||friend.alias||'Jugador').slice(0,24);if(nameTaken(name))name=('@'+(friend.alias||friend.display_name||'amigo')).slice(0,24);S.players.push({id:S.nid++,name,userId:friend.id,status:'active'});save()}else if(friend)toast('Ese amigo ya está en la quedada.');render();return}
   if(d.up){openUserProfile(d.up);return}
   if(d.a){A[d.a]();}
   else if(d.sc){const c=d.sc[0],v=+d.sc.slice(1),r=scoreStep(tmp,c,v,S.settings.points);if(r.ok)tmp[c]=r.val;else toast(r.msg);$('#app').innerHTML=header()+vGame()+foot();return}
