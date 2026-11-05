@@ -403,6 +403,21 @@ async function createClubEvent(form){
  if(Number.isNaN(start.getTime())||(end&&Number.isNaN(end.getTime()))){toast('Comprueba las fechas.');return}
  const payload={club_id:CL.selectedId,created_by:AU.user.id,title:String(fd.get('title')||'').trim(),description:String(fd.get('description')||''),event_type:String(fd.get('event_type')||'meetup'),location:String(fd.get('location')||''),starts_at:start.toISOString(),ends_at:end?end.toISOString():null,capacity:fd.get('capacity')?Number(fd.get('capacity')):null};
  try{const {error}=await sbc.from('club_events').insert(payload);if(error)throw error;CL.eventOpen=false;form.reset();toast('Evento publicado.');await loadClubData(CL.selectedId)}catch(e){toast(e.message||'No se ha podido crear el evento.')}}
+async function registerClubEvent(id){try{const {data,error}=await sbc.rpc('register_club_event',{p_event_id:id});if(error)throw error;toast(data==='waitlist'?'Te has añadido a la lista de espera.':'¡Te has apuntado!');await loadClubData(CL.selectedId)}catch(e){toast(e.message||'No se ha podido completar la inscripción.')}}
+async function cancelClubEventRegistration(id){try{const {error}=await sbc.rpc('cancel_club_event_registration',{p_event_id:id});if(error)throw error;toast('Inscripción cancelada.');await loadClubData(CL.selectedId)}catch(e){toast(e.message||'No se ha podido cancelar.')}}
+async function deleteClubEvent(id){if(!confirm('¿Eliminar este evento y sus inscripciones?'))return;const {error}=await sbc.from('club_events').delete().eq('id',id);if(error){toast('No se ha podido eliminar.');return}await loadClubData(CL.selectedId)}
+async function uploadClubImage(input){
+ const file=input.files&&input.files[0];if(!file)return;
+ if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024){toast('Usa JPG, PNG o WebP de máximo 5 MB.');input.value='';return}
+ const kind=input.dataset.clubImage,id=CL.selectedId,ext=file.type==='image/jpeg'?'jpg':file.type.split('/')[1],path=id+'/'+kind+'.'+ext;
+ try{const {error}=await sbc.storage.from('club-assets').upload(path,file,{upsert:true,contentType:file.type,cacheControl:'3600'});if(error)throw error;
+ const {data}=sbc.storage.from('club-assets').getPublicUrl(path),field=kind==='avatar'?'avatar_url':'banner_url';
+ const up=await sbc.from('clubs').update({[field]:data.publicUrl+'?v='+Date.now()}).eq('id',id);if(up.error)throw up.error;
+ await loadClubs();await loadClubData(id);toast('Imagen actualizada.')}catch(e){toast(e.message||'No se ha podido subir la imagen.')}finally{input.value=''}}
+async function redeemClubInviteFromUrl(){
+ const params=new URLSearchParams(location.search),token=params.get('club_invite');if(!token||!AU.user||CL.inviteRedeemBusy)return;CL.inviteRedeemBusy=true;
+ try{const {data,error}=await sbc.rpc('redeem_club_invite_link',{p_token:token});if(error)throw error;params.delete('club_invite');history.replaceState(null,'',location.pathname+(params.toString()?'?'+params.toString():'')+location.hash);await loadClubs();CL.selectedId=data;view='club-detail';render();await loadClubData(data);toast('Te has unido al club mediante invitación.');loadMyAchievements()}
+ catch(e){toast(e.message||'El enlace de invitación no es válido.')}finally{CL.inviteRedeemBusy=false}}
 function vClubs(){
   if(!AU.user)return '<h2>Clubes</h2><p class="lead">Crea un punto de encuentro para tu comunidad de pickleball.</p><div class="card acct">'+authInner()+'</div>';
   const cards=CL.items.map(c=>{
