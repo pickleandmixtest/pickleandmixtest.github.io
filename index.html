@@ -5,7 +5,7 @@
 <title>PICKLE &amp; MIX</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=1">
 <link rel="shortcut icon" href="favicon.svg?v=1">
-<link rel="stylesheet" href="styles.css?v=43"></head>
+<link rel="stylesheet" href="styles.css?v=44"></head>
 <body><main id="app"></main><div id="toast" role="status"></div>
 <!-- Minijuegos integrados: cada uno es un HTML completo que se carga en un iframe al pulsar su recuadro -->
 <script type="text/plain" id="g-kitchen">
@@ -79,7 +79,7 @@ function serve(){const k=Math.random()<Math.min(.55,.28+.04*level),T=Math.max(.8
 function bpos(b){if(b.ph==='ret'){const u=b.rt;return{x:lerp(b.hx,b.tx,u),y:lerp(b.hy,b.ty,u),z:6*(1-u)+4*b.arc*u*(1-u)}}
  if(b.t<b.d1){const u=b.t/b.d1;return{x:lerp(b.x0,b.xb,u),y:lerp(b.y0,b.yb,u),z:12*(1-u)+4*b.h1*u*(1-u)}}
  const u=Math.min(1,(b.t-b.d1)/b.d2);return{x:lerp(b.xb,b.xf,u),y:lerp(b.yb,b.yf,u),z:4*b.h2*u*(1-u)}}
-function lose(t){lives--;combo=0;ball=null;say(t,'#ff6b6b',1);beep(120,.35,'sawtooth');wait=1;if(lives<=0){st='over';overT=0;if(score>best){best=score;try{localStorage.setItem('kr_best',best)}catch(e){}}}}
+function lose(t){lives--;combo=0;ball=null;say(t,'#ff6b6b',1);beep(120,.35,'sawtooth');wait=1;if(lives<=0){st='over';overT=0;try{window.parent.postMessage({type:'pm-minigame-score',game:'kitchen',score},'*')}catch(e){}if(score>best){best=score;try{localStorage.setItem('kr_best',best)}catch(e){}}}}
 function hitBall(dx,p){const perfect=dx<.09&&Math.abs(p.y-py)<.12;let pts=(perfect?20:10)+Math.min(combo,10);combo++;
  if(ball.k){pts+=10;say(perfect?'PERFECT 2X SCORE':'¡Kitchen! +10',LIME)}else say(perfect?'PERFECT 2X SCORE':'¡Bien!',perfect?LIME:'#fff');
  score+=pts;prog+=1/6;if(prog>=1){prog=0;level++;say('Nivel '+level,'#7dffb0',1.2)}
@@ -258,7 +258,7 @@ function newRound(){R.tx=rnd(-7.2,7.2);R.ty=rnd(24.9,41.2);let m=.5,k=0;
  R.label=d+' · '+(m<.25?'suave':m<.5?'moderado':m<.75?'fuerte':'muy fuerte');
  tgtA=0;ballA=0;F=null;dr=null;st=st==='menu'?'menu':'aim'}
 function start(){score=0;dScore=0;shots=10;hist.b=hist.t=hist.k=0;parts.length=rips.length=pops.length=0;document.getElementById('menu').hidden=document.getElementById('over').hidden=true;st='aim';newRound();tone(520,.12,'triangle',.07,780)}
-function endGame(){st='over';newRec=score>best;if(newRec){best=score;try{localStorage.setItem('dink_best',best)}catch(e){}}
+function endGame(){st='over';try{window.parent.postMessage({type:'pm-minigame-score',game:'dink',score},'*')}catch(e){};newRec=score>best;if(newRec){best=score;try{localStorage.setItem('dink_best',best)}catch(e){}}
  document.getElementById('fs').textContent=score;document.getElementById('sb').textContent=hist.b;document.getElementById('st').textContent=hist.t;document.getElementById('sk').textContent=hist.k;
  document.getElementById('rank').textContent=score>=800?'Leyenda del dink':score>=500?'Maestro de la Kitchen':score>=300?'Buen toque':score>=150?'En racha':'Calentando';
  document.getElementById('rec').textContent=newRec&&score>0?'¡Nuevo récord!':'Récord: '+best;document.getElementById('over').hidden=false;document.getElementById('mrec').textContent=best?'Récord: '+best:''}
@@ -565,4 +565,4 @@ $('#play').onclick=newGame;$('#quit').onclick=toMenu;menu();
 </script>
 <!-- Supabase JS (librería oficial, versión fija) · si no carga, la app funciona igual sin acceso con Google -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" crossorigin="anonymous"></script>
-<script src="app.js?v=71"></script></body></html>
+<script src="app.js?v=72"></script></body></html>
