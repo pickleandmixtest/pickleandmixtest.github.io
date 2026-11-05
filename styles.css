@@ -125,3 +125,12 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .acct.mini .mut{flex:1;min-width:0}
 .btn.gg{display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:var(--ink);box-shadow:inset 0 0 0 2px #cdd8e6}
 .btn.gg svg{width:22px;height:22px;flex:none}
+
+
+/* Formulario de perfil */
+.profile-form{display:flex;flex-direction:column;gap:7px;margin-top:14px}
+.profile-form label{font-weight:800;color:var(--court);margin-top:7px}
+.profile-form input,.profile-form select{min-height:46px}
+.profile-form small{font-size:13px;line-height:1.35;color:var(--mut)}
+.profile-form .hint{margin:5px 0}
+.profile-form button{margin-top:10px}
