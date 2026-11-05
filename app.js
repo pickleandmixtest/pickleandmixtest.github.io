@@ -9,7 +9,8 @@ const ROUTE_TO_VIEW={inicio:'home',preparar:'setup',partido:'game',jugadores:'mo
 const VIEW_TO_ROUTE={home:'inicio',setup:'preparar',game:'partido',more:'jugadores',final:'resumen',profile:'perfil',friends:'amigos',history:'historial',sessions:'quedadas','session-detail':'quedadas','user-profile':'amigos',clubs:'clubes','club-detail':'clubes',admin:'admin'};
 const initialRoute=location.hash.replace(/^#\/?/,'').toLowerCase();
 const initialClubId=initialRoute.startsWith('clubes/')?decodeURIComponent(initialRoute.slice(7)):null;
-let view=initialClubId?'club-detail':(ROUTE_TO_VIEW[initialRoute]||(S.started?'game':'home')),tmp=null,msg='',err='',nerr='',ed=null,ct=1,SC={};
+const initialProfileId=initialRoute.startsWith('jugadores/')?decodeURIComponent(initialRoute.slice(10)):null;
+let view=initialClubId?'club-detail':initialProfileId?'user-profile':(ROUTE_TO_VIEW[initialRoute]||(S.started?'game':'home')),tmp=null,msg='',err='',nerr='',ed=null,ct=1,SC={};
 const nameErrBox=()=>nerr?`<div class="err">${esc(nerr)}</div>`:'';
 
 /* ---------- Algoritmo de rotación ---------- */
@@ -184,7 +185,7 @@ const bar=()=>{const t=S.matches.length,d=S.matches.filter(m=>m.status!=='pendin
 const foot=()=>`<p class="mut foot">Plataforma para pickleballers creada por <a href="https://kikebarcelodg.github.io/" target="_blank" rel="noopener">KBDG</a></p>`;
 let routeInitialized=false;
 function render(){
-  const route=view==='club-detail'&&CL.selectedId?'#clubes/'+encodeURIComponent(CL.selectedId):'#'+(VIEW_TO_ROUTE[view]||'inicio');
+  const route=view==='club-detail'&&CL.selectedId?'#clubes/'+encodeURIComponent(CL.selectedId):view==='user-profile'&&PUB.id?'#jugadores/'+encodeURIComponent(PUB.id):'#'+(VIEW_TO_ROUTE[view]||'inicio');
   if(location.hash!==route){
     const url=location.pathname+location.search+route;
     if(!routeInitialized){history.replaceState(null,'',url);routeInitialized=true}
@@ -196,7 +197,7 @@ function render(){
 }
 let PG={u:0,c:0};
 const HIST={items:[],sessions:[],selectedSessionId:null,invites:[],inviteBusy:'',stats:{played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0},loading:false,error:'',loaded:false};
-const PUB={id:null,profile:null,stats:null,history:[],achievements:null,clubs:[],clubsLoading:false,error:'',loading:false,statsHidden:false,historyHidden:false};
+const PUB={id:initialProfileId,profile:null,stats:null,history:[],achievements:null,clubs:[],clubsLoading:!!initialProfileId,error:'',loading:!!initialProfileId,statsHidden:false,historyHidden:false};
 const ACH={summary:null,loading:false,error:'',open:false,publicMode:false,notifications:[],notificationsOpen:false};
 const FR={items:[],people:[],query:'',results:[],loading:false,searching:false,error:'',loaded:false,ranking:[],rankingLoading:false,activity:[],activityLoading:false,busy:'',panel:''};
 const CL={items:[],members:[],people:[],selectedId:initialClubId,section:'mine',loading:false,error:'',busy:'',createOpen:false,requests:[],invitations:[],links:[],events:[],registrations:[],posts:[],comments:[],postOpen:false,inviteUrl:'',eventOpen:false,settingsOpen:false,inviteRedeemBusy:false,myRequest:null,incomingInvites:[]};
@@ -1349,7 +1350,7 @@ if(typeof window!=='undefined'&&typeof document!=='undefined'){
       if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))AU.profileLoading=true;
       if(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'){if(view==='home')render();else paintAuth();setTimeout(checkAdminAccess,0)}
       if(u&&(ch||ev==='INITIAL_SESSION'))watchFriendships(u.id);
-      if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))setTimeout(()=>{loadProfile(u.id);loadMyHistory();loadFriends();loadMyAchievements();if(view==='clubs'||view==='club-detail')loadClubs();redeemClubInviteFromUrl()},0);
+      if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))setTimeout(()=>{loadProfile(u.id);loadMyHistory();loadFriends();loadMyAchievements();if(view==='clubs'||view==='club-detail')loadClubs();if(view==='user-profile'&&PUB.id)openUserProfile(PUB.id);redeemClubInviteFromUrl()},0);
       if(u&&ch&&AU.oauth&&ev==='SIGNED_IN'){AU.oauth=false;toast('Sesión iniciada como '+auName(u))}});
     setTimeout(()=>{if(!AU.ready){AU.ready=true;paintAuth()}},4000)}
   catch(e){sbc=null;console.warn('[auth] onAuthStateChange:',e&&e.message)}}
@@ -1358,10 +1359,11 @@ if(typeof window!=='undefined'&&typeof document!=='undefined'){
   document.addEventListener('error',e=>{const t=e.target;if(t&&t.tagName==='IMG'&&t.classList.contains('av')){const s=document.createElement('span');s.className='av';s.setAttribute('aria-hidden','true');s.textContent=t.dataset.i||'?';t.replaceWith(s)}},true);
 }
 function syncRouteFromLocation(){
-  const route=location.hash.replace(/^#\/?/,'').toLowerCase(),clubId=route.startsWith('clubes/')?decodeURIComponent(route.slice(7)):null,next=clubId?'club-detail':ROUTE_TO_VIEW[route];
-  if(next&&(next!==view||(next==='club-detail'&&clubId!==CL.selectedId))){
-    view=next;ed=null;CL.selectedId=clubId||null;routeInitialized=true;render();
+  const route=location.hash.replace(/^#\/?/,'').toLowerCase(),clubId=route.startsWith('clubes/')?decodeURIComponent(route.slice(7)):null,profileId=route.startsWith('jugadores/')?decodeURIComponent(route.slice(10)):null,next=clubId?'club-detail':profileId?'user-profile':ROUTE_TO_VIEW[route];
+  if(next&&(next!==view||(next==='club-detail'&&clubId!==CL.selectedId)||(next==='user-profile'&&profileId!==PUB.id))){
+    view=next;ed=null;CL.selectedId=clubId||null;if(next==='user-profile')PUB.id=profileId;routeInitialized=true;render();
     if((next==='clubs'||next==='club-detail')&&AU.user){if(!CL.items.length)loadClubs();else if(clubId)loadClubData(clubId)}
+    if(next==='user-profile'&&profileId&&AU.user)openUserProfile(profileId);
   }
 }
 if(typeof window!=='undefined'){
