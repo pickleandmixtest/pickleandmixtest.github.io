@@ -327,8 +327,16 @@ function clubPerson(id){return CL.people.find(p=>p.id===id)||{id,display_name:'J
 function clubMember(clubId,userId){return CL.members.find(m=>m.club_id===clubId&&m.user_id===userId)}
 function vClubs(){
   if(!AU.user)return '<h2>Clubes</h2><p class="lead">Crea un punto de encuentro para tu comunidad de pickleball.</p><div class="card acct">'+authInner()+'</div>';
-  const cards=CL.items.map(c=>{const mine=clubMember(c.id,AU.user.id),count=CL.members.filter(m=>m.club_id===c.id).length;return '<article class="club-card" data-club-search-text="'+esc((c.name+' '+c.description+' '+c.city).toLocaleLowerCase('es'))+'"><div class="club-card-main"><div class="club-avatar">⌂</div><div class="club-card-copy"><b>'+esc(c.name)+'</b><span>'+esc(c.city||'Club de pickleball')+' · '+count+' '+(count===1?'miembro':'miembros')+'</span><p>'+esc(c.description||'Sin descripción.')+'</p></div></div><div class="club-card-actions">'+(mine?'<span class="tag">'+(mine.role==='admin'?'Administrador':'Miembro')+'</span><button class="btn sm" data-club-open="'+c.id+'">Ver club</button>':'<button class="btn sm" data-club-join="'+c.id+'" '+(CL.busy==='join:'+c.id?'disabled':'')+'>'+(CL.busy==='join:'+c.id?'Uniéndote…':'Unirme')+'</button>')+'</div></article>'}).join('');
-  return '<div class="clubs-page"><div class="clubs-hero"><div><span class="section-kicker">PICKLE &amp; MIX · COMUNIDAD</span><h2>Clubes</h2><p>Encuentra tu comunidad, organiza jugadores y comparte tu pasión por el pickleball.</p></div><span class="clubs-hero-mark">⌂</span></div><div class="club-create-toggle"><button class="btn sm ghost" type="button" data-club-create-toggle aria-expanded="${CL.createOpen}">${CL.createOpen?"− Cancelar":"＋ Crear un club"}</button></div>${CL.createOpen?`<section class="card club-create-card"><div class="friends-section-head"><h3>Crear un club</h3><span class="section-kicker">NUEVA COMUNIDAD</span></div><form data-f="club-create"><label>Nombre del club</label><input name="name" maxlength="50" minlength="3" required placeholder="Ej. Pickleball Axarquía"><label>Descripción</label><textarea name="description" maxlength="500" rows="3" placeholder="¿Qué caracteriza a vuestro club?"></textarea><label>Ciudad o zona</label><input name="city" maxlength="80" placeholder="Ej. Rincón de la Victoria"><button class="btn" type="submit" '+(CL.busy==='create'?'disabled':'')+'>'+(CL.busy==='create'?'Creando…':'Crear club')+'</button></form></section>`:``} <section class="clubs-list"><div class="clubs-list-head"><h3>Explorar clubes</h3><input aria-label="Buscar clubes" data-club-search placeholder="Buscar por nombre o ciudad"></div>'+(CL.loading?'<div class="card"><p class="hint">Cargando clubes…</p></div>':CL.error?'<div class="card err">'+esc(CL.error)+'</div>':cards||'<div class="card empty">No hay clubes todavía. ¡Puedes crear el primero!</div>')+'</section></div>';
+  const cards=CL.items.map(c=>{
+    const mine=clubMember(c.id,AU.user.id),count=CL.members.filter(m=>m.club_id===c.id).length;
+    const searchText=esc([c.name,c.description,c.city].filter(Boolean).join(' ').toLocaleLowerCase('es'));
+    return '<article class="club-card" data-club-search-text="'+searchText+'"><div class="club-card-main"><div class="club-avatar">⌂</div><div class="club-card-copy"><b>'+esc(c.name)+'</b><span>'+esc(c.city||'Club de pickleball')+' · '+count+' '+(count===1?'miembro':'miembros')+'</span><p>'+esc(c.description||'Sin descripción.')+'</p></div></div><div class="club-card-actions">'+
+      (mine?'<span class="tag">'+(mine.role==='admin'?'Administrador':'Miembro')+'</span><button class="btn sm" data-club-open="'+c.id+'">Ver club</button>':'<button class="btn sm" data-club-join="'+c.id+'" '+(CL.busy==='join:'+c.id?'disabled':'')+'>'+(CL.busy==='join:'+c.id?'Uniéndote…':'Unirme')+'</button>')+
+      '</div></article>';
+  }).join('');
+  const createForm=CL.createOpen?'<section class="card club-create-card"><div class="friends-section-head"><h3>Crear un club</h3><span class="section-kicker">NUEVA COMUNIDAD</span></div><form data-f="club-create"><label>Nombre del club</label><input name="name" maxlength="50" minlength="3" required placeholder="Ej. Pickleball Axarquía"><label>Descripción</label><textarea name="description" maxlength="500" rows="3" placeholder="¿Qué caracteriza a vuestro club?"></textarea><label>Ciudad o zona</label><input name="city" maxlength="80" placeholder="Ej. Rincón de la Victoria"><button class="btn" type="submit" '+(CL.busy==='create'?'disabled':'')+'>'+(CL.busy==='create'?'Creando…':'Crear club')+'</button></form></section>':'';
+  const listing=CL.loading?'<div class="card"><p class="hint">Cargando clubes…</p></div>':CL.error?'<div class="card err" role="alert">'+esc(CL.error)+'</div>':cards||'<div class="card empty">No hay clubes todavía. ¡Puedes crear el primero!</div>';
+  return '<div class="clubs-page"><div class="clubs-hero"><div><span class="section-kicker">PICKLE &amp; MIX · COMUNIDAD</span><h2>Clubes</h2><p>Encuentra tu comunidad, organiza jugadores y comparte tu pasión por el pickleball.</p></div><span class="clubs-hero-mark">⌂</span></div><div class="club-create-toggle"><button class="btn sm ghost" type="button" data-club-create-toggle aria-expanded="'+(CL.createOpen?'true':'false')+'">'+(CL.createOpen?'− Cancelar':'＋ Crear un club')+'</button></div>'+createForm+'<section class="clubs-list"><div class="clubs-list-head"><h3>Explorar clubes</h3><input aria-label="Buscar clubes" data-club-search placeholder="Buscar por nombre o ciudad"></div>'+listing+'</section></div>';
 }
 function vClubDetail(){
   const c=CL.items.find(x=>x.id===CL.selectedId);if(!c)return vClubs();
@@ -1036,7 +1044,7 @@ if(typeof window!=='undefined'&&typeof document!=='undefined'){
       if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))AU.profileLoading=true;
       if(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED')paintAuth();
       if(u&&(ch||ev==='INITIAL_SESSION'))watchFriendships(u.id);
-      if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))setTimeout(()=>{loadProfile(u.id);loadMyHistory();loadFriends()},0);
+      if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))setTimeout(()=>{loadProfile(u.id);loadMyHistory();loadFriends();if(view==='clubs')loadClubs()},0);
       if(u&&ch&&AU.oauth&&ev==='SIGNED_IN'){AU.oauth=false;toast('Sesión iniciada como '+auName(u))}});
     setTimeout(()=>{if(!AU.ready){AU.ready=true;paintAuth()}},4000)}
   catch(e){sbc=null;console.warn('[auth] onAuthStateChange:',e&&e.message)}}
@@ -1046,7 +1054,7 @@ if(typeof window!=='undefined'&&typeof document!=='undefined'){
 }
 if(typeof window!=='undefined')window.addEventListener('hashchange',()=>{
   const route=location.hash.replace(/^#\/?/,'').toLowerCase(),next=ROUTE_TO_VIEW[route];
-  if(next&&next!==view){view=next;ed=null;render()}
+  if(next&&next!==view){view=next;ed=null;render();if(next==='clubs'&&AU.user)loadClubs()}
 });
 if(typeof document!=='undefined'&&document.getElementById('app'))render();
 if(typeof module!=='undefined')module.exports={gen,trial,genQ,rotInfo};
