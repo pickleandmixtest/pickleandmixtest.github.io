@@ -1155,18 +1155,35 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .image-editor-actions .btn{width:auto;min-width:118px;margin:0}
 @media(max-width:520px){.club-avatar-edit{width:56px;height:56px}.club-image-edit{padding:7px 9px;font-size:10px}.image-editor{padding:15px}.image-editor-actions .btn{flex:1;min-width:0}}
 
-/* Clubes en el perfil público del jugador */
-.profile-clubs-card{padding:6px 14px}
+/* Clubes en el perfil público del jugador: sección y jerarquía */
+.profile-clubs-card{padding:15px 16px;margin:12px 0 16px;border:1px solid #dfe7f0;border-radius:16px;background:linear-gradient(180deg,#fff 0%,#fbfcfe 100%);box-shadow:0 3px 0 #e1e8f0}
+.profile-clubs-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:1px 0 12px;border-bottom:1px solid #e7edf4}
+.profile-clubs-heading>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.profile-clubs-heading h3{margin:0;color:var(--court);font:900 18px/1.1 "Arial Black",Impact,sans-serif}
+.profile-clubs-heading p{margin:0;color:var(--mut);font-size:11px;line-height:1.35}
+.profile-clubs-count{flex:none;padding:6px 9px;border-radius:9px;background:#edf3f9;color:#31577e;font-size:10px;font-weight:900;white-space:nowrap}
 .profile-clubs-list{display:flex;flex-direction:column}
-.profile-club-row{display:flex;align-items:center;gap:10px;width:100%;min-width:0;padding:11px 0;border:0;border-bottom:1px solid #e1e8f1;background:transparent;text-align:left;cursor:pointer}
-.profile-club-row:last-child{border-bottom:0}
-.profile-club-row:hover .profile-club-info b{color:var(--sky)}
-.profile-club-avatar{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;overflow:hidden;border-radius:12px;background:#edf3f9;color:var(--court);font-weight:900}
+.profile-club-row{display:flex;align-items:center;gap:12px;width:100%;min-width:0;padding:13px 2px;border:0;border-bottom:1px solid #e8edf3;background:transparent;color:var(--ink);text-align:left;cursor:pointer;transition:background .15s ease}
+.profile-club-row:last-child{border-bottom:0;padding-bottom:2px}
+.profile-club-row:hover{background:#f7f9fc}
+.profile-club-avatar{display:grid;place-items:center;flex:0 0 48px;width:48px;height:48px;overflow:hidden;border:1px solid #e2eaf2;border-radius:14px;background:#edf3f9;color:var(--court);font:900 18px "Arial Black",Impact,sans-serif}
 .profile-club-avatar img{width:100%;height:100%;object-fit:cover}
-.profile-club-info{display:flex;flex:1;flex-direction:column;gap:4px;min-width:0}
-.profile-club-info b{overflow:hidden;color:var(--court);font-size:14px;text-overflow:ellipsis;white-space:nowrap}
-.profile-club-info small{overflow:hidden;color:var(--mut);font-size:11px;text-overflow:ellipsis;white-space:nowrap}
-.profile-club-row>.tag{flex:none;font-size:10px}
-.profile-club-arrow{color:var(--mut);font-size:23px;line-height:1}
-.profile-club-row:focus-visible{outline:2px solid var(--sky);outline-offset:2px;border-radius:8px}
-@media(max-width:380px){.profile-club-row{gap:7px}.profile-club-avatar{flex-basis:36px;width:36px;height:36px}.profile-club-row>.tag{font-size:9px;padding:5px 6px}}
+.profile-club-info{display:flex;flex:1;flex-direction:column;gap:5px;min-width:0}
+.profile-club-info>b{overflow:hidden;color:var(--court);font:900 14px/1.2 "Arial Black",Impact,sans-serif;text-overflow:ellipsis;white-space:nowrap}
+.profile-club-city{overflow:hidden;color:var(--mut);font-size:11px;line-height:1.2;text-overflow:ellipsis;white-space:nowrap}
+.profile-club-badges{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.profile-club-type,.profile-club-role{display:inline-flex;align-items:center;min-height:21px;padding:4px 7px;border-radius:7px;font-size:9px;font-weight:900;line-height:1;white-space:nowrap}
+.profile-club-type.official{background:#fff0df;color:#a85c13}
+.profile-club-type.friends{background:#e8f1ff;color:#285f9d}
+.profile-club-role{background:#edf1f5;color:#536579}
+.profile-club-role.admin{background:#e9f4d5;color:#55751b}
+.profile-club-arrow{flex:none;color:#8b9bad;font-size:25px;line-height:1;transition:transform .15s ease,color .15s ease}
+.profile-club-row:hover .profile-club-arrow{transform:translateX(2px);color:var(--sky)}
+.profile-club-row:focus-visible{outline:2px solid var(--sky);outline-offset:2px;border-radius:9px}
+.profile-clubs-state{display:flex;align-items:center;gap:11px;padding:15px 2px 2px}
+.profile-clubs-state-mark{display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:11px;background:#edf3f9;color:#456789;font-size:20px;font-weight:700}
+.profile-clubs-state>div{display:flex;flex-direction:column;gap:3px}
+.profile-clubs-state b{color:var(--court);font-size:12px}
+.profile-clubs-state small{color:var(--mut);font-size:11px;line-height:1.35}
+@media(max-width:420px){.profile-clubs-card{padding:13px}.profile-club-row{gap:9px}.profile-club-avatar{flex-basis:42px;width:42px;height:42px}.profile-club-info>b{font-size:13px}.profile-club-type,.profile-club-role{font-size:8px;padding:4px 6px}}
+@media(max-width:340px){.profile-clubs-heading{align-items:flex-start}.profile-clubs-heading p{max-width:190px}.profile-club-row{gap:7px}.profile-club-avatar{flex-basis:36px;width:36px;height:36px}}
