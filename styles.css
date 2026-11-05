@@ -1076,3 +1076,40 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .club-detail-page{gap:12px}.club-detail-top{border-radius:16px}.club-detail-top .club-cover{height:135px}.club-detail-top .club-detail-hero{min-height:100px;padding:15px}.club-detail-avatar{width:56px;height:56px;border-radius:15px}.club-detail-title h2{font-size:21px}.club-detail-status{align-items:flex-start;flex-direction:column;gap:9px;padding:12px 15px 14px;border-radius:0 0 16px 16px}.club-detail-status-stats{gap:9px}.club-detail-page .club-description,.club-detail-page .club-official-contact,.club-detail-page .club-members,.club-detail-page .club-admin-section{padding:14px}.club-contact-row{gap:10px;font-size:11px}.club-section-heading-row{align-items:flex-start}.club-section-heading-row>.btn{padding:7px 9px;font-size:10px}.club-danger-zone{align-items:flex-start;flex-direction:column}.club-danger-zone .btn{width:100%}
 }
 @media(max-width:360px){.club-detail-top .club-cover{height:115px}.club-detail-title h2{font-size:19px}.club-detail-status .club-detail-labels{gap:6px}}
+
+/* Publicaciones y conversación de los clubes */
+.club-posts-section>.club-section-heading-row{align-items:flex-start}
+.club-posts-section .club-section-heading p{margin:4px 0 0;color:#728197;font-size:11px;line-height:1.4}
+.club-post-form{margin:5px 0 12px;padding:14px;border:1px solid #d9e5f2;border-radius:13px;background:#f8fbff}
+.club-post-form-actions{display:flex;gap:8px;flex-wrap:wrap}
+.club-post-form-actions .btn{width:auto;margin:0}
+.club-permission-settings{display:flex;flex-direction:column;gap:10px;margin:12px 0;padding:13px;border:1px solid #e0e8f1;border-radius:12px;background:#f8fafc}
+.club-permission-settings h4{margin:0;color:#24496f;font-size:12px}
+.club-permission-option{display:flex;align-items:flex-start;gap:9px;margin:0!important}
+.club-permission-option input{flex:none;width:17px;height:17px;margin:2px 0 0;accent-color:#245c9e}
+.club-permission-option span{display:flex;flex-direction:column;gap:3px}
+.club-permission-option b{color:#294660;font-size:11px}
+.club-permission-option small{color:#77879a;font-size:10px;line-height:1.4}
+.club-post-card{padding:15px 0;border-top:1px solid #e9eef4}
+.club-post-card:first-of-type{margin-top:3px}
+.club-post-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.club-post-head>div{min-width:0}
+.club-post-kicker{display:block;margin-bottom:4px;color:#8291a4;font-size:9px;font-weight:900;letter-spacing:1px}
+.club-post-head h4{margin:0;color:#173b62;font-size:15px;line-height:1.3}
+.club-post-head small{display:block;margin-top:5px;color:#8492a3;font-size:10px}
+.club-post-body{margin:12px 0;color:#455a70;font-size:12px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
+.club-post-footer{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding-top:9px;border-top:1px solid #f0f3f7}
+.club-post-comment-count{color:#51677f;font-size:10px;font-weight:800}
+.club-post-comment-status{margin-left:auto;color:#8291a4;font-size:9px}
+.club-post-comments{display:flex;flex-direction:column;gap:9px;margin-top:11px;padding:11px;border-radius:11px;background:#f7f9fc}
+.club-post-comment{position:relative;padding:0 0 9px;border-bottom:1px solid #e8edf3}
+.club-post-comment>div{display:flex;align-items:center;gap:8px}
+.club-post-comment b{color:#35536f;font-size:10px}
+.club-post-comment small{color:#98a3b1;font-size:9px}
+.club-post-comment p{margin:5px 0 0;color:#526579;font-size:11px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.club-post-comment .btn{margin-top:4px}
+.club-post-no-comments{margin:0;color:#8996a6;font-size:10px}
+.club-comment-form{display:flex;align-items:flex-end;gap:8px;margin-top:4px}
+.club-comment-form textarea{min-height:38px;max-height:90px;flex:1;margin:0;padding:9px 10px;border:1px solid #dce4ed;border-radius:10px;background:#fff;font-size:11px}
+.club-comment-form .btn{flex:none;width:auto;margin:0}
+@media(max-width:520px){.club-post-card{padding:13px 0}.club-post-comments{padding:9px}.club-comment-form{align-items:stretch;flex-direction:column}.club-comment-form .btn{align-self:flex-end}.club-post-footer{gap:7px}.club-post-comment-status{margin-left:0}}
