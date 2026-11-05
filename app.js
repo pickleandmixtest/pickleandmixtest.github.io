@@ -309,7 +309,7 @@ function initPong(cid,hid,pre){
 function partySubnav(){
   const items=S.started?[['go','Partido','game'],['more','Jugadores','more'],['final','Resumen','final']]:[['setup','Preparar','setup'],['final','Resumen','final']];
   const current={setup:'setup',game:'go',more:'more',final:'final'}[view];
-  return `<nav class="party-subnav" aria-label="Secciones de Partido">${items.map(x=>`<button data-a="${x[0]}"${x[0]===current?' aria-current="page"':''}>${x[1]}</button>`).join('')}</nav>`;
+  return `<nav class="party-subnav party-subnav-${items.length}" aria-label="Secciones de Partido">${items.map(x=>`<button data-a="${x[0]}"${x[0]===current?' aria-current="page"':''}>${x[1]}</button>`).join('')}</nav>`;
 }
 function header(){
   const t=[['home','Inicio'],['party','Partido'],['clubs','Clubes']];
