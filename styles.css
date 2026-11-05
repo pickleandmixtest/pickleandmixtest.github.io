@@ -1113,3 +1113,27 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .club-comment-form textarea{min-height:38px;max-height:90px;flex:1;margin:0;padding:9px 10px;border:1px solid #dce4ed;border-radius:10px;background:#fff;font-size:11px}
 .club-comment-form .btn{flex:none;width:auto;margin:0}
 @media(max-width:520px){.club-post-card{padding:13px 0}.club-post-comments{padding:9px}.club-comment-form{align-items:stretch;flex-direction:column}.club-comment-form .btn{align-self:flex-end}.club-post-footer{gap:7px}.club-post-comment-status{margin-left:0}}
+
+/* Edición de imágenes del club directamente desde la cabecera */
+.club-detail-top .club-cover{position:relative;display:flex;align-items:flex-start;justify-content:flex-end;padding:12px;background-color:#dce6f0;background-size:cover;background-position:center}
+.club-detail-top .club-cover:not([style]){background:linear-gradient(135deg,#dce7f2,#b9cbe0)}
+.club-image-edit{display:inline-flex;align-items:center;gap:6px;padding:8px 11px;border:1px solid rgba(255,255,255,.7);border-radius:10px;background:rgba(12,35,62,.78);color:#fff;font-size:11px;font-weight:800;cursor:pointer;backdrop-filter:blur(8px)}
+.club-image-edit span{font-size:15px;line-height:1}
+.club-avatar-edit{position:relative;flex:none;width:66px;height:66px;padding:0;border:0;border-radius:18px;background:transparent;cursor:pointer}
+.club-avatar-edit .club-detail-avatar{width:100%;height:100%;display:block}
+.club-avatar-edit-icon{position:absolute;right:-5px;bottom:-5px;display:grid;place-items:center;width:25px;height:25px;border:2px solid #fff;border-radius:50%;background:#d4f53c;color:#12325e;font-size:13px;font-weight:900;box-shadow:0 2px 6px #0003}
+.image-editor-backdrop{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(8,22,40,.72);backdrop-filter:blur(5px)}
+.image-editor{width:min(440px,100%);max-height:calc(100dvh - 32px);overflow:auto;padding:18px;border:1px solid #e1e8f1;border-radius:19px;background:#fff;box-shadow:0 18px 60px #07182c55}
+.image-editor-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.image-editor-head h3{margin:4px 0 0;color:#15385f;font-size:18px}
+.image-editor-close{width:34px;height:34px;border:0;border-radius:50%;background:#edf2f7;color:#294660;font-size:23px;cursor:pointer}
+.image-editor-help{margin:10px 0 13px;color:#687b91;font-size:12px;line-height:1.5}
+.image-editor-stage{width:100%;max-width:360px;margin:0 auto;overflow:hidden;border-radius:12px;background:repeating-conic-gradient(#e8edf3 0% 25%,#f7f9fb 0% 50%) 50%/18px 18px;touch-action:none}
+.image-editor-stage.square{aspect-ratio:1}.image-editor-stage.wide{aspect-ratio:3/1}
+.image-editor-stage canvas{display:block;width:100%;height:100%;object-fit:contain;cursor:grab;touch-action:none}
+.image-editor-stage canvas:active{cursor:grabbing}
+.image-editor-zoom{display:flex;align-items:center;gap:12px;margin:16px 0 13px;color:#38536f;font-size:12px;font-weight:800}
+.image-editor-zoom input{flex:1;accent-color:#245c9e}
+.image-editor-actions{display:flex;justify-content:flex-end;gap:8px}
+.image-editor-actions .btn{width:auto;min-width:118px;margin:0}
+@media(max-width:520px){.club-avatar-edit{width:56px;height:56px}.club-image-edit{padding:7px 9px;font-size:10px}.image-editor{padding:15px}.image-editor-actions .btn{flex:1;min-width:0}}
