@@ -983,7 +983,7 @@ function scoreStep(t,c,v,P){
   return{ok:true,val:n}}
 function replan(why){const n=pending().length;rebuild(n);save();msg=why+' Planificación de partidos pendientes actualizada.'}
 /* Minijuegos: cada HTML vive en index.html (<script type="text/plain" id="g-...">) y se abre a pantalla completa dentro de un iframe aislado */
-const GN={kitchen:'Kitchen Rush',dink:'Dink Shot',pairs:'Pickle Pairs'};
+const GN={pong:'Pong',kitchen:'Kitchen Rush',dink:'Dink Shot',pairs:'Pickle Pairs'};
 function miniGamePlayerName(){
   const p=AU.profile||{},alias=String(p.alias||'').trim();
   return (alias?'@'+alias:String(p.display_name||AU.user?.user_metadata?.full_name||AU.user?.email?.split('@')[0]||'Jugador')).slice(0,40);
@@ -1019,12 +1019,12 @@ async function showMiniGameLeaderboard(game){
 }
 function openGame(id){if($('#ov'))return;const src=document.getElementById('g-'+id);if(!src)return;
   const o=document.createElement('div');o.id='ov';o.dataset.game=id;o.className='ov';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');o.setAttribute('aria-label',GN[id]);
-  o.innerHTML=`<div class="ovh"><span>${GN[id]}</span><div class="ov-actions"><button class="btn sm" data-lb>Top 10</button><button class="btn sm red" data-a="closeg">Cerrar ✕</button></div></div><iframe title="${GN[id]}" allow="autoplay"></iframe>`;
+  o.innerHTML=`<div class="ovh"><span>${GN[id]}</span><div class="ov-actions">${id==='pairs'?'':'<button class=\"btn sm\" data-lb>Top 10</button>'}<button class="btn sm red" data-a="closeg">Cerrar ✕</button></div></div><iframe title="${GN[id]}" allow="autoplay"></iframe>`;
   const f=o.querySelector('iframe');
   f.addEventListener('load',()=>{try{const w=f.contentWindow;w.addEventListener('keydown',e=>{if(e.key==='Escape')A.closeg()});w.focus()}catch(e){}});
   const onMessage=e=>{if(e.source!==f.contentWindow||!e.data||e.data.type!=='pm-minigame-score'||e.data.game!==id)return;saveMiniGameScore(id,e.data.score)};
   window.addEventListener('message',onMessage);o._miniMessageHandler=onMessage;
-  o.querySelector('[data-lb]').addEventListener('click',()=>showMiniGameLeaderboard(id));
+  const lbButton=o.querySelector('[data-lb]');if(lbButton)lbButton.addEventListener('click',()=>showMiniGameLeaderboard(id));
   f.srcdoc=src.textContent.split('<\\/script>').join('</script>');
   document.body.appendChild(o);document.body.style.overflow='hidden'}
 const A={
