@@ -365,6 +365,9 @@ async function loadClubs(){
 }
 function clubPerson(id){return CL.people.find(p=>p.id===id)||{id,display_name:'Jugador',alias:''}}
 function clubMember(clubId,userId){return CL.members.find(m=>m.club_id===clubId&&m.user_id===userId)}
+function clubAdmin(id){const m=clubMember(id,AU.user&&AU.user.id);return !!m&&m.role==='admin'}
+function clubDate(v){return v?new Date(v).toLocaleString('es-ES',{dateStyle:'medium',timeStyle:'short'}):''}
+function clubEventType(t){return t==='training'?'Entrenamiento':t==='tournament'?'Torneo':'Quedada'}
 function vClubs(){
   if(!AU.user)return '<h2>Clubes</h2><p class="lead">Crea un punto de encuentro para tu comunidad de pickleball.</p><div class="card acct">'+authInner()+'</div>';
   const cards=CL.items.map(c=>{
