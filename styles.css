@@ -204,3 +204,11 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .friend-profile-link:hover .friend-person-info b{text-decoration:underline}
 .profile-public-actions{display:flex;justify-content:flex-end;margin-top:12px}
 .profile-public-actions .btn{width:auto;margin:0}
+
+/* Clasificación de amigos */
+.leaderboard-row{gap:8px}
+.leader-position{display:grid;place-items:center;flex:none;width:25px;height:25px;border-radius:50%;background:var(--ball);color:var(--ink);font-weight:900}
+.leaderboard-row .friend-profile-link{flex:1}
+.leader-stats{display:flex;flex-direction:column;align-items:flex-end;gap:2px;white-space:nowrap}
+.leader-stats b{color:var(--court);font:900 16px "Arial Black",Impact,sans-serif}
+.leader-stats small{font-size:11px;color:var(--mut)}
