@@ -357,7 +357,7 @@ async function loadFriends(){
     if(ids.length){const {data:people,error:pe}=await sbc.from('profiles').select('id,display_name,alias,avatar_url').in('id',ids);if(pe)throw pe;FR.people=people||[]}else FR.people=[];
     FR.loaded=true;
   }catch(error){console.warn('[friends] load:',error&&error.message);FR.error='No se han podido cargar tus amistades. Comprueba la conexión e inténtalo de nuevo.'}
-  finally{FR.loading=false;paintFriends();loadFriendLeaderboard();if(view==='profile'){render();loadFriendActivity()}}
+  finally{FR.loading=false;paintFriends();paintFriendBadge();loadFriendLeaderboard();if(view==='profile'){render();loadFriendActivity()}}
 }
 function paintFriends(){if(view==='friends'){const root=document.querySelector('#app');if(root)root.innerHTML=header()+vFriends()+foot()}}
 async function searchFriends(form){
@@ -771,7 +771,20 @@ document.addEventListener('change',e=>{const t=e.target;
    NUNCA pongas aquí la clave secreta de Supabase ni el Client Secret de Google (van solo en el panel de Supabase). */
 const SB_URL='https://woolozllrvabjrflmqec.supabase.co',SB_KEY='sb_publishable_A3wn2gZDvhIpIkAdg4riuA_6GpG41oS',GUEST_K='pickleMix.auth.guest';
 const AU={user:null,profile:null,profileLoading:false,profileErr:'',profileSettingsOpen:false,ready:false,busy:false,err:'',guest:false,oauth:false};
-let sbc=null;
+let sbc=null,friendChannel=null;
+function paintFriendBadge(){const n=FR.items.filter(f=>f.status==='pending'&&f.addressee_id===AU.user?.id).length,b=document.querySelector('.tabs button[data-a="friends"]');if(b)b.textContent='Amigos'+(n?' · '+n:'')}
+function watchFriendships(userId){
+  if(friendChannel&&sbc){sbc.removeChannel(friendChannel);friendChannel=null}
+  if(!sbc||!userId)return;
+  friendChannel=sbc.channel('friendships:'+userId)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'friendships',filter:'addressee_id=eq.'+userId},payload=>{
+      if(payload.new&&payload.new.status==='pending'&&payload.new.requester_id!==userId){toast('Tienes una nueva solicitud de amistad.');loadFriends()}
+    })
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'friendships',filter:'requester_id=eq.'+userId},payload=>{
+      if(payload.new&&payload.new.status==='accepted'){toast('Han aceptado tu solicitud de amistad.');loadFriends()}
+    })
+    .subscribe(status=>{if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')console.warn('[friends] no se pudo conectar con las notificaciones en tiempo real')});
+}
 const auRedirect=()=>location.origin+location.pathname.replace(/index\.html$/,'');
 const auName=u=>{const p=AU.profile&&u&&AU.profile.id===u.id?AU.profile:null,m=(u&&u.user_metadata)||{};return String((p&&p.display_name)||m.full_name||m.name||(u&&u.email?u.email.split('@')[0]:'')||'Jugador').trim().slice(0,40)||'Jugador'};
 const auPic=u=>{const p=AU.profile&&u&&AU.profile.id===u.id?AU.profile:null,m=(u&&u.user_metadata)||{},v=(p&&p.avatar_url)||m.avatar_url||m.picture||'';return/^https:\/\//i.test(v)?v:''};
@@ -871,9 +884,10 @@ if(typeof window!=='undefined'&&typeof document!=='undefined'){
     /* Solo se repinta la tarjeta y la cabecera (no toda la app) y solo si cambia la persona: así un refresco de token no interrumpe lo que se esté escribiendo */
     sbc.auth.onAuthStateChange((ev,ses)=>{const u=(ses&&ses.user)||null,was=AU.user&&AU.user.id,ch=(u&&u.id)!==was;
       AU.user=u;AU.ready=true;AU.busy=false;if(u)AU.err='';
-      if(ch&&!u){AU.profile=null;AU.profileErr='';AU.profileLoading=false;HIST.loaded=false;HIST.items=[];HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0}}
+      if(ch&&!u){watchFriendships(null);AU.profile=null;AU.profileErr='';AU.profileLoading=false;HIST.loaded=false;HIST.items=[];HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0}}
       if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))AU.profileLoading=true;
       if(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED')paintAuth();
+      if(u&&(ch||ev==='INITIAL_SESSION'))watchFriendships(u.id);
       if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))setTimeout(()=>{loadProfile(u.id);loadMyHistory();loadFriends()},0);
       if(u&&ch&&AU.oauth&&ev==='SIGNED_IN'){AU.oauth=false;toast('Sesión iniciada como '+auName(u))}});
     setTimeout(()=>{if(!AU.ready){AU.ready=true;paintAuth()}},4000)}
