@@ -443,3 +443,8 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .friends-overview button span{font-size:11px;font-weight:800}
 .friends-overview button small{font-size:9px;opacity:.8}
 .community-detail-panel{scroll-margin-top:16px}
+
+/* Minijuegos para cuentas registradas: tarjetas a plena intensidad */
+.games-registered-unlocked .gc-registered{opacity:1}
+.games-registered-unlocked .gc-registered:after{display:none}
+.games-registered-unlocked .gc-registered .tx{padding-bottom:inherit}
