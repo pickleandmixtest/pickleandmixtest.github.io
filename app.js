@@ -255,8 +255,8 @@ function vHome(){const n=S.players.length,c=S.settings;
   <button class="btn ghost" data-a="${S.started?'more':'setup'}">Gestionar participantes</button>
   ${gamesGrid()}`}
 function vProfile(){
-  const body=AU.user?authInner():AU.guest?'<div class="card acct"><span class="mut">Modo invitado · sin cuenta</span><p class="hint">Puedes seguir usando PICKLE &amp; MIX sin registrarte. Si quieres crear tu perfil, inicia sesión con Google.</p><button class="btn gg" data-a="login">Iniciar sesión con Google</button></div>':authInner();
-  return '<h2>Mi perfil</h2><p class="lead">Gestiona tu nombre público, tu alias y tus opciones de privacidad.</p><div id="authbox">'+body+'</div>';
+  const body=AU.user||AU.guest?authInner():'<div id="authbox">'+authInner()+'</div>';
+  return '<h2>Mi perfil</h2><p class="lead">'+(AU.user&&AU.profile&&!AU.profileSettingsOpen?'Tu espacio en PICKLE &amp; MIX.':'Gestiona tu cuenta y tus preferencias.')+'</p><div id="authbox">'+(AU.user||AU.guest?body:authInner())+'</div>';
 }
 /* Resumen del modo rotatorio: reparto por jugador y duración estimada (valores medios orientativos) */
 const CMAX=20; /* máximo de ciclos (partidos por jugador) que admite el campo «Ciclos» */
@@ -503,7 +503,7 @@ const A={
       .catch(e=>{AU.err='No se pudo cerrar la sesión. Inténtalo de nuevo.';console.warn('[auth] logout:',e&&e.message);paintAuth()})},
   guest(){AU.guest=true;try{localStorage.setItem(GUEST_K,'1')}catch(e){}},
   reloadProfile(){if(AU.user)loadProfile(AU.user.id)},
-  setup(){view='setup'},home(){view='home'},profile(){view='profile'},go(){view='game';ed=null},more(){view='more'},final(){view='final'},
+  setup(){view='setup'},home(){view='home'},profile(){view='profile';AU.profileSettingsOpen=false},profileSettings(){AU.profileSettingsOpen=true;paintAuth()},profileOverview(){AU.profileSettingsOpen=false;paintAuth()},go(){view='game';ed=null},more(){view='more'},final(){view='final'},
   start(){const c=S.settings;if(S.players.length<4){err='Necesitas al menos 4 jugadores.';return}
     if(S.players.length<4*c.courts){err=`Con ${c.courts} pistas necesitas al menos ${4*c.courts} jugadores.`;return}
     if(FX()&&S.players.length%2){err='Con parejas fijas necesitas un número par de jugadores.';return}
@@ -537,7 +537,7 @@ const A={
 };
 document.addEventListener('click',e=>{
   const t=e.target.closest('[data-a],[data-sc],[data-ct],[data-del],[data-st],[data-pd],[data-edit],[data-mode],[data-pm]');if(!t)return;const d=t.dataset;
-  if(d.a){if(d.a==='removeAvatar'){removeCustomAvatar();return}A[d.a]();}
+  if(d.a){A[d.a]();}
   else if(d.sc){const c=d.sc[0],v=+d.sc.slice(1),r=scoreStep(tmp,c,v,S.settings.points);if(r.ok)tmp[c]=r.val;else toast(r.msg);$('#app').innerHTML=header()+vGame()+foot();return}
   else if(d.ct){ct=+d.ct;ed=null}
   else if(d.mode)S.settings.mode=d.mode;
@@ -567,7 +567,7 @@ document.addEventListener('change',e=>{const t=e.target;
    La clave «publishable» está pensada para ir en el navegador; lo que protege los datos son las políticas RLS del proyecto.
    NUNCA pongas aquí la clave secreta de Supabase ni el Client Secret de Google (van solo en el panel de Supabase). */
 const SB_URL='https://woolozllrvabjrflmqec.supabase.co',SB_KEY='sb_publishable_A3wn2gZDvhIpIkAdg4riuA_6GpG41oS',GUEST_K='pickleMix.auth.guest';
-const AU={user:null,profile:null,profileLoading:false,profileErr:'',ready:false,busy:false,err:'',guest:false,oauth:false};
+const AU={user:null,profile:null,profileLoading:false,profileErr:'',profileSettingsOpen:false,ready:false,busy:false,err:'',guest:false,oauth:false};
 let sbc=null;
 const auRedirect=()=>location.origin+location.pathname.replace(/index\.html$/,'');
 const auName=u=>{const p=AU.profile&&u&&AU.profile.id===u.id?AU.profile:null,m=(u&&u.user_metadata)||{};return String((p&&p.display_name)||m.full_name||m.name||(u&&u.email?u.email.split('@')[0]:'')||'Jugador').trim().slice(0,40)||'Jugador'};
@@ -582,8 +582,15 @@ function authInner(){
     if(AU.profileLoading)return '<div class="card acct"><div class="me">'+auAvatar(AU.user)+'<div><span class="tag d">Sesión iniciada</span><b>'+esc(auName(AU.user))+'</b></div></div><p class="hint" role="status">Cargando tu perfil…</p><button class="btn ghost" data-a="logout">Cerrar sesión</button></div>';
     if(!AU.profile)return '<div class="card acct"><h3>Tu perfil</h3>'+(AU.profileErr?'<div class="err" role="alert">'+esc(AU.profileErr)+'</div>':'<p class="hint">No se ha podido cargar tu perfil.</p>')+'<button class="btn" data-a="reloadProfile">Reintentar</button><button class="btn ghost" data-a="logout">Cerrar sesión</button></div>';
     const p=AU.profile;
+    const avatar='<label class="avatar-picker" for="profile-avatar" title="Cambiar foto de perfil" aria-label="Cambiar foto de perfil">'+auAvatar(AU.user)+'<span class="avatar-camera" aria-hidden="true">✎</span></label><input id="profile-avatar" class="sr" type="file" accept="image/jpeg,image/png,image/webp" data-avatar-file>';
+    if(!AU.profileSettingsOpen){
+      return '<div class="profile-dashboard"><section class="card acct profile-identity"><div class="me">'+avatar+'<div><span class="tag d">Tu perfil</span><b>'+esc(auName(AU.user))+'</b><span class="mut">'+(p.alias?'@'+esc(p.alias):'Aún no has elegido un alias')+'</span></div></div><button class="btn ghost profile-settings-btn" data-a="profileSettings">Configuración</button></section>'+
+        '<h3 class="profile-section-title">Tus estadísticas</h3><div class="profile-metrics"><div class="card profile-metric"><b>—</b><span>Partidos jugados</span></div><div class="card profile-metric"><b>—</b><span>Victorias</span></div><div class="card profile-metric"><b>—</b><span>% de victorias</span></div></div>'+
+        '<section class="card profile-empty"><h3>Tu actividad</h3><p>Cuando tus partidos estén vinculados a tu cuenta, aquí podrás consultar tu historial, resultados y evolución.</p><span class="tag">Próximamente</span></section>'+e+
+        '<button class="btn ghost" data-a="logout">Cerrar sesión</button></div>';
+    }
     const opt=(k,v,t)=>'<option value="'+v+'"'+(p[k]===v?' selected':'')+'>'+t+'</option>';
-    return '<div class="card acct"><div class="me"><label class="avatar-picker" for="profile-avatar" title="Cambiar foto de perfil" aria-label="Cambiar foto de perfil">'+auAvatar(AU.user)+'<span class="avatar-camera" aria-hidden="true">✎</span></label><input id="profile-avatar" class="sr" type="file" accept="image/jpeg,image/png,image/webp" data-avatar-file><div><span class="tag d">Tu perfil</span><b>'+esc(auName(AU.user))+'</b><span class="mut">Correo de acceso (solo visible para ti): '+esc(AU.user.email||'')+'</span><button class="btn sm ghost avatar-google" type="button" data-a="removeAvatar">Usar foto de Google</button></div></div>'+e+
+    return '<div class="card acct"><div class="profile-settings-head"><button class="btn sm ghost" type="button" data-a="profileOverview">← Volver a Mi perfil</button></div><div class="me">'+avatar+'<div><span class="tag d">Configuración</span><b>'+esc(auName(AU.user))+'</b><span class="mut">Correo de acceso (solo visible para ti): '+esc(AU.user.email||'')+'</span></div></div>'+e+
       '<form data-f="profile" class="profile-form">'+
       '<label for="profile-name">Nombre público</label><input id="profile-name" name="display_name" maxlength="40" minlength="1" required value="'+esc(p.display_name||'')+'" autocomplete="nickname">'+
       '<label for="profile-alias">Alias único</label><input id="profile-alias" name="alias" maxlength="21" value="'+esc(p.alias?'@'+p.alias:'')+'" placeholder="@tu_alias" autocapitalize="none" spellcheck="false">'+
@@ -591,7 +598,6 @@ function authInner(){
       '<label for="profile-stats">Quién puede ver tus estadísticas</label><select id="profile-stats" name="stats_visibility">'+opt('stats_visibility','everyone','Todo el mundo')+opt('stats_visibility','friends','Solo amigos')+opt('stats_visibility','nobody','Nadie')+'</select>'+
       '<label for="profile-history">Quién puede ver tu historial</label><select id="profile-history" name="history_visibility">'+opt('history_visibility','everyone','Todo el mundo')+opt('history_visibility','friends','Solo amigos')+opt('history_visibility','nobody','Nadie')+'</select>'+
       '<label for="profile-location">Quién puede ver tu ubicación</label><select id="profile-location" name="location_visibility">'+opt('location_visibility','everyone','Todo el mundo')+opt('location_visibility','friends','Solo amigos')+opt('location_visibility','nobody','Nadie')+'</select>'+
-
       '<button class="btn" type="submit">Guardar perfil</button></form><button class="btn ghost" data-a="logout">Cerrar sesión</button></div>';
   }
   if(!sbc)return AU.guest?'':'<p class="hint">El acceso con Google no está disponible ahora mismo. La app funciona con normalidad sin cuenta.</p>';
@@ -620,8 +626,7 @@ async function uploadAvatar(input){
   if(!['image/jpeg','image/png','image/webp'].includes(file.type)){toast('Elige una imagen JPG, PNG o WebP.');return}
   if(file.size>2*1024*1024){toast('La imagen no puede superar los 2 MB.');return}
   if(!sbc||!AU.user||!AU.profile){toast('Inicia sesión para cambiar tu foto.');return}
-  const card=input.closest('.acct'),button=card&&card.querySelector('[data-a="removeAvatar"]');
-  input.disabled=true;if(button)button.disabled=true;toast('Subiendo tu foto…');
+  input.disabled=true;toast('Subiendo tu foto…');
   const ext=file.type==='image/jpeg'?'jpg':file.type==='image/png'?'png':'webp';
   const id=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
   const path=AU.user.id+'/'+id+'.'+ext;
@@ -632,15 +637,7 @@ async function uploadAvatar(input){
     try{await storeAvatarUrl(data.publicUrl)}catch(error){await sbc.storage.from('avatars').remove([path]);throw error}
     toast('Foto de perfil actualizada.');
   }catch(error){console.warn('[avatar] upload:',error&&error.message);toast('No se ha podido actualizar la foto. Comprueba la conexión e inténtalo de nuevo.')}
-  finally{input.disabled=false;if(button)button.disabled=false}
-}
-async function removeCustomAvatar(){
-  if(!sbc||!AU.user||!AU.profile)return;
-  if(!AU.profile.avatar_url){toast('Ya estás usando tu foto de Google.');return}
-  const b=document.querySelector('[data-a="removeAvatar"]');if(b)b.disabled=true;
-  try{await storeAvatarUrl(null);toast('Ahora se muestra tu foto de Google.')}
-  catch(error){console.warn('[avatar] remove:',error&&error.message);toast('No se ha podido cambiar la foto. Inténtalo de nuevo.')}
-  finally{if(b)b.disabled=false}
+  finally{input.disabled=false}
 }
 async function saveProfile(form){
   if(!sbc||!AU.user||!AU.profile)return;
