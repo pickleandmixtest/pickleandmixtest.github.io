@@ -415,7 +415,18 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .club-member-identity b{font-size:13px}
 .club-member-identity small{color:var(--mut);font-size:11px}
 .club-member-profile:hover .club-member-identity b{text-decoration:underline}
-.club-member-row>.tag{font-size:9px}
+.club-member-row>.tag{font-size:9px;flex:0 0 auto}
+.club-member-menu{position:relative;flex:0 0 34px;display:flex;justify-content:flex-end}
+.club-member-menu-trigger{width:32px;height:32px;display:grid;place-items:center;border:0;border-radius:9px;background:transparent;color:var(--ink);font-size:24px;line-height:1;cursor:pointer}
+.club-member-menu-trigger:hover,.club-member-row.menu-open .club-member-menu-trigger{background:#edf2f8}
+.club-member-menu-trigger:focus-visible,.club-member-menu-popover button:focus-visible{outline:2px solid var(--court);outline-offset:2px}
+.club-member-menu-popover{display:none;position:absolute;z-index:8;top:calc(100% + 5px);right:0;width:190px;padding:5px;background:#fff;border:1px solid #e2e8f0;border-radius:11px;box-shadow:0 8px 24px rgba(15,35,60,.16)}
+.club-member-row.menu-open .club-member-menu-popover{display:grid;gap:2px}
+.club-member-menu-popover button{width:100%;padding:10px 11px;border:0;border-radius:7px;background:transparent;color:var(--ink);text-align:left;font:600 12px inherit;cursor:pointer}
+.club-member-menu-popover button:hover{background:#f2f5f9}
+.club-member-menu-popover button.danger{color:#c0392b}
+.club-member-menu-popover button.danger:hover{background:#fff0ef}
+.club-member-row{position:relative}
 .club-description>p{margin:0;line-height:1.5}
 .club-detail-meta{display:flex;flex-wrap:wrap;gap:12px;margin-top:13px;padding-top:12px;border-top:1px solid #edf1f6;color:var(--mut);font-size:11px}
 .club-join-card{text-align:center;padding:20px}
