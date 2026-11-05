@@ -5,8 +5,8 @@ const fresh=()=>({players:[],settings:{courts:1,points:11,cycles:3,mode:'rot',pa
 function valid(d){return d&&Array.isArray(d.players)&&Array.isArray(d.matches)&&d.settings&&d.players.every(p=>p&&typeof p.id=='number'&&typeof p.name=='string')&&d.matches.every(m=>m&&Array.isArray(m.a)&&Array.isArray(m.b)&&m.a.length==2&&m.b.length==2&&['pending','done','skipped'].includes(m.status))&&(d.settings.mode!=='fixed'||Array.isArray(d.teams))&&['courts','points','cycles'].every(k=>Number.isInteger(d.settings[k])&&d.settings[k]>0)}
 let S=fresh();try{const d=JSON.parse(localStorage.getItem(K));if(valid(d)){S=d;if(!S.started&&S.settings.points===7)S.settings.points=11}}catch(e){}
 const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
-const ROUTE_TO_VIEW={inicio:'home',preparar:'setup',partido:'game',jugadores:'more',resumen:'final',perfil:'profile',amigos:'friends',historial:'history'};
-const VIEW_TO_ROUTE={home:'inicio',setup:'preparar',game:'partido',more:'jugadores',final:'resumen',profile:'perfil',friends:'amigos',history:'historial'};
+const ROUTE_TO_VIEW={inicio:'home',preparar:'setup',partido:'game',jugadores:'more',resumen:'final',perfil:'profile',amigos:'friends',historial:'history',usuario:'user-profile'};
+const VIEW_TO_ROUTE={home:'inicio',setup:'preparar',game:'partido',more:'jugadores',final:'resumen',profile:'perfil',friends:'amigos',history:'historial','user-profile':'amigos'};
 const initialRoute=location.hash.replace(/^#\/?/,'').toLowerCase();
 let view=ROUTE_TO_VIEW[initialRoute]||(S.started?'game':'home'),tmp=null,msg='',err='',nerr='',ed=null,ct=1,SC={};
 const nameErrBox=()=>nerr?`<div class="err">${esc(nerr)}</div>`:'';
@@ -184,7 +184,7 @@ const foot=()=>`<p class="mut foot">Plataforma para pickleballers creada por <a 
 function render(){
   const route='#'+(VIEW_TO_ROUTE[view]||'inicio');
   if(location.hash!==route)history.replaceState(null,'',location.pathname+location.search+route);
-  const f={home:vHome,setup:vSetup,game:vGame,more:vMore,final:vFinal,profile:vProfile,friends:vFriends,history:vHistory}[view];
+  const f={home:vHome,setup:vSetup,game:vGame,more:vMore,final:vFinal,profile:vProfile,friends:vFriends,history:vHistory,'user-profile':vUserProfile}[view];
   $('#app').innerHTML=header()+f()+(err?`<div class="err">${esc(err)}</div>`:'')+foot();err='';nerr='';if(view==='home')initPong('pong',null,true);
   if(msg){toast(msg);msg=''}
 }
@@ -239,8 +239,10 @@ function initPong(cid,hid,pre){
   (function f(now){if(!document.body.contains(c))return;fit();if(W){const dt=Math.min(.033,(now-last)/1000);step(dt);draw()}last=now;requestAnimationFrame(f)})(last);
 }
 function header(){
-  const t=S.started?[['home','Inicio'],['go','Partido'],['more','Jugadores'],['final','Resumen'],['friends','Amigos'],['profile','Mi perfil']]:[['home','Inicio'],['setup','Preparar'],['final','Resumen'],['friends','Amigos'],['profile','Mi perfil']];
-  const cur={home:'home',game:'go',more:'more',final:'final',setup:'setup',profile:'profile',friends:'friends',history:'profile'}[view];
+  const pendingFriends=FR.items.filter(f=>f.status==='pending'&&f.addressee_id===AU.user?.id).length;
+  const friendLabel='Amigos'+(pendingFriends?' · '+pendingFriends:'');
+  const t=S.started?[['home','Inicio'],['go','Partido'],['more','Jugadores'],['final','Resumen'],['friends',friendLabel],['profile','Mi perfil']]:[['home','Inicio'],['setup','Preparar'],['final','Resumen'],['friends',friendLabel],['profile','Mi perfil']];
+  const cur={home:'home',game:'go',more:'more',final:'final',setup:'setup',profile:'profile',friends:'friends',history:'profile','user-profile':'friends'}[view];
   return`<header class="top"><div class="mark">PICKLE<b>&amp;MIX</b></div><div class="who" id="authchip">${authChipIn()}</div><nav class="tabs" aria-label="Acceso rápido">${t.map(x=>`<button data-a="${x[0]}"${x[0]===cur?' aria-current="page"':''}>${x[1]}</button>`).join('')}</nav></header>`}
 const GT={
 pong:`<svg viewBox="0 0 160 96" aria-hidden="true"><rect width="160" height="96" fill="#2f6fbd"/><rect x="6" y="6" width="148" height="84" rx="4" fill="none" stroke="#fff" stroke-width="2" opacity=".8"/><path d="M6 48H154" stroke="#fff" stroke-width="2" stroke-dasharray="6 5" opacity=".8"/><rect x="56" y="12" width="46" height="8" rx="4" fill="#ff6a4d"/><rect x="66" y="76" width="46" height="8" rx="4" fill="#fff"/><circle cx="84" cy="62" r="4" fill="#d4f53c" opacity=".35"/><circle cx="92" cy="54" r="7" fill="#d4f53c" stroke="#0e1c33" stroke-width="2"/></svg>`,
@@ -256,6 +258,7 @@ function vHome(){const n=S.players.length,c=S.settings;
   <button class="btn ghost" data-a="${S.started?'more':'setup'}">Gestionar participantes</button>
   ${gamesGrid()}`}
 function profileMini(p){return '<div class="friend-person">'+(p.avatar_url?'<img class="av" src="'+esc(p.avatar_url)+'" alt="">':'<span class="av">'+esc((p.display_name||'?').slice(0,1).toUpperCase())+'</span>')+'<div class="friend-person-info"><b>'+esc(p.display_name||'Jugador')+'</b><span class="mut">@'+esc(p.alias||'')+'</span></div></div>'}
+function profileLink(p){return '<button type="button" class="friend-profile-link" data-up="'+p.id+'">'+profileMini(p)+'</button>'}
 function friendState(id){const f=FR.items.find(x=>x.requester_id===id||x.addressee_id===id);if(!f)return null;if(f.status==='accepted')return'friend';return f.requester_id===AU.user.id?'sent':'received'}
 function vFriends(){
   if(!AU.user)return '<h2>Amigos</h2><p class="lead">Inicia sesión con Google para encontrar jugadores y crear tu red de amigos.</p><div class="card acct">'+authInner()+'</div>';
@@ -265,10 +268,10 @@ function vFriends(){
   const accepted=FR.items.filter(f=>f.status==='accepted');
   const byId=id=>FR.people.find(p=>p.id===id)||{id,display_name:'Jugador',alias:''};
   const search=FR.results.filter(p=>p.id!==AU.user.id);
-  const results=search.map(p=>{const s=friendState(p.id);return '<div class="friend-row">'+profileMini(p)+(s==='friend'?'<span class="tag">Amigos</span>':s==='sent'?'<span class="tag">Enviada</span>':s==='received'?'<button class="btn sm" data-fa="accept" data-id="'+p.id+'">Aceptar</button>':'<button class="btn sm" data-fa="send" data-id="'+p.id+'">Añadir</button>')+'</div>'}).join('');
-  const requests=incoming.map(f=>'<div class="friend-row">'+profileMini(byId(f.requester_id))+'<div class="friend-actions"><button class="btn sm" data-fa="accept" data-id="'+f.id+'">Aceptar</button><button class="btn sm ghost" data-fa="reject" data-id="'+f.id+'">Rechazar</button></div></div>').join('');
-  const sent=outgoing.map(f=>'<div class="friend-row">'+profileMini(byId(f.addressee_id))+'<button class="btn sm ghost" data-fa="cancel" data-id="'+f.id+'">Cancelar</button></div>').join('');
-  const friends=accepted.map(f=>{const id=f.requester_id===AU.user.id?f.addressee_id:f.requester_id;return '<div class="friend-row">'+profileMini(byId(id))+'<button class="btn sm ghost" data-fa="remove" data-id="'+f.id+'">Eliminar</button></div>'}).join('');
+  const results=search.map(p=>{const s=friendState(p.id);return '<div class="friend-row">'+profileLink(p)+(s==='friend'?'<span class="tag">Amigos</span>':s==='sent'?'<span class="tag">Enviada</span>':s==='received'?'<button class="btn sm" data-fa="accept" data-id="'+p.id+'">Aceptar</button>':'<button class="btn sm" data-fa="send" data-id="'+p.id+'">Añadir</button>')+'</div>'}).join('');
+  const requests=incoming.map(f=>'<div class="friend-row">'+profileLink(byId(f.requester_id))+'<div class="friend-actions"><button class="btn sm" data-fa="accept" data-id="'+f.id+'">Aceptar</button><button class="btn sm ghost" data-fa="reject" data-id="'+f.id+'">Rechazar</button></div></div>').join('');
+  const sent=outgoing.map(f=>'<div class="friend-row">'+profileLink(byId(f.addressee_id))+'<button class="btn sm ghost" data-fa="cancel" data-id="'+f.id+'">Cancelar</button></div>').join('');
+  const friends=accepted.map(f=>{const id=f.requester_id===AU.user.id?f.addressee_id:f.requester_id;return '<div class="friend-row">'+profileLink(byId(id))+'<button class="btn sm ghost" data-fa="remove" data-id="'+f.id+'">Eliminar</button></div>'}).join('');
   return '<h2>Amigos</h2><p class="lead">Encuentra a otros jugadores de PICKLE &amp; MIX y conecta con ellos.</p>'+
     '<form class="card friend-search" data-f="friend-search"><label for="friend-query">Buscar jugadores</label><div class="row"><input id="friend-query" name="q" maxlength="40" placeholder="Nombre o @alias" value="'+esc(FR.query)+'" autocomplete="off"><button class="btn sm" type="submit" '+(FR.searching?'disabled':'')+'>'+(FR.searching?'Buscando…':'Buscar')+'</button></div><small>Para aparecer en las búsquedas, cada usuario debe elegir un alias en su configuración de perfil.</small></form>'+
     (FR.error?'<div class="err" role="alert">'+esc(FR.error)+'</div>':'')+
@@ -277,6 +280,35 @@ function vFriends(){
     '<section class="card"><h3>Solicitudes enviadas</h3>'+(sent||'<p class="mut">No tienes solicitudes enviadas.</p>')+'</section>'+
     '<section class="card"><h3>Mis amigos · '+accepted.length+'</h3>'+(friends||'<p class="mut">Todavía no tienes amigos añadidos.</p>')+'</section>'+
     '<button class="btn ghost" data-a="profile">Volver a Mi perfil</button>';
+}
+function vUserProfile(){
+  if(!AU.user)return '<h2>Perfil</h2><div class="card acct">'+authInner()+'</div>';
+  if(PUB.loading)return '<h2>Perfil</h2><div class="card"><p class="hint">Cargando perfil…</p></div>';
+  if(PUB.error||!PUB.profile)return '<h2>Perfil</h2><div class="card"><p class="hint">'+esc(PUB.error||'No se ha podido cargar el perfil.')+'</p><button class="btn ghost" data-a="friends">Volver a Amigos</button></div>';
+  const p=PUB.profile,rel=friendState(p.id),request=FR.items.find(f=>(f.requester_id===p.id&&f.addressee_id===AU.user.id)||(f.addressee_id===p.id&&f.requester_id===AU.user.id));
+  const action=rel==='friend'?'<span class="tag">Amigos</span>':rel==='sent'?'<span class="tag">Solicitud enviada</span>':rel==='received'?'<button class="btn sm" data-fa="accept" data-id="'+request.id+'">Aceptar solicitud</button>':'<button class="btn sm" data-fa="send" data-id="'+p.id+'">Añadir amigo</button>';
+  const stat=PUB.stats?'<div class="profile-metrics"><div class="card profile-metric"><b>'+PUB.stats.played+'</b><span>Partidos</span></div><div class="card profile-metric"><b>'+PUB.stats.wins+'</b><span>Victorias</span></div><div class="card profile-metric"><b>'+Math.round(PUB.stats.win_rate*100)+'%</b><span>Victorias</span></div></div><p class="mut">Diferencia de puntos: '+(PUB.stats.points_for-PUB.stats.points_against>0?'+':'')+(PUB.stats.points_for-PUB.stats.points_against)+'</p>':PUB.statsHidden?'<p class="mut">Este usuario no comparte sus estadísticas contigo.</p>':'<p class="mut">Todavía no hay estadísticas registradas.</p>';
+  const hist=PUB.history.length?PUB.history.map(h=>'<div class="history-row"><div><b>'+esc(h.session_title||'Quedada')+'</b><span class="mut">'+new Date(h.played_at).toLocaleDateString('es-ES')+' · '+(h.won?'Victoria':'Derrota')+'</span><small>'+esc((h.teammates||[]).join(' / '))+' vs '+esc((h.opponents||[]).join(' / '))+'</small></div><strong class="'+(h.won?'win':'loss')+'">'+h.own_score+'–'+h.opponent_score+'</strong></div>').join(''):PUB.historyHidden?'<p class="mut">Este usuario no comparte su historial contigo.</p>':'<p class="mut">Todavía no hay partidos guardados.</p>';
+  return '<h2>Perfil de jugador</h2><section class="card acct"><div class="me">'+(p.avatar_url?'<img class="av" src="'+esc(p.avatar_url)+'" alt="">':'<span class="av">'+esc((p.display_name||'?').slice(0,1).toUpperCase())+'</span>')+'<div><span class="tag d">Jugador de PICKLE &amp; MIX</span><b>'+esc(p.display_name)+'</b><span class="mut">@'+esc(p.alias)+'</span></div></div><div class="profile-public-actions">'+action+'</div></section>'+
+    '<h3 class="profile-section-title">Estadísticas</h3>'+stat+
+    '<section class="card profile-empty"><h3>Historial de partidos</h3>'+hist+'</section>'+
+    '<button class="btn ghost" data-a="friends">Volver a Amigos</button>';
+}
+async function openUserProfile(id){
+  if(!sbc||!AU.user)return;
+  PUB.id=id;PUB.profile=null;PUB.stats=null;PUB.history=[];PUB.error='';PUB.loading=true;PUB.statsHidden=false;PUB.historyHidden=false;view='user-profile';render();
+  try{
+    const {data,error}=await sbc.from('profiles').select('id,display_name,alias,avatar_url,stats_visibility,history_visibility').eq('id',id).single();
+    if(error)throw error;PUB.profile=data;
+    const isSelf=id===AU.user.id,isFriend=friendState(id)==='friend';
+    const canStats=isSelf||data.stats_visibility==='everyone'||(data.stats_visibility==='friends'&&isFriend);
+    const canHistory=isSelf||data.history_visibility==='everyone'||(data.history_visibility==='friends'&&isFriend);
+    if(canStats){const r=await sbc.rpc('get_user_stats',{p_user_id:id});if(r.error)throw r.error;PUB.stats=r.data}
+    else PUB.statsHidden=true;
+    if(canHistory){const r=await sbc.rpc('get_user_history',{p_user_id:id,p_limit:20});if(r.error)throw r.error;PUB.history=Array.isArray(r.data)?r.data:[]}
+    else PUB.historyHidden=true;
+  }catch(error){console.warn('[public profile] load:',error&&error.message);PUB.error='No se ha podido cargar este perfil o sus datos públicos.'}
+  finally{PUB.loading=false;if(view==='user-profile')render()}
 }
 async function loadFriends(){
   if(!sbc||!AU.user)return;
@@ -670,8 +702,9 @@ const A={
   reset(){if(confirm('Se borrarán jugadores, partidos y resultados. ¿Seguro?')&&confirm('Última comprobación: ¿empezar una quedada nueva?')){S=fresh();SC={};ed=null;ct=1;tmp=null;view='home'}}
 };
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-a],[data-fa],[data-sc],[data-ct],[data-del],[data-st],[data-pd],[data-edit],[data-mode],[data-pm]');if(!t)return;const d=t.dataset;
+  const t=e.target.closest('[data-a],[data-fa],[data-up],[data-sc],[data-ct],[data-del],[data-st],[data-pd],[data-edit],[data-mode],[data-pm]');if(!t)return;const d=t.dataset;
   if(d.fa){friendAction(d.fa,d.id);return}
+  if(d.up){openUserProfile(d.up);return}
   if(d.a){A[d.a]();}
   else if(d.sc){const c=d.sc[0],v=+d.sc.slice(1),r=scoreStep(tmp,c,v,S.settings.points);if(r.ok)tmp[c]=r.val;else toast(r.msg);$('#app').innerHTML=header()+vGame()+foot();return}
   else if(d.ct){ct=+d.ct;ed=null}
