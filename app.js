@@ -386,6 +386,23 @@ async function respondClubRequest(id,accept){try{const {error}=await sbc.rpc('re
 async function respondClubInvite(id,accept){try{const {error}=await sbc.rpc('respond_club_invitation',{p_invitation_id:id,p_accept:accept});if(error)throw error;toast(accept?'Ya formas parte del club.':'Invitación rechazada.');await loadClubs();await loadClubData(CL.selectedId);loadMyAchievements()}catch(e){toast(e.message||'No se ha podido responder a la invitación.')}}
 async function manageClubMember(userId,action){if(!confirm(action==='remove'?'¿Expulsar a este miembro?':action==='promote'?'¿Nombrar administrador?':'¿Retirar el rol de administrador?'))return;try{const {error}=await sbc.rpc('manage_club_member',{p_club_id:CL.selectedId,p_user_id:userId,p_action:action});if(error)throw error;await loadClubs();await loadClubData(CL.selectedId);loadMyAchievements();toast('Miembros actualizados.')}catch(e){toast(e.message||'No se ha podido modificar el miembro.')}}
 async function saveClubSettings(form){const fd=new FormData(form);try{const {error}=await sbc.from('clubs').update({name:String(fd.get('name')||'').trim(),description:String(fd.get('description')||'').trim(),city:String(fd.get('city')||'').trim(),access_mode:String(fd.get('access_mode')||'open')}).eq('id',CL.selectedId);if(error)throw error;CL.settingsOpen=false;await loadClubs();await loadClubData(CL.selectedId);toast('Configuración guardada.')}catch(e){toast(e.message||'No se han podido guardar los cambios.')}}
+async function inviteClubMember(form){
+ const alias=String(new FormData(form).get('alias')||'').trim().replace(/^@/,'').toLowerCase();if(!alias)return;
+ try{const p=await sbc.from('profiles').select('id,alias').ilike('alias',alias).maybeSingle();if(p.error)throw p.error;if(!p.data){toast('No se ha encontrado ese alias.');return}
+ if(p.data.id===AU.user.id||clubMember(CL.selectedId,p.data.id)){toast('Ese jugador ya es miembro o no puede ser invitado.');return}
+ const old=await sbc.from('club_invitations').select('id,status').eq('club_id',CL.selectedId).eq('invited_user_id',p.data.id).maybeSingle();if(old.error)throw old.error;
+ if(old.data&&old.data.status==='pending'){toast('Ya existe una invitación pendiente.');return}
+ if(old.data){const del=await sbc.from('club_invitations').delete().eq('id',old.data.id);if(del.error)throw del.error}
+ const ins=await sbc.from('club_invitations').insert({club_id:CL.selectedId,invited_user_id:p.data.id,invited_by:AU.user.id,status:'pending'});if(ins.error)throw ins.error;
+ form.reset();toast('Invitación enviada.');await loadClubData(CL.selectedId)
+ }catch(e){toast(e.message||'No se ha podido enviar la invitación.')}}
+async function createClubInviteLink(){try{const {data,error}=await sbc.from('club_invite_links').insert({club_id:CL.selectedId,created_by:AU.user.id}).select('token').single();if(error)throw error;CL.inviteUrl=location.origin+location.pathname+'?club_invite='+data.token;paintClubs();toast('Enlace creado.');await loadClubData(CL.selectedId)}catch(e){toast(e.message||'No se ha podido crear el enlace.')}}
+async function revokeClubInviteLink(id){if(!confirm('¿Revocar este enlace?'))return;const {error}=await sbc.from('club_invite_links').update({revoked_at:new Date().toISOString()}).eq('id',id);if(error){toast('No se ha podido revocar.');return}await loadClubData(CL.selectedId)}
+async function createClubEvent(form){
+ const fd=new FormData(form),start=new Date(String(fd.get('starts_at')||'')),endRaw=String(fd.get('ends_at')||''),end=endRaw?new Date(endRaw):null;
+ if(Number.isNaN(start.getTime())||(end&&Number.isNaN(end.getTime()))){toast('Comprueba las fechas.');return}
+ const payload={club_id:CL.selectedId,created_by:AU.user.id,title:String(fd.get('title')||'').trim(),description:String(fd.get('description')||''),event_type:String(fd.get('event_type')||'meetup'),location:String(fd.get('location')||''),starts_at:start.toISOString(),ends_at:end?end.toISOString():null,capacity:fd.get('capacity')?Number(fd.get('capacity')):null};
+ try{const {error}=await sbc.from('club_events').insert(payload);if(error)throw error;CL.eventOpen=false;form.reset();toast('Evento publicado.');await loadClubData(CL.selectedId)}catch(e){toast(e.message||'No se ha podido crear el evento.')}}
 function vClubs(){
   if(!AU.user)return '<h2>Clubes</h2><p class="lead">Crea un punto de encuentro para tu comunidad de pickleball.</p><div class="card acct">'+authInner()+'</div>';
   const cards=CL.items.map(c=>{
