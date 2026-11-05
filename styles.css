@@ -1312,3 +1312,170 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
  .admin-page .admin-kpi-grid{grid-template-columns:1fr 1fr}
  .admin-page .admin-row-actions{padding-left:0}
 }
+
+
+/* Botones del panel de administración: restablecer estilos nativos y
+   aplicar el lenguaje visual de Pickle&Mix de forma consistente. */
+.admin-page button{
+  appearance:none;
+  -webkit-appearance:none;
+  box-sizing:border-box;
+  font-family:inherit;
+  font-weight:800;
+  line-height:1.2;
+  text-decoration:none;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.admin-page .admin-nav-btn{
+  flex:0 0 auto;
+  width:auto;
+  min-width:0;
+  margin:0;
+  border:1px solid #dce5ef;
+  border-radius:11px;
+  background:#fff;
+  color:#36516e;
+  box-shadow:0 2px 0 #e5ebf2;
+  font-size:12px;
+  font-weight:800;
+  transition:background .16s,border-color .16s,color .16s,transform .16s,box-shadow .16s;
+}
+.admin-page .admin-nav-btn:hover{
+  border-color:#a9bdd1;
+  background:#f4f8fc;
+  color:#12325e;
+}
+.admin-page .admin-nav-btn:active{transform:translateY(1px);box-shadow:none}
+.admin-page .admin-nav-btn[aria-current="page"]{
+  border-color:var(--court);
+  background:var(--court);
+  color:#fff;
+  box-shadow:0 2px 0 #0b2745;
+}
+.admin-page .admin-nav-btn[aria-current="page"] i{background:var(--ball)}
+.admin-page .admin-filter-btn{
+  flex:0 0 auto;
+  width:auto;
+  min-width:0;
+  margin:0;
+  border:1px solid #dce5ef;
+  border-radius:999px;
+  background:#fff;
+  color:#36516e;
+  box-shadow:0 2px 0 #e5ebf2;
+  font-family:inherit;
+  font-size:11px;
+  font-weight:800;
+  line-height:1.2;
+  transition:background .16s,border-color .16s,color .16s,transform .16s;
+}
+.admin-page .admin-filter-btn:hover{border-color:#a9bdd1;background:#f4f8fc}
+.admin-page .admin-filter-btn:active{transform:translateY(1px)}
+.admin-page .admin-filter-btn.is-active{
+  border-color:var(--court);
+  background:var(--court);
+  color:#fff;
+  box-shadow:0 2px 0 #0b2745;
+}
+.admin-page .admin-row-actions .btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  min-height:34px;
+  padding:7px 11px;
+  border:0;
+  border-radius:10px;
+  background:var(--court);
+  color:#fff;
+  box-shadow:0 2px 0 #0b2745;
+  font-size:11px;
+  font-weight:800;
+  line-height:1.15;
+  white-space:nowrap;
+}
+.admin-page .admin-row-actions .btn.ghost,
+.admin-page .admin-footer .btn.ghost,
+.admin-page .admin-section-head>.btn.ghost,
+.admin-page .admin-error .btn.ghost{
+  border:1.5px solid var(--court);
+  background:#fff;
+  color:var(--court);
+  box-shadow:0 2px 0 #dbe4ed;
+}
+.admin-page .admin-row-actions .btn.danger{
+  border:1px solid #f0c9c3;
+  background:#fff1ee;
+  color:#a33e32;
+  box-shadow:0 2px 0 #f3ddd9;
+}
+.admin-page .admin-row-actions .btn:hover,
+.admin-page .admin-footer .btn:hover,
+.admin-page .admin-section-head>.btn:hover,
+.admin-page .admin-error .btn:hover{filter:brightness(.97)}
+.admin-page .admin-row-actions .btn:active,
+.admin-page .admin-footer .btn:active,
+.admin-page .admin-section-head>.btn:active{transform:translateY(1px);box-shadow:none}
+.admin-page .admin-footer .btn,
+.admin-page .admin-section-head>.btn,
+.admin-page .admin-error .btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:auto;
+  min-height:36px;
+  margin:0;
+  padding:8px 13px;
+  border-radius:11px;
+  font-family:inherit;
+  font-size:11px;
+  font-weight:800;
+  line-height:1.2;
+}
+.admin-page .admin-add-form .btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:40px;
+  padding:9px 15px;
+  border:0;
+  border-radius:11px;
+  background:var(--court);
+  color:#fff;
+  box-shadow:0 2px 0 #0b2745;
+  font-family:inherit;
+  font-size:11px;
+  font-weight:900;
+  line-height:1.2;
+}
+.admin-page .admin-range button{
+  flex:0 0 auto;
+  width:auto;
+  min-height:34px;
+  margin:0;
+  padding:7px 12px;
+  border:1px solid #dce5ef;
+  border-radius:999px;
+  background:#fff;
+  color:#36516e;
+  box-shadow:0 2px 0 #e5ebf2;
+  font-family:inherit;
+  font-size:11px;
+  font-weight:800;
+}
+.admin-page .admin-range button.active{
+  border-color:var(--court);
+  background:var(--court);
+  color:#fff;
+  box-shadow:0 2px 0 #0b2745;
+}
+.admin-page button:focus-visible{
+  outline:3px solid var(--ball);
+  outline-offset:2px;
+}
+@media(max-width:480px){
+  .admin-page .admin-nav-btn{justify-content:center;min-height:38px;padding:8px 9px;font-size:11px}
+  .admin-page .admin-row-actions .btn{min-height:35px;padding:8px 10px}
+  .admin-page .admin-filter-btn{min-height:33px;padding:7px 10px}
+}
