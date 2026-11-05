@@ -391,7 +391,7 @@ async function manageClubMember(userId,action){if(!confirm(action==='remove'?'¿
 async function saveClubSettings(form){const fd=new FormData(form),name=String(fd.get('name')||'').trim();if(name.length<3||name.length>50){toast('El nombre debe tener entre 3 y 50 caracteres.');return}try{const {error}=await sbc.from('clubs').update({name,description:String(fd.get('description')||'').trim(),city:String(fd.get('city')||'').trim(),access_mode:String(fd.get('access_mode')||'open')}).eq('id',CL.selectedId);if(error)throw error;CL.settingsOpen=false;await loadClubs();await loadClubData(CL.selectedId);toast('Configuración guardada.')}catch(e){toast(e.message||'No se han podido guardar los cambios.')}}
 async function inviteClubMember(form){
  const alias=String(new FormData(form).get('alias')||'').trim().replace(/^@/,'').toLowerCase();if(!alias)return;
- try{const p=await sbc.from('profiles').select('id,alias').ilike('alias',alias).maybeSingle();if(p.error)throw p.error;if(!p.data){toast('No se ha encontrado ese alias.');return}
+ try{const p=await sbc.from('profiles').select('id,alias').eq('alias',alias).maybeSingle();if(p.error)throw p.error;if(!p.data){toast('No se ha encontrado ese alias.');return}
  if(p.data.id===AU.user.id||clubMember(CL.selectedId,p.data.id)){toast('Ese jugador ya es miembro o no puede ser invitado.');return}
  const old=await sbc.from('club_invitations').select('id,status').eq('club_id',CL.selectedId).eq('invited_user_id',p.data.id).maybeSingle();if(old.error)throw old.error;
  if(old.data&&old.data.status==='pending'){toast('Ya existe una invitación pendiente.');return}
