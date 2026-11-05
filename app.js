@@ -738,6 +738,9 @@ const A={
 };
 document.addEventListener('click',e=>{
   const t=e.target.closest('[data-a],[data-fa],[data-up],[data-sc],[data-ct],[data-del],[data-st],[data-pd],[data-edit],[data-mode],[data-pm]');if(!t)return;const d=t.dataset;
+  // Navegación explícita: no depende de las acciones genéricas del resto de la app.
+  if(d.a==='friends'){view='friends';FR.error='';render();loadFriends();return}
+  if(d.a==='profile'){view='profile';AU.profileSettingsOpen=false;render();if(AU.user){loadMyHistory();loadFriends()}return}
   if(d.fa){friendAction(d.fa,d.id);return}
   if(d.up){openUserProfile(d.up);return}
   if(d.a){A[d.a]();}
