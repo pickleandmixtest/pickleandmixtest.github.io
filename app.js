@@ -866,7 +866,7 @@ const A={
   reset(){if(confirm('Se borrarán jugadores, partidos y resultados. ¿Seguro?')&&confirm('Última comprobación: ¿empezar una quedada nueva?')){S=fresh();SC={};ed=null;ct=1;tmp=null;view='home'}}
 };
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-a],[data-fa],[data-up],[data-linkplayer],[data-addself],[data-session-response],[data-session-open],[data-club-open],[data-club-join],[data-club-leave],[data-club-delete],[data-sc],[data-ct],[data-del],[data-st],[data-pd],[data-edit],[data-mode],[data-pm]');if(!t)return;const d=t.dataset;
+  const t=e.target.closest('[data-a],[data-community-panel],[data-fa],[data-up],[data-linkplayer],[data-addself],[data-session-response],[data-session-open],[data-club-open],[data-club-join],[data-club-leave],[data-club-delete],[data-sc],[data-ct],[data-del],[data-st],[data-pd],[data-edit],[data-mode],[data-pm]');if(!t)return;const d=t.dataset;
   // Navegación explícita: no depende de las acciones genéricas del resto de la app.
   if(d.a==='friends'){view='friends';FR.error='';render();loadFriends();return}
   if(d.a==='profile'){view='profile';AU.profileSettingsOpen=false;render();if(AU.user){loadMyHistory();loadFriends()}return}
