@@ -5,8 +5,8 @@ const fresh=()=>({players:[],settings:{courts:1,points:11,cycles:3,mode:'rot',pa
 function valid(d){return d&&Array.isArray(d.players)&&Array.isArray(d.matches)&&d.settings&&d.players.every(p=>p&&typeof p.id=='number'&&typeof p.name=='string')&&d.matches.every(m=>m&&Array.isArray(m.a)&&Array.isArray(m.b)&&m.a.length==2&&m.b.length==2&&['pending','done','skipped'].includes(m.status))&&(d.settings.mode!=='fixed'||Array.isArray(d.teams))&&['courts','points','cycles'].every(k=>Number.isInteger(d.settings[k])&&d.settings[k]>0)}
 let S=fresh();try{const d=JSON.parse(localStorage.getItem(K));if(valid(d)){S=d;if(!S.started&&S.settings.points===7)S.settings.points=11}}catch(e){}
 const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
-const ROUTE_TO_VIEW={inicio:'home',preparar:'setup',partido:'game',jugadores:'more',resumen:'final',perfil:'profile'};
-const VIEW_TO_ROUTE={home:'inicio',setup:'preparar',game:'partido',more:'jugadores',final:'resumen',profile:'perfil'};
+const ROUTE_TO_VIEW={inicio:'home',preparar:'setup',partido:'game',jugadores:'more',resumen:'final',perfil:'profile',amigos:'friends'};
+const VIEW_TO_ROUTE={home:'inicio',setup:'preparar',game:'partido',more:'jugadores',final:'resumen',profile:'perfil',friends:'amigos'};
 const initialRoute=location.hash.replace(/^#\/?/,'').toLowerCase();
 let view=ROUTE_TO_VIEW[initialRoute]||(S.started?'game':'home'),tmp=null,msg='',err='',nerr='',ed=null,ct=1,SC={};
 const nameErrBox=()=>nerr?`<div class="err">${esc(nerr)}</div>`:'';
@@ -184,11 +184,12 @@ const foot=()=>`<p class="mut foot">Plataforma para pickleballers creada por <a 
 function render(){
   const route='#'+(VIEW_TO_ROUTE[view]||'inicio');
   if(location.hash!==route)history.replaceState(null,'',location.pathname+location.search+route);
-  const f={home:vHome,setup:vSetup,game:vGame,more:vMore,final:vFinal,profile:vProfile}[view];
+  const f={home:vHome,setup:vSetup,game:vGame,more:vMore,final:vFinal,profile:vProfile,friends:vFriends}[view];
   $('#app').innerHTML=header()+f()+(err?`<div class="err">${esc(err)}</div>`:'')+foot();err='';nerr='';if(view==='home')initPong('pong',null,true);
   if(msg){toast(msg);msg=''}
 }
 let PG={u:0,c:0};
+const FR={items:[],people:[],query:'',loading:false,searching:false,error:'',loaded:false};
 function initPong(cid,hid,pre){
   const c=document.getElementById(cid);if(!c)return;const x=c.getContext('2d'),d=window.devicePixelRatio||1,hint=hid&&document.getElementById(hid);
   let W=0,H=0,k=1,PW,PH,UY,CY,NY,RI,RP;if(!pre)PG.u=PG.c=0;const WIN=7,HIT=()=>PW/2+s.r*.7,s={m:'idle',bx:0,by:0,vx:0,vy:0,r:0,a:0,sp:300,ux:0,cx:0,t:0,dir:-1,err:0};
@@ -238,8 +239,8 @@ function initPong(cid,hid,pre){
   (function f(now){if(!document.body.contains(c))return;fit();if(W){const dt=Math.min(.033,(now-last)/1000);step(dt);draw()}last=now;requestAnimationFrame(f)})(last);
 }
 function header(){
-  const t=S.started?[['home','Inicio'],['go','Partido'],['more','Jugadores'],['final','Resumen'],['profile','Mi perfil']]:[['home','Inicio'],['setup','Preparar'],['final','Resumen'],['profile','Mi perfil']];
-  const cur={home:'home',game:'go',more:'more',final:'final',setup:'setup',profile:'profile'}[view];
+  const t=S.started?[['home','Inicio'],['go','Partido'],['more','Jugadores'],['final','Resumen'],['friends','Amigos'],['profile','Mi perfil']]:[['home','Inicio'],['setup','Preparar'],['final','Resumen'],['friends','Amigos'],['profile','Mi perfil']];
+  const cur={home:'home',game:'go',more:'more',final:'final',setup:'setup',profile:'profile',friends:'friends'}[view];
   return`<header class="top"><div class="mark">PICKLE<b>&amp;MIX</b></div><div class="who" id="authchip">${authChipIn()}</div><nav class="tabs" aria-label="Acceso rápido">${t.map(x=>`<button data-a="${x[0]}"${x[0]===cur?' aria-current="page"':''}>${x[1]}</button>`).join('')}</nav></header>`}
 const GT={
 pong:`<svg viewBox="0 0 160 96" aria-hidden="true"><rect width="160" height="96" fill="#2f6fbd"/><rect x="6" y="6" width="148" height="84" rx="4" fill="none" stroke="#fff" stroke-width="2" opacity=".8"/><path d="M6 48H154" stroke="#fff" stroke-width="2" stroke-dasharray="6 5" opacity=".8"/><rect x="56" y="12" width="46" height="8" rx="4" fill="#ff6a4d"/><rect x="66" y="76" width="46" height="8" rx="4" fill="#fff"/><circle cx="84" cy="62" r="4" fill="#d4f53c" opacity=".35"/><circle cx="92" cy="54" r="7" fill="#d4f53c" stroke="#0e1c33" stroke-width="2"/></svg>`,
@@ -254,6 +255,70 @@ function vHome(){const n=S.players.length,c=S.settings;
   ${S.started?'<button class="btn ball" data-a="go">Continuar la quedada</button>':''}
   <button class="btn ghost" data-a="${S.started?'more':'setup'}">Gestionar participantes</button>
   ${gamesGrid()}`}
+function profileMini(p){return '<div class="friend-person">'+(p.avatar_url?'<img class="av" src="'+esc(p.avatar_url)+'" alt="">':'<span class="av">'+esc((p.display_name||'?').slice(0,1).toUpperCase())+'</span>')+'<div class="friend-person-info"><b>'+esc(p.display_name||'Jugador')+'</b><span class="mut">@'+esc(p.alias||'')+'</span></div></div>'}
+function friendState(id){const f=FR.items.find(x=>x.requester_id===id||x.addressee_id===id);if(!f)return null;if(f.status==='accepted')return'friend';return f.requester_id===AU.user.id?'sent':'received'}
+function vFriends(){
+  if(!AU.user)return '<h2>Amigos</h2><p class="lead">Inicia sesión con Google para encontrar jugadores y crear tu red de amigos.</p><div class="card acct">'+authInner()+'</div>';
+  if(!AU.profile)return '<h2>Amigos</h2><div class="card"><p class="hint">Necesitamos cargar tu perfil para gestionar tus amistades.</p><button class="btn" data-a="reloadProfile">Reintentar</button></div>';
+  const incoming=FR.items.filter(f=>f.status==='pending'&&f.addressee_id===AU.user.id);
+  const outgoing=FR.items.filter(f=>f.status==='pending'&&f.requester_id===AU.user.id);
+  const accepted=FR.items.filter(f=>f.status==='accepted');
+  const byId=id=>FR.people.find(p=>p.id===id)||{id,display_name:'Jugador',alias:''};
+  const search=FR.people.filter(p=>p.id!==AU.user.id);
+  const results=search.map(p=>{const s=friendState(p.id);return '<div class="friend-row">'+profileMini(p)+(s==='friend'?'<span class="tag">Amigos</span>':s==='sent'?'<span class="tag">Enviada</span>':s==='received'?'<button class="btn sm" data-fa="accept" data-id="'+p.id+'">Aceptar</button>':'<button class="btn sm" data-fa="send" data-id="'+p.id+'">Añadir</button>')+'</div>'}).join('');
+  const requests=incoming.map(f=>'<div class="friend-row">'+profileMini(byId(f.requester_id))+'<div class="friend-actions"><button class="btn sm" data-fa="accept" data-id="'+f.id+'">Aceptar</button><button class="btn sm ghost" data-fa="reject" data-id="'+f.id+'">Rechazar</button></div></div>').join('');
+  const sent=outgoing.map(f=>'<div class="friend-row">'+profileMini(byId(f.addressee_id))+'<button class="btn sm ghost" data-fa="cancel" data-id="'+f.id+'">Cancelar</button></div>').join('');
+  const friends=accepted.map(f=>{const id=f.requester_id===AU.user.id?f.addressee_id:f.requester_id;return '<div class="friend-row">'+profileMini(byId(id))+'<button class="btn sm ghost" data-fa="remove" data-id="'+f.id+'">Eliminar</button></div>'}).join('');
+  return '<h2>Amigos</h2><p class="lead">Encuentra a otros jugadores de PICKLE &amp; MIX y conecta con ellos.</p>'+
+    '<form class="card friend-search" data-f="friend-search"><label for="friend-query">Buscar jugadores</label><div class="row"><input id="friend-query" name="q" maxlength="40" placeholder="Nombre o @alias" value="'+esc(FR.query)+'" autocomplete="off"><button class="btn sm" type="submit" '+(FR.searching?'disabled':'')+'>'+(FR.searching?'Buscando…':'Buscar')+'</button></div><small>Para aparecer en las búsquedas, cada usuario debe elegir un alias en su configuración de perfil.</small></form>'+
+    (FR.error?'<div class="err" role="alert">'+esc(FR.error)+'</div>':'')+
+    (FR.query?'<section class="card"><h3>Resultados</h3>'+(FR.searching?'<p class="hint">Buscando jugadores…</p>':results||'<p class="empty">No hemos encontrado usuarios con ese nombre o alias.</p>')+'</section>':'')+
+    '<section class="card"><h3>Solicitudes recibidas '+(incoming.length?'<span class="tag">'+incoming.length+'</span>':'')+'</h3>'+(FR.loading?'<p class="hint">Cargando…</p>':requests||'<p class="mut">No tienes solicitudes pendientes.</p>')+'</section>'+
+    '<section class="card"><h3>Solicitudes enviadas</h3>'+(sent||'<p class="mut">No tienes solicitudes enviadas.</p>')+'</section>'+
+    '<section class="card"><h3>Mis amigos · '+accepted.length+'</h3>'+(friends||'<p class="mut">Todavía no tienes amigos añadidos.</p>')+'</section>'+
+    '<button class="btn ghost" data-a="profile">Volver a Mi perfil</button>';
+}
+async function loadFriends(){
+  if(!sbc||!AU.user)return;
+  FR.loading=true;FR.error='';paintFriends();
+  try{
+    const uid=AU.user.id;
+    const {data,error}=await sbc.from('friendships').select('id,requester_id,addressee_id,status,created_at').or('requester_id.eq.'+uid+',addressee_id.eq.'+uid).order('created_at',{ascending:false});
+    if(error)throw error;
+    FR.items=data||[];
+    const ids=[...new Set(FR.items.flatMap(f=>[f.requester_id,f.addressee_id]).filter(id=>id!==uid))];
+    if(ids.length){const {data:people,error:pe}=await sbc.from('profiles').select('id,display_name,alias,avatar_url').in('id',ids);if(pe)throw pe;FR.people=people||[]}else FR.people=[];
+    FR.loaded=true;
+  }catch(error){console.warn('[friends] load:',error&&error.message);FR.error='No se han podido cargar tus amistades. Comprueba la conexión e inténtalo de nuevo.'}
+  finally{FR.loading=false;paintFriends()}
+}
+function paintFriends(){if(view==='friends'){const root=document.querySelector('#app');if(root)root.innerHTML=header()+vFriends()+foot()}}
+async function searchFriends(form){
+  const q=String(form.querySelector('[name="q"]').value||'').trim().replace(/^@/,'').slice(0,40);FR.query=q;FR.people=[];FR.error='';
+  if(!q){paintFriends();return}
+  if(!AU.user||!sbc)return;
+  FR.searching=true;paintFriends();
+  try{
+    const safe=q.replace(/[,%()]/g,' ').trim();if(!safe){FR.people=[];return}
+    const {data,error}=await sbc.from('profiles').select('id,display_name,alias,avatar_url').or('alias.ilike.%'+safe+'%,display_name.ilike.%'+safe+'%').neq('id',AU.user.id).not('alias','is',null).limit(20);
+    if(error)throw error;FR.people=data||[];
+  }catch(error){console.warn('[friends] search:',error&&error.message);FR.error='No se ha podido realizar la búsqueda. Inténtalo de nuevo.'}
+  finally{FR.searching=false;paintFriends()}
+}
+async function friendAction(action,id){
+  if(!sbc||!AU.user)return;
+  try{
+    let result;
+    if(action==='send')result=await sbc.rpc('send_friend_request',{p_addressee_id:id});
+    else if(action==='accept')result=await sbc.rpc('respond_friend_request',{p_request_id:id,p_accept:true});
+    else if(action==='reject')result=await sbc.rpc('respond_friend_request',{p_request_id:id,p_accept:false});
+    else if(action==='cancel')result=await sbc.rpc('cancel_friend_request',{p_request_id:id});
+    else if(action==='remove'){if(!confirm('¿Eliminar esta amistad?'))return;result=await sbc.rpc('remove_friend',{p_friendship_id:id})}
+    if(result&&result.error)throw result.error;
+    toast(({send:'Solicitud enviada.',accept:'Solicitud aceptada.',reject:'Solicitud rechazada.',cancel:'Solicitud cancelada.',remove:'Amistad eliminada.'})[action]||'Actualizado.');
+    await loadFriends();
+  }catch(error){console.warn('[friends] action:',error&&error.message);FR.error=error&&error.message&&/alias/i.test(error.message)?'Elige un alias en Configuración antes de enviar solicitudes.':'No se ha podido completar la acción. Puede que la solicitud ya no esté disponible.';paintFriends()}
+}
 function vProfile(){
   const body=AU.user||AU.guest?authInner():'<div id="authbox">'+authInner()+'</div>';
   return '<h2>Mi perfil</h2><p class="lead">'+(AU.user&&AU.profile&&!AU.profileSettingsOpen?'Tu espacio en PICKLE &amp; MIX.':'Gestiona tu cuenta y tus preferencias.')+'</p><div id="authbox">'+(AU.user||AU.guest?body:authInner())+'</div>';
@@ -503,7 +568,7 @@ const A={
       .catch(e=>{AU.err='No se pudo cerrar la sesión. Inténtalo de nuevo.';console.warn('[auth] logout:',e&&e.message);paintAuth()})},
   guest(){AU.guest=true;try{localStorage.setItem(GUEST_K,'1')}catch(e){}},
   reloadProfile(){if(AU.user)loadProfile(AU.user.id)},
-  setup(){view='setup'},home(){view='home'},profile(){view='profile';AU.profileSettingsOpen=false},profileSettings(){AU.profileSettingsOpen=true;paintAuth()},profileOverview(){AU.profileSettingsOpen=false;paintAuth()},go(){view='game';ed=null},more(){view='more'},final(){view='final'},
+  setup(){view='setup'},home(){view='home'},profile(){view='profile';AU.profileSettingsOpen=false},friends(){view='friends';FR.error='';loadFriends()},profileSettings(){AU.profileSettingsOpen=true;paintAuth()},profileOverview(){AU.profileSettingsOpen=false;paintAuth()},go(){view='game';ed=null},more(){view='more'},final(){view='final'},
   start(){const c=S.settings;if(S.players.length<4){err='Necesitas al menos 4 jugadores.';return}
     if(S.players.length<4*c.courts){err=`Con ${c.courts} pistas necesitas al menos ${4*c.courts} jugadores.`;return}
     if(FX()&&S.players.length%2){err='Con parejas fijas necesitas un número par de jugadores.';return}
@@ -549,7 +614,7 @@ document.addEventListener('click',e=>{
   save();render();
 });
 document.addEventListener('change',e=>{if(e.target.matches('[data-avatar-file]'))uploadAvatar(e.target)});
-document.addEventListener('submit',e=>{e.preventDefault();if(e.target.dataset.f==='profile'){saveProfile(e.target);return}const f=e.target.dataset.f,v=e.target.n.value;if(!v.trim())return;
+document.addEventListener('submit',e=>{e.preventDefault();if(e.target.dataset.f==='profile'){saveProfile(e.target);return}if(e.target.dataset.f==='friend-search'){searchFriends(e.target);return}const f=e.target.dataset.f,v=e.target.n.value;if(!v.trim())return;
   const r=addNames(v);if(r.added&&f==='addlive')replan('Jugador añadido.');
   if(r.dups.length)nerr=dupMsg(r.dups,r.added);
   save();render();
