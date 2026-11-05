@@ -241,10 +241,16 @@ function initPong(cid,hid,pre){
   let last=performance.now();
   (function f(now){if(!document.body.contains(c))return;fit();if(W){const dt=Math.min(.033,(now-last)/1000);step(dt);draw()}last=now;requestAnimationFrame(f)})(last);
 }
+function partySubnav(){
+  const items=S.started?[['go','Partido','game'],['more','Jugadores','more'],['final','Resumen','final']]:[['setup','Preparar','setup'],['final','Resumen','final']];
+  const current={setup:'setup',game:'go',more:'more',final:'final'}[view];
+  return `<nav class="party-subnav" aria-label="Secciones de Partido">${items.map(x=>`<button data-a="${x[0]}"${x[0]===current?' aria-current="page"':''}>${x[1]}</button>`).join('')}</nav>`;
+}
 function header(){
-  const t=S.started?[['home','Inicio'],['go','Partido'],['more','Jugadores'],['final','Resumen'],['profile','Mi perfil'],['clubs','Clubes']]:[['home','Inicio'],['setup','Preparar'],['final','Resumen'],['profile','Mi perfil'],['clubs','Clubes']];
-  const cur={home:'home',game:'go',more:'more',final:'final',setup:'setup',profile:'profile',friends:'profile',history:'profile','user-profile':'profile',clubs:'clubs','club-detail':'clubs'}[view];
-  return`<header class="top"><div class="mark">PICKLE<b>&amp;MIX</b></div><div class="who" id="authchip">${authChipIn()}</div><nav class="tabs" aria-label="Acceso rápido">${t.map(x=>`<button data-a="${x[0]}"${x[0]===cur?' aria-current="page"':''}>${x[1]}</button>`).join('')}</nav></header>`}
+  const t=[['home','Inicio'],['party','Partido'],['clubs','Clubes'],['profile','Mi perfil']];
+  const cur={home:'home',setup:'party',game:'party',more:'party',final:'party',profile:'profile',friends:'profile',history:'profile','user-profile':'profile',clubs:'clubs','club-detail':'clubs'}[view];
+  const inParty=['setup','game','more','final'].includes(view);
+  return`<header class="top"><div class="mark">PICKLE<b>&amp;MIX</b></div><div class="who" id="authchip">${authChipIn()}</div><nav class="tabs" aria-label="Navegación principal">${t.map(x=>`<button data-a="${x[0]}"${x[0]===cur?' aria-current="page"':''}>${x[1]}</button>`).join('')}</nav>${inParty?partySubnav():''}</header>`}
 const GT={
 pong:`<svg viewBox="0 0 160 96" aria-hidden="true"><rect width="160" height="96" fill="#2f6fbd"/><rect x="6" y="6" width="148" height="84" rx="4" fill="none" stroke="#fff" stroke-width="2" opacity=".8"/><path d="M6 48H154" stroke="#fff" stroke-width="2" stroke-dasharray="6 5" opacity=".8"/><rect x="56" y="12" width="46" height="8" rx="4" fill="#ff6a4d"/><rect x="66" y="76" width="46" height="8" rx="4" fill="#fff"/><circle cx="84" cy="62" r="4" fill="#d4f53c" opacity=".35"/><circle cx="92" cy="54" r="7" fill="#d4f53c" stroke="#0e1c33" stroke-width="2"/></svg>`,
 kitchen:`<svg viewBox="0 0 160 96" aria-hidden="true"><rect width="160" height="96" fill="#12325e"/><polygon points="44,10 116,10 148,90 12,90" fill="#2f7bff" stroke="#fff" stroke-width="2"/><polygon points="31,56 129,56 140,78 20,78" fill="#d4f53c" opacity=".35"/><path d="M80 10V56M80 78V90" stroke="#fff" stroke-width="2"/><rect x="26" y="40" width="108" height="9" rx="3" fill="#0e1c33" opacity=".7"/><rect x="24" y="38" width="112" height="3" rx="1.5" fill="#fff"/><circle cx="98" cy="68" r="7" fill="#d4f53c" stroke="#0e1c33" stroke-width="2"/></svg>`,
@@ -827,7 +833,7 @@ const A={
       .catch(e=>{AU.err='No se pudo cerrar la sesión. Inténtalo de nuevo.';console.warn('[auth] logout:',e&&e.message);paintAuth()})},
   guest(){AU.guest=true;try{localStorage.setItem(GUEST_K,'1')}catch(e){}},
   reloadProfile(){if(AU.user)loadProfile(AU.user.id)},
-  setup(){view='setup'},home(){view='home'},profile(){view='profile';AU.profileSettingsOpen=false;loadFriendActivity()},sessions(){view='sessions';HIST.selectedSessionId=null;if(!HIST.loaded)loadMyHistory()},friends(){view='friends';FR.error='';loadFriends()},clubs(){view='clubs';CL.error='';CL.selectedId=null;loadClubs()},history(){view='history';loadMyHistory()},profileSettings(){AU.profileSettingsOpen=true;paintAuth()},profileOverview(){AU.profileSettingsOpen=false;paintAuth()},go(){view='game';ed=null},more(){view='more'},final(){view='final'},
+  setup(){view='setup'},home(){view='home'},profile(){view='profile';AU.profileSettingsOpen=false;loadFriendActivity()},sessions(){view='sessions';HIST.selectedSessionId=null;if(!HIST.loaded)loadMyHistory()},friends(){view='friends';FR.error='';loadFriends()},party(){view=S.started?'game':'setup';ed=null},clubs(){view='clubs';CL.error='';CL.selectedId=null;loadClubs()},history(){view='history';loadMyHistory()},profileSettings(){AU.profileSettingsOpen=true;paintAuth()},profileOverview(){AU.profileSettingsOpen=false;paintAuth()},go(){view='game';ed=null},more(){view='more'},final(){view='final'},
   start(){S.savedSessionId=null;const c=S.settings;if(S.players.length<4){err='Necesitas al menos 4 jugadores.';return}
     if(S.players.length<4*c.courts){err=`Con ${c.courts} pistas necesitas al menos ${4*c.courts} jugadores.`;return}
     if(FX()&&S.players.length%2){err='Con parejas fijas necesitas un número par de jugadores.';return}
