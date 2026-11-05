@@ -1201,7 +1201,7 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .admin-nav-group{min-width:0;padding:10px;border:1px solid #e3eaf2;border-radius:13px;background:#f8fafc}
 .admin-nav-group>span{display:block;margin:0 0 8px 2px;color:#8996a6;font-size:9px;font-weight:900;letter-spacing:1px;text-transform:uppercase}
 .admin-nav-items{display:flex;flex-wrap:wrap;gap:5px}
-.admin-nav-btn{position:relative;display:flex;align-items:center;justify-content:center;min-height:34px;padding:7px 10px;border:1px solid transparent;border-radius:9px;background:transparent;color:#52677e;font:700 11px inherit;cursor:pointer;transition:background .15s,border-color .15s,color .15s}
+.admin-nav-btn{position:relative;display:flex;align-items:center;justify-content:center;min-height:34px;padding:7px 10px;border:1px solid transparent;border-radius:9px;background:transparent;color:#52677e;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:background .15s,border-color .15s,color .15s}
 .admin-nav-btn:hover{background:#edf2f7;color:#173b62}
 .admin-nav-btn[aria-current="page"]{border-color:#d4e1ef;background:#fff;color:#15385f;box-shadow:0 1px 3px rgba(20,45,75,.07)}
 .admin-nav-btn[aria-current="page"] i{position:absolute;right:7px;top:7px;width:6px;height:6px;border-radius:50%;background:#a8cf32}
