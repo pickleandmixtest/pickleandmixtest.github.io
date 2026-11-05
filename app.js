@@ -1074,7 +1074,7 @@ function watchFriendships(userId){
     })
     .subscribe(status=>{if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')console.warn('[friends] no se pudo conectar con las notificaciones en tiempo real')});
 }
-const auRedirect=()=>location.origin+location.pathname.replace(/index\.html$/,'');
+const auRedirect=()=>{const token=new URLSearchParams(location.search).get('club_invite');return location.origin+location.pathname.replace(/index\.html$/,'')+(token?'?club_invite='+encodeURIComponent(token):'')};
 const auName=u=>{const p=AU.profile&&u&&AU.profile.id===u.id?AU.profile:null,m=(u&&u.user_metadata)||{};return String((p&&p.display_name)||m.full_name||m.name||(u&&u.email?u.email.split('@')[0]:'')||'Jugador').trim().slice(0,40)||'Jugador'};
 const auPic=u=>{const p=AU.profile&&u&&AU.profile.id===u.id?AU.profile:null,m=(u&&u.user_metadata)||{},v=(p&&p.avatar_url)||m.avatar_url||m.picture||'';return/^https:\/\//i.test(v)?v:''};
 const auAvatar=u=>{const n=auName(u),i=esc(n.charAt(0).toUpperCase()||'?'),p=auPic(u);
