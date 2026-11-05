@@ -368,3 +368,11 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .session-detail-matches{padding:15px}
 .sessions-back{width:auto;margin:0}
 @media(max-width:360px){.session-grid{gap:8px}.session-grid-card{padding:10px;min-height:140px}.session-grid-card>b{font-size:13px}}
+
+.session-match-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #e1e8f1}
+.session-match-row:last-child{border-bottom:0}
+.session-match-info{display:flex;flex-direction:column;gap:5px;min-width:0}
+.session-match-info>b{color:var(--court);font-size:14px}
+.session-match-info small{font-size:12px;line-height:1.4;color:var(--mut);overflow-wrap:anywhere}
+.session-match-info small span{font-weight:800;color:var(--court)}
+.session-match-row>strong{flex:none;font:900 19px "Arial Black",Impact,sans-serif;color:var(--court);white-space:nowrap}
