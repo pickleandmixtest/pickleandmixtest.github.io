@@ -215,7 +215,7 @@ const ACH_BADGES=[
 ];
 const ACH_LEVELS=[{name:'Principiante',min:0},{name:'Aprendiz',min:100},{name:'Aficionado',min:300},{name:'Jugador habitual',min:600},{name:'Experimentado',min:1000},{name:'Avanzado',min:1800},{name:'Experto',min:3000},{name:'Leyenda',min:5000}];
 function achievementPanel(summary,publicMode){
-  if(!summary)return '';
+  if(!summary)return ACH.loading&&!publicMode?'<section class="card achievement-panel"><p class="hint">Actualizando tus logros…</p></section>':'';
   const xp=Number(summary.xp)||0,level=Math.max(1,Math.min(8,Number(summary.level)||1)),cur=ACH_LEVELS[level-1],next=ACH_LEVELS[level]||null,base=cur.min,progress=next?Math.max(0,Math.min(100,(xp-base)/(next.min-base)*100)):100;
   const earned=new Map((summary.earned||[]).map(x=>[x.id,x.earned_at]));
   const metrics=summary.metrics||{},total=ACH_BADGES.length,done=earned.size;
@@ -409,14 +409,14 @@ async function createClub(form){
 async function joinClub(id){
   if(!sbc||!AU.user||CL.busy)return;
   CL.busy='join:'+id;paintClubs();
-  try{const {error}=await sbc.from('club_members').insert({club_id:id,user_id:AU.user.id,role:'member'});if(error)throw error;await loadClubs();CL.selectedId=id;view='club-detail';paintClubs();toast('Te has unido al club.')}
+  try{const {error}=await sbc.from('club_members').insert({club_id:id,user_id:AU.user.id,role:'member'});if(error)throw error;await loadClubs();CL.selectedId=id;view='club-detail';paintClubs();toast('Te has unido al club.');loadMyAchievements()}
   catch(error){console.warn('[clubs] join:',error&&error.message);toast('No se ha podido completar la inscripción. Puede que ya formes parte del club.')}
   finally{CL.busy='';paintClubs()}
 }
 async function leaveClub(id){
   if(!sbc||!AU.user||CL.busy||!confirm('¿Quieres salir de este club?'))return;
   CL.busy='leave:'+id;
-  try{const {error}=await sbc.from('club_members').delete().eq('club_id',id).eq('user_id',AU.user.id);if(error)throw error;await loadClubs();view='clubs';CL.selectedId=null;render();toast('Has salido del club.')}
+  try{const {error}=await sbc.from('club_members').delete().eq('club_id',id).eq('user_id',AU.user.id);if(error)throw error;await loadClubs();view='clubs';CL.selectedId=null;render();toast('Has salido del club.');loadMyAchievements()}
   catch(error){console.warn('[clubs] leave:',error&&error.message);toast('No se ha podido salir del club.')}
   finally{CL.busy='';paintClubs()}
 }
@@ -513,7 +513,7 @@ async function friendAction(action,id){
     else if(action==='remove')result=await sbc.rpc('remove_friend',{p_friendship_id:id});
     if(result&&result.error)throw result.error;
     toast(({send:'Solicitud enviada.',accept:'Solicitud aceptada.',reject:'Solicitud rechazada.',cancel:'Solicitud cancelada.',remove:'Amistad eliminada.'})[action]||'Actualizado.');
-    await loadFriends();
+    await loadFriends();loadMyAchievements();
     if(view==='user-profile'&&PUB.id)await openUserProfile(PUB.id);
   }catch(error){
     const msg=String(error&&error.message||'');console.warn('[friends] action:',error);
