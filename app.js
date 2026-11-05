@@ -323,6 +323,7 @@ function historyRow(item){
   return '<div class="history-row"><div><b>'+esc(item.sessionTitle)+'</b><span class="mut">'+new Date(item.playedAt).toLocaleDateString('es-ES')+' · Partido '+item.matchNumber+'</span><small>'+esc(item.teammates.join(' / '))+' vs '+esc(item.opponents.join(' / '))+'</small></div><strong class="'+(item.won?'win':'loss')+'">'+item.ownScore+'–'+item.oppScore+'</strong></div>';
 }
 function vHistory(){
+  if(!AU.user)return '<h2>Mi historial</h2><p class="lead">Inicia sesión para consultar tus partidos guardados.</p><div class="card acct">'+authInner()+'</div>';
   return '<h2>Mi historial</h2><p class="lead">Tus partidos guardados en PICKLE &amp; MIX.</p>'+
     (HIST.loading?'<div class="card"><p class="hint">Cargando historial…</p></div>':HIST.error?'<div class="card err">'+esc(HIST.error)+'</div>':HIST.items.length?'<div class="card"><div class="profile-metrics"><div class="profile-metric"><b>'+HIST.stats.played+'</b><span>Partidos</span></div><div class="profile-metric"><b>'+HIST.stats.wins+'</b><span>Victorias</span></div><div class="profile-metric"><b>'+Math.round(HIST.stats.winRate*100)+'%</b><span>Victorias</span></div></div>'+HIST.items.map(historyRow).join('')+'</div>':'<div class="card"><p>Aún no tienes partidos guardados. Cuando termines una quedada, podrás guardarla en tu historial.</p></div>')+
     '<button class="btn ghost" data-a="profile">Volver a Mi perfil</button>';
