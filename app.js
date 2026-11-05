@@ -180,7 +180,7 @@ function ranking(){return stats().sort((x,y)=>(x.lv||0)-(y.lv||0)||rate(y)-rate(
 /* ---------- Vistas ---------- */
 const bar=()=>{const t=S.matches.length,d=S.matches.filter(m=>m.status!=='pending').length;return`<div class="bar"><i style="width:${t?d/t*100:0}%"></i></div><span class="mut">${d} de ${t} partidos resueltos</span>`};
 /* Pie de página: visible en todas las pestañas */
-const foot=()=>`<p class="mut foot">Plataforma para pickleballers creada por <a href="https://kikebarcelodg.github.io/" target="_blank" rel="noopener">Kike Barceló</a></p>`;
+const foot=()=>`<p class="mut foot">Plataforma para pickleballers creada por <a href="https://kikebarcelodg.github.io/" target="_blank" rel="noopener">KBDG</a></p>`;
 function render(){
   const route='#'+(VIEW_TO_ROUTE[view]||'inicio');
   if(location.hash!==route)history.replaceState(null,'',location.pathname+location.search+route);
