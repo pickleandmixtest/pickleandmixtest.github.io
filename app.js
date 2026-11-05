@@ -191,7 +191,7 @@ function render(){
 let PG={u:0,c:0};
 const HIST={items:[],sessions:[],selectedSessionId:null,invites:[],inviteBusy:'',stats:{played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0},loading:false,error:'',loaded:false};
 const PUB={id:null,profile:null,stats:null,history:[],achievements:null,error:'',loading:false,statsHidden:false,historyHidden:false};
-const ACH={summary:null,loading:false,error:''};
+const ACH={summary:null,loading:false,error:'',open:false,publicMode:false,notifications:[],notificationsOpen:false};
 const FR={items:[],people:[],query:'',results:[],loading:false,searching:false,error:'',loaded:false,ranking:[],rankingLoading:false,activity:[],activityLoading:false,busy:'',panel:''};
 const CL={items:[],members:[],people:[],selectedId:null,loading:false,error:'',busy:'',createOpen:false,requests:[],invitations:[],links:[],events:[],registrations:[],inviteUrl:'',eventOpen:false,settingsOpen:false,inviteRedeemBusy:false,myRequest:null,incomingInvites:[]};
 const ACH_BADGES=[
@@ -215,22 +215,40 @@ const ACH_BADGES=[
 ];
 const ACH_LEVELS=[{name:'Principiante',min:0},{name:'Aprendiz',min:100},{name:'Aficionado',min:300},{name:'Jugador habitual',min:600},{name:'Experimentado',min:1000},{name:'Avanzado',min:1800},{name:'Experto',min:3000},{name:'Leyenda',min:5000}];
 function achievementPanel(summary,publicMode){
-  if(!summary)return ACH.loading&&!publicMode?'<section class="card achievement-panel"><p class="hint">Actualizando tus logros…</p></section>':'';
-  const xp=Number(summary.xp)||0,level=Math.max(1,Math.min(8,Number(summary.level)||1)),cur=ACH_LEVELS[level-1],next=ACH_LEVELS[level]||null,base=cur.min,progress=next?Math.max(0,Math.min(100,(xp-base)/(next.min-base)*100)):100;
+  if(!summary)return '';
   const earned=new Map((summary.earned||[]).map(x=>[x.id,x.earned_at]));
-  const metrics=summary.metrics||{},total=ACH_BADGES.length,done=earned.size;
-  return '<section class="card achievement-panel"><div class="achievement-head"><div><span class="section-kicker">LOGROS PICKLE &amp; MIX</span><h3>'+(publicMode?'Logros':'Tu progresión')+'</h3></div><span class="achievement-level">NIVEL '+String(level).padStart(2,'0')+'</span></div>'+
-    '<div class="achievement-level-row"><div><b>'+cur.name+'</b><small>'+xp.toLocaleString('es-ES')+' XP'+(next?' · '+(next.min-xp)+' XP para '+next.name:' · Nivel máximo')+'</small></div><strong>'+done+'/'+total+'</strong></div>'+
-    '<div class="achievement-progress"><i style="width:'+progress+'%"></i></div>'+
-    (publicMode?'':'<div class="achievement-stats"><span><b>'+(metrics.matches||0)+'</b> partidos</span><span><b>'+(metrics.tournaments||0)+'</b> torneos</span><span><b>'+(metrics.friends||0)+'</b> amigos</span><span><b>'+(metrics.clubs||0)+'</b> clubes</span></div>')+
-    '<div class="achievement-grid">'+ACH_BADGES.map(b=>{const at=earned.get(b.id),ok=!!at;return '<article class="achievement-badge'+(ok?' earned':' locked')+'"><span class="achievement-mark">'+b.mark+'</span><div><b>'+b.title+'</b><small>'+b.desc+'</small><em>'+b.group+(ok?' · '+new Date(at).toLocaleDateString('es-ES'):' · Pendiente')+'</em></div></article>'}).join('')+'</div></section>';
+  const unlocked=ACH_BADGES.filter(b=>earned.has(b.id));
+  const shown=unlocked.slice(0,6).map(b=>'<span class="achievement-medal earned" title="'+esc(b.title)+'" aria-label="'+esc(b.title)+'"><b>'+b.mark+'</b></span>').join('');
+  const more=unlocked.length>6?'<span class="achievement-medal-more">+'+(unlocked.length-6)+'</span>':'';
+  return '<button type="button" class="achievement-medal-launch" data-a="'+(publicMode?'publicAchievements':'achievements')+'" aria-label="Ver colección de insignias"><span class="achievement-medal-row">'+(shown||'<span class="achievement-medal-empty">Aún no has desbloqueado insignias</span>')+more+'</span><span class="achievement-medal-caption">'+unlocked.length+' de '+ACH_BADGES.length+' insignias <b>Ver colección ›</b></span></button>';
+}
+function achievementCatalog(summary,publicMode){
+  if(!ACH.open||ACH.publicMode!==publicMode||!summary)return '';
+  const xp=Number(summary.xp)||0,level=Math.max(1,Math.min(8,Number(summary.level)||1)),cur=ACH_LEVELS[level-1],next=ACH_LEVELS[level]||null;
+  const earned=new Map((summary.earned||[]).map(x=>[x.id,x.earned_at]));
+  const progress=next?Math.max(0,Math.min(100,(xp-cur.min)/(next.min-cur.min)*100)):100;
+  const groups=[...new Set(ACH_BADGES.map(b=>b.group))];
+  return '<div class="achievement-modal-backdrop" data-a="achievementsClose"><section class="achievement-modal" role="dialog" aria-modal="true" aria-labelledby="achievement-modal-title" data-achievement-modal><header class="achievement-modal-head"><div><span class="section-kicker">PICKLE &amp; MIX</span><h3 id="achievement-modal-title">Colección de insignias</h3></div><button type="button" class="achievement-modal-close" data-a="achievementsClose" aria-label="Cerrar">×</button></header>'+
+    '<div class="achievement-level-summary"><div><small>NIVEL '+String(level).padStart(2,'0')+'</small><b>'+cur.name+'</b><span>'+xp.toLocaleString('es-ES')+' XP'+(next?' · '+Math.max(0,next.min-xp)+' XP para '+next.name:' · Nivel máximo')+'</span></div><strong>'+earned.size+'/'+ACH_BADGES.length+'</strong></div><div class="achievement-progress"><i style="width:'+progress+'%"></i></div>'+
+    groups.map(group=>'<section class="achievement-group"><h4>'+esc(group)+'</h4><div class="achievement-catalog-grid">'+ACH_BADGES.filter(b=>b.group===group).map(b=>{const at=earned.get(b.id),ok=!!at;return '<article class="achievement-catalog-item '+(ok?'is-earned':'is-locked')+'"><span class="achievement-medal '+(ok?'earned':'locked')+'"><b>'+b.mark+'</b></span><div><b>'+esc(b.title)+'</b><small>'+esc(b.desc)+'</small><em>'+(ok?'Conseguida · '+new Date(at).toLocaleDateString('es-ES'):'Por desbloquear')+'</em></div></article>'}).join('')+'</div></section>').join('')+'</section></div>';
+}
+function notificationsPanel(){
+  const items=ACH.notifications||[],unread=items.filter(n=>!n.read_at).length;
+  return '<section class="card profile-notifications"><button type="button" class="notifications-heading" data-a="notificationsToggle" aria-expanded="'+(ACH.notificationsOpen?'true':'false')+'"><span class="notifications-heading-icon">✦</span><span><b>Notificaciones</b><small>Insignias y novedades de tu perfil</small></span>'+(unread?'<span class="notifications-count">'+unread+'</span>':'')+'<span class="notifications-chevron">'+(ACH.notificationsOpen?'−':'+')+'</span></button>'+
+    (ACH.notificationsOpen?'<div class="notifications-content">'+(items.length?items.slice(0,10).map(n=>'<article class="notification-item '+(n.read_at?'is-read':'is-unread')+'"><span class="notification-symbol">'+(n.notification_type==='achievement_unlocked'?'✦':'•')+'</span><div><b>'+esc(n.title)+'</b><p>'+esc(n.body)+'</p><small>'+new Date(n.created_at).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})+'</small></div></article>').join(''):'<p class="hint">Todavía no tienes notificaciones. Cuando desbloquees una insignia, aparecerá aquí.</p>')+(unread?'<button type="button" class="btn sm ghost notifications-read-all" data-a="notificationsReadAll">Marcar todas como leídas</button>':'')+'</div>':'')+'</section>';
+}
+async function markNotificationsRead(){
+  if(!sbc||!AU.user)return;
+  const {error}=await sbc.from('profile_notifications').update({read_at:new Date().toISOString()}).eq('user_id',AU.user.id).is('read_at',null);
+  if(error){toast('No se han podido marcar las notificaciones como leídas.');console.warn('[notifications] read:',error.message);return}
+  ACH.notifications=(ACH.notifications||[]).map(n=>({...n,read_at:n.read_at||new Date().toISOString()}));paintAuth();
 }
 async function loadMyAchievements(){
   if(!sbc||!AU.user)return;
   ACH.loading=true;ACH.error='';
   try{const {data,error}=await sbc.rpc('sync_my_profile_achievements');if(error)throw error;ACH.summary=data||null}
   catch(error){console.warn('[achievements] load:',error&&error.message);ACH.error='No se han podido actualizar tus logros.'}
-  finally{ACH.loading=false;if(view==='profile')paintAuth()}
+  finally{ACH.loading=false;try{const {data,error}=await sbc.from('profile_notifications').select('id,notification_type,reference_id,title,body,created_at,read_at').order('created_at',{ascending:false}).limit(20);if(error)throw error;ACH.notifications=data||[]}catch(error){console.warn('[notifications] load:',error&&error.message);ACH.notifications=[]}if(view==='profile')paintAuth()}
 }
 
 function initPong(cid,hid,pre){
@@ -509,7 +527,7 @@ function vUserProfile(){
   const action=rel==='friend'?'<span class="tag">Amigos</span>':rel==='sent'?'<span class="tag">Solicitud enviada</span>':rel==='received'?'<button class="btn sm" data-fa="accept" data-id="'+request.id+'">Aceptar solicitud</button>':'<button class="btn sm" data-fa="send" data-id="'+p.id+'">Añadir amigo</button>';
   const stat=PUB.stats?'<div class="profile-metrics"><div class="card profile-metric"><b>'+PUB.stats.played+'</b><span>Partidos</span></div><div class="card profile-metric"><b>'+PUB.stats.wins+'</b><span>Victorias</span></div><div class="card profile-metric"><b>'+Math.round(PUB.stats.win_rate*100)+'%</b><span>Victorias</span></div></div><p class="mut">Diferencia de puntos: '+(PUB.stats.points_for-PUB.stats.points_against>0?'+':'')+(PUB.stats.points_for-PUB.stats.points_against)+'</p>':PUB.statsHidden?'<p class="mut">Este usuario no comparte sus estadísticas contigo.</p>':'<p class="mut">Todavía no hay estadísticas registradas.</p>';
     return '<h2>Perfil de jugador</h2><section class="card acct"><div class="me">'+(p.avatar_url?'<img class="av" src="'+esc(p.avatar_url)+'" alt="">':'<span class="av">'+esc((p.display_name||'?').slice(0,1).toUpperCase())+'</span>')+'<div><span class="tag d">Jugador de PICKLE &amp; MIX</span><b>'+esc(p.display_name)+'</b><span class="mut">@'+esc(p.alias)+'</span></div></div><div class="profile-public-actions">'+action+'</div></section>'+
-    '<p class="mut">'+(!PUB.locationHidden&&(p.city||p.country)?esc([p.city,p.country].filter(Boolean).join(', ')):'')+'</p>'+achievementPanel(PUB.achievements,true)+'<h3 class="profile-section-title">Estadísticas</h3>'+stat+
+    '<p class="mut">'+(!PUB.locationHidden&&(p.city||p.country)?esc([p.city,p.country].filter(Boolean).join(', ')):'')+'</p>'+achievementPanel(PUB.achievements,true)+achievementCatalog(PUB.achievements,true)+'<h3 class="profile-section-title">Estadísticas</h3>'+stat+
         '<button class="btn ghost" data-a="friends">Volver a Amigos</button>';
 }
 async function openUserProfile(id){
@@ -966,7 +984,7 @@ const A={
       .catch(e=>{AU.err='No se pudo cerrar la sesión. Inténtalo de nuevo.';console.warn('[auth] logout:',e&&e.message);paintAuth()})},
   guest(){AU.guest=true;try{localStorage.setItem(GUEST_K,'1')}catch(e){}},
   reloadProfile(){if(AU.user)loadProfile(AU.user.id)},
-  setup(){view='setup'},home(){view='home'},profile(){view='profile';AU.profileSettingsOpen=false;loadFriendActivity()},sessions(){view='sessions';HIST.selectedSessionId=null;if(!HIST.loaded)loadMyHistory()},friends(){view='friends';FR.error='';loadFriends()},party(){view=S.started?'game':'setup';ed=null},clubs(){view='clubs';CL.error='';CL.selectedId=null;loadClubs()},history(){view='history';loadMyHistory()},profileSettings(){AU.profileSettingsOpen=true;paintAuth()},profileOverview(){AU.profileSettingsOpen=false;paintAuth()},go(){view='game';ed=null},more(){view='more'},final(){view='final'},
+  setup(){view='setup'},home(){view='home'},profile(){view='profile';AU.profileSettingsOpen=false;loadFriendActivity()},sessions(){view='sessions';HIST.selectedSessionId=null;if(!HIST.loaded)loadMyHistory()},friends(){view='friends';FR.error='';loadFriends()},party(){view=S.started?'game':'setup';ed=null},clubs(){view='clubs';CL.error='';CL.selectedId=null;loadClubs()},history(){view='history';loadMyHistory()},profileSettings(){AU.profileSettingsOpen=true;paintAuth()},profileOverview(){AU.profileSettingsOpen=false;paintAuth()},achievements(){ACH.open=true;ACH.publicMode=false;paintAuth()},publicAchievements(){ACH.open=true;ACH.publicMode=true;render()},achievementsClose(){ACH.open=false;if(ACH.publicMode)render();else paintAuth()},notificationsToggle(){ACH.notificationsOpen=!ACH.notificationsOpen;paintAuth()},notificationsReadAll(){markNotificationsRead()},go(){view='game';ed=null},more(){view='more'},final(){view='final'},
   start(){S.savedSessionId=null;const c=S.settings;if(S.players.length<4){err='Necesitas al menos 4 jugadores.';return}
     if(S.players.length<4*c.courts){err=`Con ${c.courts} pistas necesitas al menos ${4*c.courts} jugadores.`;return}
     if(FX()&&S.players.length%2){err='Con parejas fijas necesitas un número par de jugadores.';return}
@@ -1090,8 +1108,7 @@ function authInner(){
     const avatar='<label class="avatar-picker" for="profile-avatar" title="Cambiar foto de perfil" aria-label="Cambiar foto de perfil">'+auAvatar(AU.user)+'<span class="avatar-camera" aria-hidden="true">✎</span></label><input id="profile-avatar" class="sr" type="file" accept="image/jpeg,image/png,image/webp" data-avatar-file>';
     if(!AU.profileSettingsOpen){
       const pending=FR.items.filter(f=>f.status==='pending'&&f.addressee_id===AU.user.id).length;
-      return '<div class="profile-dashboard"><section class="card acct profile-hero"><div class="profile-hero-main"><div class="profile-avatar-large">'+avatar+'</div><div class="profile-hero-copy"><span class="tag d">TU PERFIL</span><b>'+esc(auName(AU.user))+'</b><span class="profile-alias">'+(p.alias?'@'+esc(p.alias):'Aún no has elegido un alias')+'</span><span class="profile-location">'+(p.city||p.country?'⌖ '+esc([p.city,p.country].filter(Boolean).join(', ')):'Añade tu ciudad en configuración')+'</span></div></div><button class="btn ghost profile-settings-btn" data-a="profileSettings">Editar perfil</button></section>'+
-        achievementPanel(ACH.summary,false)+sessionInvitesPanel()+
+      return '<div class="profile-dashboard"><section class="card acct profile-hero"><div class="profile-hero-main"><div class="profile-avatar-large">'+avatar+'</div><div class="profile-hero-copy"><span class="tag d">TU PERFIL</span><b>'+esc(auName(AU.user))+'</b><span class="profile-alias">'+(p.alias?'@'+esc(p.alias):'Aún no has elegido un alias')+'</span><span class="profile-location">'+(p.city||p.country?'⌖ '+esc([p.city,p.country].filter(Boolean).join(', ')):'Añade tu ciudad en configuración')+'</span></div></div>'+achievementPanel(ACH.summary,false)+'<button class="btn ghost profile-settings-btn" data-a="profileSettings">Editar perfil</button></section>'+achievementCatalog(ACH.summary,false)+notificationsPanel()+sessionInvitesPanel()+
         '<button class="profile-community card" data-a="friends"><span class="community-symbol">✦</span><span class="community-copy"><b>Amigos y comunidad</b><small>Busca jugadores, gestiona solicitudes y consulta la clasificación</small></span>'+(pending?'<span class="community-count">'+pending+'</span>':'')+'<span class="community-arrow">›</span></button>'+
         '<section class="profile-stat-block"><h3 class="profile-section-title">Tu rendimiento</h3><div class="profile-metrics"><button type="button" class="card profile-metric profile-metric-click" data-a="sessions" '+(!HIST.loaded?'disabled':'')+'><b>'+(HIST.loaded?HIST.stats.sessions:'—')+'</b><span>Quedadas jugadas</span><small>Ver registro ›</small></button><div class="card profile-metric"><b>'+(HIST.loaded?HIST.stats.wins:'—')+'</b><span>Partidos ganados</span></div><div class="card profile-metric"><b>'+(HIST.loaded?(HIST.stats.played?Math.round(HIST.stats.winRate*100)+'%':'0%'):'—')+'</b><span>% de partidos ganados</span></div></div></section>'+
         '<section class="card profile-empty profile-activity-card"><div class="profile-card-heading"><h3>Tu actividad</h3><span class="section-kicker">RECIENTE</span></div>'+(HIST.loading?'<p>Cargando tu historial…</p>':HIST.error?'<p>'+esc(HIST.error)+'</p>':HIST.items.length?HIST.items.slice(0,3).map(historyRow).join(''):'<p>Todavía no has guardado partidos en tu historial. Al terminar una quedada, podrás guardarla y vincular tu jugador con tu cuenta.</p>')+'</section>'+' <section class="card profile-empty profile-activity-card"><div class="profile-card-heading"><h3>Actividad de tus amigos</h3><span class="section-kicker">COMUNIDAD</span></div>'+(FR.activityLoading?'<p>Cargando actividad…</p>':FR.activity.length?FR.activity.slice(0,3).map(friendActivityRow).join(''):'<p>Cuando tengas amigos y compartan su historial, verás aquí sus últimos partidos.</p>')+'</section>'+
@@ -1179,9 +1196,9 @@ if(typeof window!=='undefined'&&typeof document!=='undefined'){
     sbc.auth.onAuthStateChange((ev,ses)=>{const u=(ses&&ses.user)||null,was=AU.user&&AU.user.id,ch=(u&&u.id)!==was;
       AU.user=u;AU.ready=true;AU.busy=false;if(u)AU.err='';
       if(ch){HIST.invites=[];HIST.inviteBusy='';HIST.items=[];HIST.loaded=false;HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0}}
-      if(ch&&!u){watchFriendships(null);AU.profile=null;AU.profileErr='';AU.profileLoading=false;HIST.loaded=false;HIST.items=[];HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0}}
+      if(ch&&!u){ACH.summary=null;ACH.notifications=[];ACH.open=false;ACH.notificationsOpen=false;watchFriendships(null);AU.profile=null;AU.profileErr='';AU.profileLoading=false;HIST.loaded=false;HIST.items=[];HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0}}
       if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))AU.profileLoading=true;
-      if(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED')paintAuth();
+      if(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'){if(view==='home')render();else paintAuth()}
       if(u&&(ch||ev==='INITIAL_SESSION'))watchFriendships(u.id);
       if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))setTimeout(()=>{loadProfile(u.id);loadMyHistory();loadFriends();loadMyAchievements();if(view==='clubs')loadClubs();redeemClubInviteFromUrl()},0);
       if(u&&ch&&AU.oauth&&ev==='SIGNED_IN'){AU.oauth=false;toast('Sesión iniciada como '+auName(u))}});
