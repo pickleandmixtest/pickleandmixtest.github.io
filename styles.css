@@ -150,3 +150,19 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .avatar-picker:hover .av{filter:brightness(.88)}
 .avatar-picker:focus-visible{outline:3px solid var(--sky);outline-offset:4px}
 .avatar-google{margin:5px 0 0!important;min-height:34px;padding:5px 10px;font-size:12px}
+
+/* Panel principal de Mi perfil */
+.profile-dashboard{display:flex;flex-direction:column;gap:12px;width:100%}
+.profile-identity{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.profile-identity .me{flex:1;min-width:0}
+.profile-settings-btn{width:auto;min-width:124px;min-height:42px;margin:0;padding:8px 12px;font-size:14px}
+.profile-section-title{margin:8px 2px 0;font:900 19px/1.1 "Arial Black",Impact,sans-serif;color:var(--ball)}
+.profile-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.profile-metric{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;min-width:0;min-height:88px;padding:10px 6px;text-align:center}
+.profile-metric b{font:900 27px/1 "Arial Black",Impact,sans-serif;color:var(--court)}
+.profile-metric span{font-size:12px;line-height:1.2;color:var(--mut)}
+.profile-empty h3{margin:0 0 6px;color:var(--court);font:900 18px "Arial Black",Impact,sans-serif}
+.profile-empty p{margin:0 0 10px;color:var(--mut);font-size:14px}
+.profile-settings-head{margin-bottom:12px}
+.profile-settings-head .btn{width:auto;min-height:38px;margin:0;padding:6px 12px;font-size:13px}
+@media(max-width:380px){.profile-identity{align-items:flex-start;flex-wrap:wrap}.profile-settings-btn{width:100%}.profile-metric span{font-size:11px}}
