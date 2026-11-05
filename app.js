@@ -368,6 +368,24 @@ function clubMember(clubId,userId){return CL.members.find(m=>m.club_id===clubId&
 function clubAdmin(id){const m=clubMember(id,AU.user&&AU.user.id);return !!m&&m.role==='admin'}
 function clubDate(v){return v?new Date(v).toLocaleString('es-ES',{dateStyle:'medium',timeStyle:'short'}):''}
 function clubEventType(t){return t==='training'?'Entrenamiento':t==='tournament'?'Torneo':'Quedada'}
+async function loadClubData(id){
+ if(!sbc||!AU.user)return;const mine=clubMember(id,AU.user.id);
+ try{const [req,inv,events,links]=await Promise.all([
+ mine&&mine.role==='admin'?sbc.from('club_join_requests').select('*').eq('club_id',id).eq('status','pending').order('created_at'):Promise.resolve({data:[],error:null}),
+ sbc.from('club_invitations').select('*').eq('club_id',id).eq('invited_user_id',AU.user.id).eq('status','pending'),
+ mine?sbc.from('club_events').select('*').eq('club_id',id).order('starts_at'):Promise.resolve({data:[],error:null}),
+ mine&&mine.role==='admin'?sbc.from('club_invite_links').select('*').eq('club_id',id).is('revoked_at',null).order('created_at',{ascending:false}):Promise.resolve({data:[],error:null})]);
+ for(const x of [req,inv,events,links])if(x.error)throw x.error;
+ CL.requests=req.data||[];CL.invitations=inv.data||[];CL.events=events.data||[];CL.links=links.data||[];
+ const eids=CL.events.map(x=>x.id);if(eids.length){const rr=await sbc.from('club_event_registrations').select('*').in('event_id',eids).order('created_at');if(rr.error)throw rr.error;CL.registrations=rr.data||[]}else CL.registrations=[];
+ const ids=[...new Set([...CL.requests.map(x=>x.user_id),...CL.invitations.map(x=>x.invited_by),...CL.registrations.map(x=>x.user_id)])].filter(x=>!CL.people.some(p=>p.id===x));
+ if(ids.length){const p=await sbc.from('profiles').select('id,display_name,alias,avatar_url').in('id',ids);if(p.error)throw p.error;CL.people=[...CL.people,...(p.data||[])]}
+ }catch(e){console.warn('[clubs] detail load',e);toast('No se ha podido actualizar toda la información del club.')}finally{paintClubs()}
+}
+async function respondClubRequest(id,accept){try{const {error}=await sbc.rpc('respond_club_join_request',{p_request_id:id,p_accept:accept});if(error)throw error;toast(accept?'Solicitud aceptada.':'Solicitud rechazada.');await loadClubs();await loadClubData(CL.selectedId);loadMyAchievements()}catch(e){toast(e.message||'No se ha podido responder a la solicitud.')}}
+async function respondClubInvite(id,accept){try{const {error}=await sbc.rpc('respond_club_invitation',{p_invitation_id:id,p_accept:accept});if(error)throw error;toast(accept?'Ya formas parte del club.':'Invitación rechazada.');await loadClubs();await loadClubData(CL.selectedId);loadMyAchievements()}catch(e){toast(e.message||'No se ha podido responder a la invitación.')}}
+async function manageClubMember(userId,action){if(!confirm(action==='remove'?'¿Expulsar a este miembro?':action==='promote'?'¿Nombrar administrador?':'¿Retirar el rol de administrador?'))return;try{const {error}=await sbc.rpc('manage_club_member',{p_club_id:CL.selectedId,p_user_id:userId,p_action:action});if(error)throw error;await loadClubs();await loadClubData(CL.selectedId);loadMyAchievements();toast('Miembros actualizados.')}catch(e){toast(e.message||'No se ha podido modificar el miembro.')}}
+async function saveClubSettings(form){const fd=new FormData(form);try{const {error}=await sbc.from('clubs').update({name:String(fd.get('name')||'').trim(),description:String(fd.get('description')||'').trim(),city:String(fd.get('city')||'').trim(),access_mode:String(fd.get('access_mode')||'open')}).eq('id',CL.selectedId);if(error)throw error;CL.settingsOpen=false;await loadClubs();await loadClubData(CL.selectedId);toast('Configuración guardada.')}catch(e){toast(e.message||'No se han podido guardar los cambios.')}}
 function vClubs(){
   if(!AU.user)return '<h2>Clubes</h2><p class="lead">Crea un punto de encuentro para tu comunidad de pickleball.</p><div class="card acct">'+authInner()+'</div>';
   const cards=CL.items.map(c=>{
