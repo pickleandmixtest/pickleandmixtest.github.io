@@ -367,7 +367,7 @@ async function loadMyHistory(){
     const [mr,lr,pr,sr]=await Promise.all([
       sbc.from('play_session_matches').select('id,session_id,match_number,cycle,court,phase,side_a_score,side_b_score,played_at').in('id',matchIds).order('played_at',{ascending:false}),
       sbc.from('play_match_players').select('match_id,session_player_id,side').in('match_id',matchIds),
-      sbc.from('play_session_players').select('id,player_name,user_id').in('id',[...new Set((mineLinks||[]).map(x=>x.session_player_id))]),
+      sbc.from('play_session_players').select('id,player_name,user_id').in('id',[...new Set((lr.data||[]).map(x=>x.session_player_id))]),
       sbc.from('play_sessions').select('id,title,mode,created_at').in('id',sessionIds)
     ]);
     for(const x of [mr,lr,pr,sr])if(x.error)throw x.error;
@@ -380,7 +380,7 @@ async function loadMyHistory(){
       const teammates=peers.filter(x=>x.side===ownSide).map(x=>playerMap.get(x.session_player_id)?.player_name||'Jugador');
       const opponents=peers.filter(x=>x.side!==ownSide).map(x=>playerMap.get(x.session_player_id)?.player_name||'Jugador');
       const ses=sessionMap.get(m.session_id);
-      return{matchId:m.id,sessionId:m.session_id,sessionTitle:ses?.title||'Quedada',matchNumber:m.match_number,playedAt:m.played_at,scoreA:m.side_a_score,scoreB:m.side_b_score,ownSide,won,teammates,opponents};
+      return{matchId:m.id,sessionId:m.session_id,sessionTitle:ses?.title||'Quedada',matchNumber:m.match_number,playedAt:m.played_at,scoreA:m.side_a_score,scoreB:m.side_b_score,ownSide,ownScore:ownSide==='a'?m.side_a_score:m.side_b_score,oppScore:ownSide==='a'?m.side_b_score:m.side_a_score,won,teammates,opponents};
     }).filter(Boolean);
     const wins=items.filter(x=>x.won).length,losses=items.length-wins;
     HIST.items=items;HIST.stats={played:items.length,wins,losses,winRate:items.length?wins/items.length:0,pointsFor:items.reduce((n,x)=>n+(x.ownSide==='a'?x.scoreA:x.scoreB),0),pointsAgainst:items.reduce((n,x)=>n+(x.ownSide==='a'?x.scoreB:x.scoreA),0),sessions:sessionIds.length};HIST.loaded=true;
