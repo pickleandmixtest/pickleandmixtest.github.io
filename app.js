@@ -260,6 +260,21 @@ function vHome(){const n=S.players.length,c=S.settings;
 function profileMini(p){return '<div class="friend-person">'+(p.avatar_url?'<img class="av" src="'+esc(p.avatar_url)+'" alt="">':'<span class="av">'+esc((p.display_name||'?').slice(0,1).toUpperCase())+'</span>')+'<div class="friend-person-info"><b>'+esc(p.display_name||'Jugador')+'</b><span class="mut">@'+esc(p.alias||'')+'</span></div></div>'}
 function profileLink(p){return '<button type="button" class="friend-profile-link" data-up="'+p.id+'">'+profileMini(p)+'</button>'}
 function friendState(id){const f=FR.items.find(x=>x.requester_id===id||x.addressee_id===id);if(!f)return null;if(f.status==='accepted')return'friend';return f.requester_id===AU.user.id?'sent':'received'}
+async function loadFriendLeaderboard(){
+  if(!sbc||!AU.user)return;
+  FR.rankingLoading=true;paintFriends();
+  const people=[{id:AU.user.id,display_name:AU.profile?.display_name||auName(AU.user),avatar_url:AU.profile?.avatar_url||null,isMe:true},
+    ...FR.items.filter(f=>f.status==='accepted').map(f=>{const id=f.requester_id===AU.user.id?f.addressee_id:f.requester_id;return FR.people.find(p=>p.id===id)}).filter(Boolean)];
+  try{
+    const rows=await Promise.all(people.map(async p=>{
+      const {data,error}=await sbc.rpc('get_user_stats',{p_user_id:p.id});
+      if(error||!data||!data.played)return null;
+      return{...p,stats:data};
+    }));
+    FR.ranking=rows.filter(Boolean).sort((a,b)=>b.stats.win_rate-a.stats.win_rate||b.stats.wins-a.stats.wins||b.stats.played-a.stats.played);
+  }catch(error){console.warn('[friends] ranking:',error&&error.message);FR.ranking=[]}
+  finally{FR.rankingLoading=false;paintFriends()}
+}
 function vFriends(){
   if(!AU.user)return '<h2>Amigos</h2><p class="lead">Inicia sesión con Google para encontrar jugadores y crear tu red de amigos.</p><div class="card acct">'+authInner()+'</div>';
   if(!AU.profile)return '<h2>Amigos</h2><div class="card"><p class="hint">Necesitamos cargar tu perfil para gestionar tus amistades.</p><button class="btn" data-a="reloadProfile">Reintentar</button></div>';
@@ -272,6 +287,7 @@ function vFriends(){
   const requests=incoming.map(f=>'<div class="friend-row">'+profileLink(byId(f.requester_id))+'<div class="friend-actions"><button class="btn sm" data-fa="accept" data-id="'+f.id+'">Aceptar</button><button class="btn sm ghost" data-fa="reject" data-id="'+f.id+'">Rechazar</button></div></div>').join('');
   const sent=outgoing.map(f=>'<div class="friend-row">'+profileLink(byId(f.addressee_id))+'<button class="btn sm ghost" data-fa="cancel" data-id="'+f.id+'">Cancelar</button></div>').join('');
   const friends=accepted.map(f=>{const id=f.requester_id===AU.user.id?f.addressee_id:f.requester_id;return '<div class="friend-row">'+profileLink(byId(id))+'<button class="btn sm ghost" data-fa="remove" data-id="'+f.id+'">Eliminar</button></div>'}).join('');
+  const ranking=FR.rankingLoading?'<p class="mut">Calculando clasificación…</p>':FR.ranking.length?FR.ranking.map((p,i)=>'<div class="friend-row leaderboard-row"><span class="leader-position">'+(i+1)+'</span>'+profileLink(p)+'<span class="leader-stats"><b>'+Math.round(p.stats.win_rate*100)+'%</b><small>'+p.stats.wins+'V · '+p.stats.played+' PJ</small></span></div>').join(''):'<p class="mut">Todavía no hay partidos guardados suficientes para crear una clasificación. Guarda tus quedadas y las de tus amigos.</p>';
   return '<h2>Amigos</h2><p class="lead">Encuentra a otros jugadores de PICKLE &amp; MIX y conecta con ellos.</p>'+
     '<form class="card friend-search" data-f="friend-search"><label for="friend-query">Buscar jugadores</label><div class="row"><input id="friend-query" name="q" maxlength="40" placeholder="Nombre o @alias" value="'+esc(FR.query)+'" autocomplete="off"><button class="btn sm" type="submit" '+(FR.searching?'disabled':'')+'>'+(FR.searching?'Buscando…':'Buscar')+'</button></div><small>Para aparecer en las búsquedas, cada usuario debe elegir un alias en su configuración de perfil.</small></form>'+
     (FR.error?'<div class="err" role="alert">'+esc(FR.error)+'</div>':'')+
@@ -279,6 +295,7 @@ function vFriends(){
     '<section class="card"><h3>Solicitudes recibidas '+(incoming.length?'<span class="tag">'+incoming.length+'</span>':'')+'</h3>'+(FR.loading?'<p class="hint">Cargando…</p>':requests||'<p class="mut">No tienes solicitudes pendientes.</p>')+'</section>'+
     '<section class="card"><h3>Solicitudes enviadas</h3>'+(sent||'<p class="mut">No tienes solicitudes enviadas.</p>')+'</section>'+
     '<section class="card"><h3>Mis amigos · '+accepted.length+'</h3>'+(friends||'<p class="mut">Todavía no tienes amigos añadidos.</p>')+'</section>'+
+    '<section class="card"><h3>Clasificación entre amigos</h3>'+ranking+'</section>'+
     '<button class="btn ghost" data-a="profile">Volver a Mi perfil</button>';
 }
 function vUserProfile(){
@@ -340,7 +357,7 @@ async function loadFriends(){
     if(ids.length){const {data:people,error:pe}=await sbc.from('profiles').select('id,display_name,alias,avatar_url').in('id',ids);if(pe)throw pe;FR.people=people||[]}else FR.people=[];
     FR.loaded=true;
   }catch(error){console.warn('[friends] load:',error&&error.message);FR.error='No se han podido cargar tus amistades. Comprueba la conexión e inténtalo de nuevo.'}
-  finally{FR.loading=false;paintFriends();if(view==='profile'){render();loadFriendActivity()}}
+  finally{FR.loading=false;paintFriends();loadFriendLeaderboard();if(view==='profile'){render();loadFriendActivity()}}
 }
 function paintFriends(){if(view==='friends'){const root=document.querySelector('#app');if(root)root.innerHTML=header()+vFriends()+foot()}}
 async function searchFriends(form){
