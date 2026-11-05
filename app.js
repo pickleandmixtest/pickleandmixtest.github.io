@@ -189,7 +189,7 @@ function render(){
   if(msg){toast(msg);msg=''}
 }
 let PG={u:0,c:0};
-const HIST={items:[],stats:{played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0},loading:false,error:'',loaded:false};
+const HIST={items:[],invites:[],inviteBusy:'',stats:{played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0},loading:false,error:'',loaded:false};
 const PUB={id:null,profile:null,stats:null,history:[],error:'',loading:false,statsHidden:false,historyHidden:false};
 const FR={items:[],people:[],query:'',results:[],loading:false,searching:false,error:'',loaded:false,ranking:[],rankingLoading:false,activity:[],activityLoading:false,busy:''};
 function initPong(cid,hid,pre){
@@ -429,12 +429,42 @@ async function savePlaySession(form){
     S.savedSessionId=data;save();toast('Quedada guardada en tu historial.');render();loadMyHistory();
   }catch(error){console.warn('[history] save:',error&&error.message);if(btn){btn.disabled=false;btn.textContent='Guardar quedada'}toast('No se ha podido guardar la quedada. Comprueba la conexión e inténtalo de nuevo.')}
 }
+async function loadSessionInvitations(uid){
+  try{
+    const {data:rows,error}=await sbc.from('play_session_players').select('id,session_id,player_name').eq('user_id',uid).eq('approval_status','pending');
+    if(error)throw error;
+    if(!rows||!rows.length){HIST.invites=[];return}
+    const sessionIds=[...new Set(rows.map(x=>x.session_id))];
+    const {data:sessions,error:se}=await sbc.from('play_sessions').select('id,title,owner_id,created_at').in('id',sessionIds);
+    if(se)throw se;
+    const owners=[...new Set((sessions||[]).map(x=>x.owner_id).filter(Boolean))];
+    const {data:profiles,error:pe}=owners.length?await sbc.from('profiles').select('id,display_name,alias').in('id',owners):{data:[],error:null};
+    if(pe)throw pe;
+    const sm=new Map((sessions||[]).map(x=>[x.id,x])),pm=new Map((profiles||[]).map(x=>[x.id,x]));
+    HIST.invites=rows.map(x=>{const session=sm.get(x.session_id),owner=session&&pm.get(session.owner_id);return{id:x.id,sessionId:x.session_id,playerName:x.player_name,title:session?.title||'Quedada',createdAt:session?.created_at||null,organizer:owner?.display_name||owner?.alias||'Un amigo'}}).filter(x=>sm.has(x.sessionId)).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+  }catch(error){console.warn('[history] invitations:',error&&error.message);HIST.invites=[]}
+}
+function sessionInvitesPanel(){
+  if(!HIST.invites.length)return '';
+  return '<section class="card session-invites"><div class="profile-card-heading"><h3>Participaciones pendientes</h3><span class="community-count">'+HIST.invites.length+'</span></div><p class="mut">Te han incluido en estas quedadas. Confirma si quieres que sus resultados aparezcan en tu perfil y cuenten para tus estadísticas.</p>'+HIST.invites.map(x=>'<article class="session-invite-card"><div><b>'+esc(x.title)+'</b><span class="mut">'+esc(x.organizer)+' · '+(x.createdAt?new Date(x.createdAt).toLocaleDateString('es-ES'):'Fecha no disponible')+'</span><small>Jugador: '+esc(x.playerName)+'</small></div><div class="row invite-actions"><button class="btn ball" data-session-response="accept" data-id="'+x.id+'" '+(HIST.inviteBusy===x.id?'disabled':'')+'>Aceptar</button><button class="btn ghost" data-session-response="reject" data-id="'+x.id+'" '+(HIST.inviteBusy===x.id?'disabled':'')+'>Rechazar</button></div></article>').join('')+'</section>';
+}
+async function respondSessionInvitation(action,id){
+  if(!sbc||!AU.user||!id||HIST.inviteBusy)return;
+  HIST.inviteBusy=id;paintAuth();
+  try{
+    const {data,error}=await sbc.rpc('respond_play_session_invitation',{p_player_id:id,p_accept:action==='accept'});
+    if(error)throw error;
+    toast(action==='accept'?'Torneo añadido a tu perfil.':'Participación rechazada.');
+    await loadMyHistory();
+  }catch(error){console.warn('[history] invitation response:',error&&error.message);toast('No se ha podido guardar tu respuesta. Actualiza el perfil e inténtalo de nuevo.')}
+  finally{HIST.inviteBusy='';paintAuth()}
+}
 async function loadMyHistory(){
   if(!sbc||!AU.user)return;
-  const uid=AU.user.id;HIST.loading=true;HIST.error='';HIST.loaded=false;
+  const uid=AU.user.id;HIST.loading=true;HIST.error='';HIST.loaded=false;await loadSessionInvitations(uid);
   if(view==='history')render();else paintAuth();
   try{
-    const {data:mine,error:e1}=await sbc.from('play_session_players').select('id,session_id,player_name').eq('user_id',uid);
+    const {data:mine,error:e1}=await sbc.from('play_session_players').select('id,session_id,player_name').eq('user_id',uid).eq('approval_status','accepted');
     if(e1)throw e1;
     if(!mine||!mine.length){HIST.items=[];HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0};HIST.loaded=true;return}
     const playerIds=mine.map(x=>x.id),sessionIds=[...new Set(mine.map(x=>x.session_id))];
@@ -766,11 +796,11 @@ const A={
   reset(){if(confirm('Se borrarán jugadores, partidos y resultados. ¿Seguro?')&&confirm('Última comprobación: ¿empezar una quedada nueva?')){S=fresh();SC={};ed=null;ct=1;tmp=null;view='home'}}
 };
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-a],[data-fa],[data-up],[data-linkplayer],[data-addself],[data-sc],[data-ct],[data-del],[data-st],[data-pd],[data-edit],[data-mode],[data-pm]');if(!t)return;const d=t.dataset;
+  const t=e.target.closest('[data-a],[data-fa],[data-up],[data-linkplayer],[data-addself],[data-session-response],[data-sc],[data-ct],[data-del],[data-st],[data-pd],[data-edit],[data-mode],[data-pm]');if(!t)return;const d=t.dataset;
   // Navegación explícita: no depende de las acciones genéricas del resto de la app.
   if(d.a==='friends'){view='friends';FR.error='';render();loadFriends();return}
   if(d.a==='profile'){view='profile';AU.profileSettingsOpen=false;render();if(AU.user){loadMyHistory();loadFriends()}return}
-  if(d.fa){friendAction(d.fa,d.id);return}
+  if(d.sessionResponse){respondSessionInvitation(d.sessionResponse,d.id);return}\n  if(d.fa){friendAction(d.fa,d.id);return}
   if(d.addself!==undefined){addSelfPlayer();return}
   if(d.linkplayer){const friend=linkedFriends().find(p=>p.id===d.linkplayer);if(friend&&!S.players.some(p=>p.userId===friend.id)){let name=(friend.display_name||friend.alias||'Jugador').slice(0,24);if(nameTaken(name))name=('@'+(friend.alias||friend.display_name||'amigo')).slice(0,24);S.players.push({id:S.nid++,name,userId:friend.id,status:'active'});save()}else if(friend)toast('Ese amigo ya está en la quedada.');render();return}
   if(d.up){openUserProfile(d.up);return}
@@ -836,7 +866,7 @@ function authInner(){
     if(!AU.profileSettingsOpen){
       const pending=FR.items.filter(f=>f.status==='pending'&&f.addressee_id===AU.user.id).length;
       return '<div class="profile-dashboard"><section class="card acct profile-hero"><div class="profile-hero-main"><div class="profile-avatar-large">'+avatar+'</div><div class="profile-hero-copy"><span class="tag d">TU PERFIL</span><b>'+esc(auName(AU.user))+'</b><span class="profile-alias">'+(p.alias?'@'+esc(p.alias):'Aún no has elegido un alias')+'</span><span class="profile-location">'+(p.city||p.country?'⌖ '+esc([p.city,p.country].filter(Boolean).join(', ')):'Añade tu ciudad en configuración')+'</span></div></div><button class="btn ghost profile-settings-btn" data-a="profileSettings">Editar perfil</button></section>'+
-        '<button class="profile-community card" data-a="friends"><span class="community-symbol">✦</span><span class="community-copy"><b>Amigos y comunidad</b><small>Busca jugadores, gestiona solicitudes y consulta la clasificación</small></span>'+(pending?'<span class="community-count">'+pending+'</span>':'')+'<span class="community-arrow">›</span></button>'+
+        sessionInvitesPanel()+\n        '<button class="profile-community card" data-a="friends"><span class="community-symbol">✦</span><span class="community-copy"><b>Amigos y comunidad</b><small>Busca jugadores, gestiona solicitudes y consulta la clasificación</small></span>'+(pending?'<span class="community-count">'+pending+'</span>':'')+'<span class="community-arrow">›</span></button>'+
         '<section class="profile-stat-block"><h3 class="profile-section-title">Tu rendimiento</h3><div class="profile-metrics"><div class="card profile-metric"><b>'+(HIST.loaded?HIST.stats.sessions:'—')+'</b><span>Quedadas jugadas</span></div><div class="card profile-metric"><b>'+(HIST.loaded?HIST.stats.wins:'—')+'</b><span>Partidos ganados</span></div><div class="card profile-metric"><b>'+(HIST.loaded?(HIST.stats.played?Math.round(HIST.stats.winRate*100)+'%':'0%'):'—')+'</b><span>% de partidos ganados</span></div></div></section>'+
         '<section class="card profile-empty profile-activity-card"><div class="profile-card-heading"><h3>Tu actividad</h3><span class="section-kicker">RECIENTE</span></div>'+(HIST.loading?'<p>Cargando tu historial…</p>':HIST.error?'<p>'+esc(HIST.error)+'</p>':HIST.items.length?HIST.items.slice(0,3).map(historyRow).join(''):'<p>Todavía no has guardado partidos en tu historial. Al terminar una quedada, podrás guardarla y vincular tu jugador con tu cuenta.</p>')+'</section>'+' <section class="card profile-empty profile-activity-card"><div class="profile-card-heading"><h3>Actividad de tus amigos</h3><span class="section-kicker">COMUNIDAD</span></div>'+(FR.activityLoading?'<p>Cargando actividad…</p>':FR.activity.length?FR.activity.slice(0,3).map(friendActivityRow).join(''):'<p>Cuando tengas amigos y compartan su historial, verás aquí sus últimos partidos.</p>')+'</section>'+
         (HIST.items.length?'<button class="btn ghost" data-a="history">Ver historial completo</button>':'')+e+
