@@ -994,15 +994,27 @@ const A={
   reset(){if(confirm('Se borrarán jugadores, partidos y resultados. ¿Seguro?')&&confirm('Última comprobación: ¿empezar una quedada nueva?')){S=fresh();SC={};ed=null;ct=1;tmp=null;view='home'}}
 };
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-a],[data-community-panel],[data-fa],[data-up],[data-linkplayer],[data-addself],[data-session-response],[data-session-open],[data-club-open],[data-club-join],[data-club-leave],[data-club-delete],[data-club-create-toggle],[data-sc],[data-ct],[data-del],[data-st],[data-pd],[data-edit],[data-mode],[data-pm]');if(!t)return;const d=t.dataset;
+  const t=e.target.closest('[data-a],[data-community-panel],[data-fa],[data-up],[data-linkplayer],[data-addself],[data-session-response],[data-session-open],[data-club-open],[data-club-join],[data-club-leave],[data-club-delete],[data-club-create-toggle],[data-club-settings-toggle],[data-club-link-create],[data-club-link-copy],[data-club-copy-current],[data-club-link-revoke],[data-club-request],[data-club-invitation],[data-club-member-action],[data-club-event-toggle],[data-club-event-register],[data-club-event-cancel],[data-club-event-delete],[data-sc],[data-ct],[data-del],[data-st],[data-pd],[data-edit],[data-mode],[data-pm]');if(!t)return;const d=t.dataset;
   // Navegación explícita: no depende de las acciones genéricas del resto de la app.
   if(d.a==='friends'){view='friends';FR.error='';render();loadFriends();return}
   if(d.a==='profile'){view='profile';AU.profileSettingsOpen=false;render();if(AU.user){loadMyHistory();loadFriends()}return}
   if(d.a==='clubs'){view='clubs';CL.error='';CL.selectedId=null;render();loadClubs();return}
-  if(d.clubOpen){CL.selectedId=d.clubOpen;view='club-detail';render();return}
+  if(d.clubOpen){CL.selectedId=d.clubOpen;view='club-detail';CL.settingsOpen=false;CL.eventOpen=false;CL.inviteUrl='';render();loadClubData(d.clubOpen);return}
   if(d.clubJoin){joinClub(d.clubJoin);return}
   if(d.clubLeave){leaveClub(d.clubLeave);return}
   if(d.clubDelete){deleteClub(d.clubDelete);return}
+  if(d.clubSettingsToggle){CL.settingsOpen=!CL.settingsOpen;paintClubs();return}
+  if(d.clubLinkCreate){createClubInviteLink();return}
+  if(d.clubLinkCopy){const u=location.origin+location.pathname+'?club_invite='+d.clubLinkCopy;if(navigator.clipboard)navigator.clipboard.writeText(u).then(()=>toast('Enlace copiado.')).catch(()=>prompt('Copia este enlace:',u));else prompt('Copia este enlace:',u);return}
+  if(d.clubCopyCurrent){if(CL.inviteUrl&&navigator.clipboard)navigator.clipboard.writeText(CL.inviteUrl).then(()=>toast('Enlace copiado.')).catch(()=>prompt('Copia este enlace:',CL.inviteUrl));else if(CL.inviteUrl)prompt('Copia este enlace:',CL.inviteUrl);return}
+  if(d.clubLinkRevoke){revokeClubInviteLink(d.clubLinkRevoke);return}
+  if(d.clubRequest){respondClubRequest(d.id,d.clubRequest==='accept');return}
+  if(d.clubInvitation){respondClubInvite(d.id,d.clubInvitation==='accept');return}
+  if(d.clubMemberAction){manageClubMember(d.id,d.clubMemberAction);return}
+  if(d.clubEventToggle){CL.eventOpen=!CL.eventOpen;paintClubs();return}
+  if(d.clubEventRegister){registerClubEvent(d.clubEventRegister);return}
+  if(d.clubEventCancel){cancelClubEventRegistration(d.clubEventCancel);return}
+  if(d.clubEventDelete){deleteClubEvent(d.clubEventDelete);return}
   if(d.clubCreateToggle){e.preventDefault();CL.createOpen=!CL.createOpen;paintClubs();return}
   if(d.sessionResponse){respondSessionInvitation(d.sessionResponse,d.id);return};if(d.sessionOpen){HIST.selectedSessionId=d.sessionOpen;view='session-detail';render();return}
   if(d.communityPanel){FR.panel=FR.panel===d.communityPanel?'':d.communityPanel;paintFriends();return}
@@ -1022,8 +1034,8 @@ document.addEventListener('click',e=>{
   save();render();
 });
 document.addEventListener('input',e=>{const t=e.target;if(t.matches('form[data-f="add"] input[name="n"]')){const box=t.closest('form').querySelector('#player-suggestions'),raw=t.value.trim(),isMention=raw.startsWith('@'),q=raw.replace(/^@/,'').toLocaleLowerCase('es');if(!box)return;if(!isMention){box.hidden=true;box.innerHTML='';return}const ownAlias=String((AU.profile&&AU.profile.alias)||'').toLocaleLowerCase('es'),ownName=String((AU.profile&&AU.profile.display_name)||'').toLocaleLowerCase('es'),hasSelf=AU.user&&!S.players.some(x=>x.userId===AU.user.id)&&(q==='yo'||(q&&((ownAlias&&ownAlias.includes(q))||ownName.includes(q))));const self=hasSelf?'<button type="button" class="player-suggestion" data-addself><b>@'+esc(ownAlias||'yo')+'</b><small>'+esc((AU.profile&&AU.profile.display_name)||auName(AU.user))+'</small><span>Este eres tú</span></button>':'';const found=AU.user&&q?linkedFriends().filter(p=>!S.players.some(x=>x.userId===p.id)&&((p.alias||'').toLocaleLowerCase('es').includes(q)||(p.display_name||'').toLocaleLowerCase('es').includes(q))).slice(0,6):[];box.innerHTML=self+found.map(p=>'<button type="button" class="player-suggestion" data-linkplayer="'+p.id+'"><b>@'+esc(p.alias||p.display_name)+'</b><small>'+esc(p.display_name||'')+'</small><span>Vincular</span></button>').join('');box.hidden=!box.innerHTML}});
-document.addEventListener('change',e=>{if(e.target.matches('[data-avatar-file]'))uploadAvatar(e.target)});
-document.addEventListener('submit',e=>{e.preventDefault();if(e.target.dataset.f==='profile'){saveProfile(e.target);return}if(e.target.dataset.f==='friend-search'){searchFriends(e.target);return}if(e.target.dataset.f==='save-session'){savePlaySession(e.target);return}if(e.target.dataset.f==='club-create'){createClub(e.target);return}const f=e.target.dataset.f,v=e.target.n&&e.target.n.value;if(!v||!v.trim())return;if(f==='add'&&v.trim().startsWith('@')){const mention=v.trim().slice(1).toLocaleLowerCase('es'),ownAlias=String((AU.profile&&AU.profile.alias)||'').toLocaleLowerCase('es');if(AU.user&&(mention==='yo'||(ownAlias&&mention===ownAlias))){addSelfPlayer();return}toast('Selecciona una sugerencia para vincular a tu amigo.');return}
+document.addEventListener('change',e=>{if(e.target.matches('[data-avatar-file]'))uploadAvatar(e.target);if(e.target.matches('[data-club-image]'))uploadClubImage(e.target)});
+document.addEventListener('submit',e=>{e.preventDefault();if(e.target.dataset.f==='profile'){saveProfile(e.target);return}if(e.target.dataset.f==='friend-search'){searchFriends(e.target);return}if(e.target.dataset.f==='save-session'){savePlaySession(e.target);return}if(e.target.dataset.f==='club-create'){createClub(e.target);return}if(e.target.dataset.f==='club-settings'){saveClubSettings(e.target);return}if(e.target.dataset.f==='club-invite'){inviteClubMember(e.target);return}if(e.target.dataset.f==='club-event'){createClubEvent(e.target);return}const f=e.target.dataset.f,v=e.target.n&&e.target.n.value;if(!v||!v.trim())return;if(f==='add'&&v.trim().startsWith('@')){const mention=v.trim().slice(1).toLocaleLowerCase('es'),ownAlias=String((AU.profile&&AU.profile.alias)||'').toLocaleLowerCase('es');if(AU.user&&(mention==='yo'||(ownAlias&&mention===ownAlias))){addSelfPlayer();return}toast('Selecciona una sugerencia para vincular a tu amigo.');return}
   const r=addNames(v);if(r.added&&f==='addlive')replan('Jugador añadido.');
   if(r.dups.length)nerr=dupMsg(r.dups,r.added);
   save();render();
@@ -1164,7 +1176,7 @@ if(typeof window!=='undefined'&&typeof document!=='undefined'){
       if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))AU.profileLoading=true;
       if(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED')paintAuth();
       if(u&&(ch||ev==='INITIAL_SESSION'))watchFriendships(u.id);
-      if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))setTimeout(()=>{loadProfile(u.id);loadMyHistory();loadFriends();loadMyAchievements();if(view==='clubs')loadClubs()},0);
+      if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))setTimeout(()=>{loadProfile(u.id);loadMyHistory();loadFriends();loadMyAchievements();if(view==='clubs')loadClubs();redeemClubInviteFromUrl()},0);
       if(u&&ch&&AU.oauth&&ev==='SIGNED_IN'){AU.oauth=false;toast('Sesión iniciada como '+auName(u))}});
     setTimeout(()=>{if(!AU.ready){AU.ready=true;paintAuth()}},4000)}
   catch(e){sbc=null;console.warn('[auth] onAuthStateChange:',e&&e.message)}}
