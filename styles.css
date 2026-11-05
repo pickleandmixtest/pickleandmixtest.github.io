@@ -904,7 +904,7 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 
 /* Clubes: navegación entre Mis Clubes y Explorar */
 .clubs-section-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:5px;border:1px solid #e1e9f2;border-radius:15px;background:#f1f5fa}
-.clubs-section-tabs button{display:flex;align-items:center;justify-content:center;gap:8px;min-width:0;min-height:43px;padding:9px 12px;border:0;border-radius:11px;background:transparent;color:#687b91;font:800 13px inherit;cursor:pointer;transition:background .18s,color .18s,box-shadow .18s}
+.clubs-section-tabs button{display:flex;align-items:center;justify-content:center;gap:8px;min-width:0;min-height:43px;padding:9px 12px;border:0;border-radius:11px;background:transparent;color:#687b91;font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;transition:background .18s,color .18s,box-shadow .18s}
 .clubs-section-tabs button.active{background:#fff;color:#173b68;box-shadow:0 2px 7px rgba(24,53,87,.11)}
 .clubs-section-tabs button small{display:grid;place-items:center;min-width:21px;height:21px;padding:0 6px;border-radius:99px;background:#e9eff7;color:#31547b;font-size:10px;font-weight:900}
 .clubs-section-tabs button.active small{background:#e6f0ff;color:#245c9e}
