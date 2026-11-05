@@ -426,7 +426,7 @@ async function savePlaySession(form){
   try{
     const {data,error}=await sbc.rpc('save_play_session',{p_title:title,p_mode:FX()?'fixed':'rot',p_points:S.settings.points,p_courts:S.settings.courts,p_self_player_id:selfId,p_players:players,p_matches:matches});
     if(error)throw error;
-    S.savedSessionId=data;save();toast('Quedada guardada en tu historial.');render();loadMyHistory();
+    S.savedSessionId=data;save();const invited=players.filter(p=>p.user_id&&p.user_id!==AU.user.id).length;toast(invited?'Quedada guardada. Se ha avisado a '+invited+' amigo'+(invited===1?'':'s')+' para confirmar su participación.':'Quedada guardada en tu historial.');render();loadMyHistory();
   }catch(error){console.warn('[history] save:',error&&error.message);if(btn){btn.disabled=false;btn.textContent='Guardar quedada'}toast('No se ha podido guardar la quedada. Comprueba la conexión e inténtalo de nuevo.')}
 }
 async function loadSessionInvitations(uid){
@@ -954,7 +954,7 @@ if(typeof window!=='undefined'&&typeof document!=='undefined'){
     /* Solo se repinta la tarjeta y la cabecera (no toda la app) y solo si cambia la persona: así un refresco de token no interrumpe lo que se esté escribiendo */
     sbc.auth.onAuthStateChange((ev,ses)=>{const u=(ses&&ses.user)||null,was=AU.user&&AU.user.id,ch=(u&&u.id)!==was;
       AU.user=u;AU.ready=true;AU.busy=false;if(u)AU.err='';
-      if(ch&&!u){watchFriendships(null);AU.profile=null;AU.profileErr='';AU.profileLoading=false;HIST.loaded=false;HIST.items=[];HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0}}
+      if(ch){HIST.invites=[];HIST.inviteBusy='';HIST.items=[];HIST.loaded=false;HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0}}\n      if(ch&&!u){watchFriendships(null);AU.profile=null;AU.profileErr='';AU.profileLoading=false;HIST.loaded=false;HIST.items=[];HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0}}
       if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))AU.profileLoading=true;
       if(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED')paintAuth();
       if(u&&(ch||ev==='INITIAL_SESSION'))watchFriendships(u.id);
