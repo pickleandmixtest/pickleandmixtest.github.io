@@ -800,7 +800,8 @@ document.addEventListener('click',e=>{
   // Navegación explícita: no depende de las acciones genéricas del resto de la app.
   if(d.a==='friends'){view='friends';FR.error='';render();loadFriends();return}
   if(d.a==='profile'){view='profile';AU.profileSettingsOpen=false;render();if(AU.user){loadMyHistory();loadFriends()}return}
-  if(d.sessionResponse){respondSessionInvitation(d.sessionResponse,d.id);return}\n  if(d.fa){friendAction(d.fa,d.id);return}
+  if(d.sessionResponse){respondSessionInvitation(d.sessionResponse,d.id);return}
+  if(d.fa){friendAction(d.fa,d.id);return}
   if(d.addself!==undefined){addSelfPlayer();return}
   if(d.linkplayer){const friend=linkedFriends().find(p=>p.id===d.linkplayer);if(friend&&!S.players.some(p=>p.userId===friend.id)){let name=(friend.display_name||friend.alias||'Jugador').slice(0,24);if(nameTaken(name))name=('@'+(friend.alias||friend.display_name||'amigo')).slice(0,24);S.players.push({id:S.nid++,name,userId:friend.id,status:'active'});save()}else if(friend)toast('Ese amigo ya está en la quedada.');render();return}
   if(d.up){openUserProfile(d.up);return}
