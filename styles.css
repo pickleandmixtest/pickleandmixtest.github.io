@@ -558,3 +558,19 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 @media(max-width:520px){.achievement-modal{padding:15px;border-radius:18px}.achievement-catalog-grid{grid-template-columns:1fr}.achievement-modal-backdrop{padding:9px}.profile-hero .achievement-medal-row{gap:5px}}
 
 .achievement-medal-launch{display:flex;flex-direction:column;align-items:flex-start;gap:6px;max-width:100%;padding:0;border:0;background:transparent;color:#173454;text-align:left;cursor:pointer}.achievement-medal-launch:hover .achievement-medal{transform:translateY(-2px)}
+
+
+/* Mi perfil: reducir el espacio vertical entre bloques */
+.profile-dashboard{gap:8px}
+.profile-dashboard>.card{margin:0}
+.profile-dashboard>.profile-stat-block{margin:0}
+.profile-dashboard>.profile-hero{gap:11px;padding:15px}
+.profile-dashboard>.achievement-profile-card{padding:10px 13px}
+.profile-dashboard>.profile-notifications{padding:0}
+.profile-dashboard>.profile-community{padding:11px 13px}
+.profile-dashboard>.profile-activity-card{padding:12px}
+.profile-dashboard>.session-invites{padding:12px;gap:8px}
+.profile-dashboard>.profile-stat-block{gap:6px}
+.profile-dashboard .profile-metrics{gap:7px}
+.profile-dashboard .profile-metric{min-height:84px;padding:8px 5px}
+.profile-dashboard .profile-section-title{margin-bottom:0}
