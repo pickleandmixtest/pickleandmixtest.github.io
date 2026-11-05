@@ -166,3 +166,20 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .profile-settings-head{margin-bottom:12px}
 .profile-settings-head .btn{width:auto;min-height:38px;margin:0;padding:6px 12px;font-size:13px}
 @media(max-width:380px){.profile-identity{align-items:flex-start;flex-wrap:wrap}.profile-settings-btn{width:100%}.profile-metric span{font-size:11px}}
+
+/* Amigos y conexiones */
+.friend-search label{display:block;margin-bottom:8px;font-weight:800;color:var(--court)}
+.friend-search .row{display:flex;gap:8px}
+.friend-search .row input{flex:1;min-width:0}
+.friend-search small{display:block;margin-top:8px;color:var(--mut);font-size:12px;line-height:1.4}
+.friend-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #e1e8f1}
+.friend-row:last-child{border-bottom:0}
+.friend-person{display:flex;align-items:center;gap:10px;min-width:0}
+.friend-person .av{width:42px;height:42px;font-size:17px;object-fit:cover}
+.friend-person-info{display:flex;flex-direction:column;gap:3px;min-width:0}
+.friend-person-info b{max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--court)}
+.friend-person-info .mut{font-size:12px}
+.friend-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.friend-row .btn{width:auto;min-height:34px;margin:0;padding:6px 10px;font-size:12px}
+.friend-row .tag{flex:none}
+@media(max-width:360px){.friend-row{align-items:flex-start}.friend-actions{max-width:118px}}
