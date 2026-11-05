@@ -553,3 +553,5 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .notification-item.is-unread b:after{content:" NUEVA";font-size:8px;color:#68851f;letter-spacing:.05em}
 .notifications-read-all{width:auto;margin:12px 0 0}
 @media(max-width:520px){.achievement-modal{padding:15px;border-radius:18px}.achievement-catalog-grid{grid-template-columns:1fr}.achievement-modal-backdrop{padding:9px}.profile-hero .achievement-medal-row{gap:5px}}
+
+.achievement-medal-launch{display:flex;flex-direction:column;align-items:flex-start;gap:6px;max-width:100%;padding:0;border:0;background:transparent;color:#173454;text-align:left;cursor:pointer}.achievement-medal-launch:hover .achievement-medal{transform:translateY(-2px)}
