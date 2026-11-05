@@ -667,3 +667,17 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .account-chip-icon{display:grid;place-items:center;width:38px;height:38px;flex:none;border-radius:50%;background:var(--ball);color:var(--court);font-size:20px;font-weight:900}
 .account-chip-chevron{font-size:22px;line-height:1;color:#d4f53c}
 @media(max-width:520px){.account-chip{gap:6px;min-height:38px;padding:2px 5px 2px 2px;font-size:12px}.account-chip .av,.account-chip-icon{width:34px;height:34px}.account-chip .nm{max-width:76px}.mark{padding-right:120px}}
+
+
+/* Cabecera: marca y acceso al perfil en una misma fila */
+.top{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:10px;row-gap:9px}
+.mark{min-width:0;margin:0;padding:0!important;white-space:nowrap;font-size:clamp(21px,6vw,26px)}
+.who{position:static;top:auto;right:auto;height:auto;max-width:100%;min-width:0;justify-self:end;display:flex;align-items:center}
+.who:empty{display:flex}
+.account-chip{gap:6px;min-height:36px;padding:2px 5px 2px 2px;font-size:12px}
+.account-chip .av,.account-chip-icon{width:32px;height:32px}
+.account-chip .av{box-shadow:0 0 0 2px var(--ball)}
+.account-chip .nm{max-width:72px}
+.account-chip-chevron{font-size:18px}
+.tabs{grid-column:1/-1;min-width:0}
+@media(max-width:360px){.top{column-gap:6px}.mark{font-size:21px}.account-chip{gap:4px;padding-right:2px}.account-chip .nm{max-width:58px}.account-chip-chevron{display:none}}
