@@ -782,6 +782,20 @@ function vSetup(){
     <section class="party-start-panel"><div class="party-start-stats"><div><b>${n}</b><span>Jugadores</span></div>${FX()?'':`<div><b>${c.cycles}</b><span>Ciclos</span></div>`}<div><b>${tot}</b><span>Partidos previstos</span></div></div><p>La planificación es orientativa y puede variar según los descansos y el desarrollo de la quedada.</p><button class="btn ball" data-a="start" ${n<4?'disabled':''}>Generar partidos <span aria-hidden="true">→</span></button><button class="btn ghost" data-a="home">Volver al inicio</button></section>
   </main>`
 }
+function vGame(){
+  const lv=live(),em=ed&&S.matches.find(x=>x.id===ed),m=em||lv.find(x=>x.court===ct)||lv[0];if(m&&!em)ct=m.court;
+  if(!m)return`<div class="logo">¡FIN!</div><div class="note tip"><b>🎉 No quedan partidos pendientes.</b><br>Mira el resumen final o empieza una nueva quedada.</div><button class="btn ball" data-a="final">Ver resumen final</button>${S.started&&S.matches.length?'<button class="btn ghost" data-a="repeat">Repetir con los mismos jugadores</button><button class="btn red" data-a="reset">Nueva quedada (borra todo)</button>':''}<nav><button class="btn ghost sm" data-a="more">Jugadores</button></nav>`;
+  tmp=SC[m.id]||(SC[m.id]={id:m.id,a:m.sa??0,b:m.sb??0});
+  const idx=S.matches.indexOf(m)+1,nx=pending().find(x=>x!==m&&!lv.includes(x)),
+  ctabs=!em&&lv.length>1?`<div class="ctabs" role="tablist" aria-label="Pistas en juego">${lv.map(x=>{const t=SC[x.id];return`<button role="tab" data-ct="${x.court}" aria-selected="${x===m}"><b>Pista ${x.court}</b><small>${t&&(t.a||t.b)?t.a+' - '+t.b:'en juego'}</small></button>`}).join('')}</div>`:'',tm=(t,c,l)=>`<div class="team ${c}"><div class="mut" style="color:#fff">${l}</div><div class="n">${t.map(i=>esc(nameOf(i))).join('<br>')}</div><div class="sc"><button data-sc="${c}-1" aria-label="Restar">−</button><output>${tmp[c]}</output><button data-sc="${c}1" aria-label="Sumar">+</button></div></div>`;
+  return`${ctabs}<div class="head"><h2>Partido ${idx}</h2><span class="chip">${FX()?(m.lbl||'Grupo A'):'Ciclo '+m.cycle} · Pista ${m.court}</span></div>${bar()}
+  ${tm(m.a,'a','Pareja A')}<div class="vs">contra</div>${tm(m.b,'b','Pareja B')}
+  <button class="btn ball" data-a="ok">${m.status==='done'?'Guardar corrección':'Confirmar resultado'}</button>
+  <div class="row">${m.ph==='ko'?'':'<button class="btn ghost" data-a="skip">Saltar partido</button>'}${m.status==='done'?'<button class="btn ghost" data-a="cancel">Cancelar</button>':''}</div>
+  ${nx?`<div class="card pend"><span class="mut">${lv.length>1?'En cola:':'Después:'}</span><br><b>${nx.a.map(nameOf).map(esc).join(' y ')}</b> vs <b>${nx.b.map(nameOf).map(esc).join(' y ')}</b></div>`:''}
+  ${!em&&nx&&lv.length<S.settings.courts?'<div class="note">⏳ <b>Hay una pista libre:</b> el siguiente partido necesita a jugadores que todavía están en pista. Empezará cuando terminen.</div>':''}
+  ${FX()?fxFlow():''}
+  <nav><button class="btn ghost sm" data-a="more">Jugadores</button></nav>`}
 function vMore(){
   const done=S.matches.filter(m=>m.status!=='pending');
   return`<h2>Jugadores</h2><div class="note">${FX()?'✏️ <b>Parejas fijas:</b> aquí puedes corregir nombres y resultados.':'🔄 <b>Cualquier cambio</b> recalcula solo los partidos pendientes.'}</div>
