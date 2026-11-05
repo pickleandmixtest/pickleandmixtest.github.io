@@ -628,8 +628,9 @@ if(typeof window!=='undefined'&&typeof document!=='undefined'){
     sbc.auth.onAuthStateChange((ev,ses)=>{const u=(ses&&ses.user)||null,was=AU.user&&AU.user.id,ch=(u&&u.id)!==was;
       AU.user=u;AU.ready=true;AU.busy=false;if(u)AU.err='';
       if(ch&&!u){AU.profile=null;AU.profileErr='';AU.profileLoading=false}
+      if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))AU.profileLoading=true;
       if(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED')paintAuth();
-      if(u&&(ch||!AU.profile||AU.profile.id!==u.id))setTimeout(()=>loadProfile(u.id),0);
+      if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))setTimeout(()=>loadProfile(u.id),0);
       if(u&&ch&&AU.oauth&&ev==='SIGNED_IN'){AU.oauth=false;toast('Sesión iniciada como '+auName(u))}});
     setTimeout(()=>{if(!AU.ready){AU.ready=true;paintAuth()}},4000)}
   catch(e){sbc=null;console.warn('[auth] onAuthStateChange:',e&&e.message)}}
