@@ -448,3 +448,9 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .games-registered-unlocked .gc-registered{opacity:1}
 .games-registered-unlocked .gc-registered:after{display:none}
 .games-registered-unlocked .gc-registered .tx{padding-bottom:inherit}
+
+/* Navegación secundaria agrupada bajo Partido */
+.party-subnav{display:flex;align-items:center;justify-content:center;gap:7px;padding:0 12px 11px;flex-wrap:wrap}
+.party-subnav button{border:1px solid rgba(18,50,94,.14);border-radius:999px;background:rgba(255,255,255,.72);color:var(--court);padding:7px 13px;font:700 12px inherit;cursor:pointer;transition:background .16s,border-color .16s}
+.party-subnav button[aria-current="page"]{background:var(--court);border-color:var(--court);color:#fff}
+@media(max-width:420px){.party-subnav{gap:5px;padding-bottom:9px}.party-subnav button{padding:7px 10px;font-size:11px}}
