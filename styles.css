@@ -498,3 +498,58 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 
 .club-inbox{padding:14px}.club-inbox h3{margin:0 0 9px}.club-incoming-invite{display:flex;align-items:center;gap:8px;padding:9px 0;border-top:1px solid #edf1f6}.club-incoming-invite>div{display:flex;flex:1;flex-direction:column;gap:3px;min-width:0}.club-incoming-invite b{font-size:12px}.club-incoming-invite small{font-size:10px;color:var(--mut)}.club-incoming-invite .btn{flex:none;width:auto;margin:0}
 @media(max-width:480px){.club-incoming-invite{flex-wrap:wrap}.club-incoming-invite>div{flex-basis:100%}}
+
+/* Insignias como medallas en el banner del perfil */
+.profile-hero .achievement-medal-launch{display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:100%;padding:0;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}
+.achievement-medal-row{display:flex;align-items:center;gap:7px;min-height:36px;flex-wrap:wrap}
+.achievement-medal{width:34px;height:34px;flex:none;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;border:2px solid #f8df87;background:radial-gradient(circle at 35% 25%,#fff4bd 0%,#e9b84b 48%,#a76c18 100%);box-shadow:0 2px 5px rgba(0,0,0,.22),inset 0 0 0 2px rgba(255,255,255,.55);color:#54360e;position:relative}
+.achievement-medal b{font-size:10px;font-weight:900;letter-spacing:-.5px}
+.achievement-medal-more{font-size:11px;font-weight:900;color:#fff;padding:5px 8px;border-radius:20px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.22)}
+.achievement-medal-empty{font-size:11px;color:#d5e2f0}
+.achievement-medal-caption{display:flex;align-items:center;gap:8px;font-size:10px;color:#d4e2f1}
+.achievement-medal-caption b{color:#e5f59a;font-size:10px}
+.achievement-medal-launch:hover .achievement-medal{transform:translateY(-2px)}
+.achievement-medal{transition:transform .16s ease}
+.achievement-modal-backdrop{position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(8,20,38,.72);backdrop-filter:blur(5px)}
+.achievement-modal{width:min(680px,100%);max-height:min(84vh,850px);overflow:auto;padding:20px;border-radius:22px;background:#fff;color:#142d4b;box-shadow:0 22px 70px rgba(0,0,0,.32)}
+.achievement-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:15px}
+.achievement-modal-head h3{margin:3px 0 0;font-size:22px;color:#12325e}
+.achievement-modal-close{width:34px;height:34px;border:0;border-radius:50%;background:#edf2f7;color:#12325e;font-size:24px;line-height:1;cursor:pointer}
+.achievement-level-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 15px;border-radius:14px;background:linear-gradient(110deg,#12325e,#235587);color:#fff}
+.achievement-level-summary>div{display:flex;flex-direction:column;gap:3px}
+.achievement-level-summary small{color:#d6e7f7;font-size:9px;font-weight:900;letter-spacing:.12em}
+.achievement-level-summary b{font-size:17px}
+.achievement-level-summary span{color:#d6e7f7;font-size:11px}
+.achievement-level-summary>strong{font-size:18px}
+.achievement-modal .achievement-progress{height:7px;margin:9px 0 17px;border-radius:9px;background:#e8eef5;overflow:hidden}
+.achievement-modal .achievement-progress i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#b3d936,#e7bd4b)}
+.achievement-group{margin-top:16px}
+.achievement-group h4{margin:0 0 9px;color:#12325e;font-size:13px}
+.achievement-catalog-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.achievement-catalog-item{display:flex;align-items:center;gap:10px;min-width:0;padding:10px;border:1px solid #e5ebf2;border-radius:13px;background:#fbfcfe}
+.achievement-catalog-item>div{display:flex;flex-direction:column;gap:3px;min-width:0}
+.achievement-catalog-item>div>b{font-size:11px;color:#173454}
+.achievement-catalog-item small{font-size:10px;line-height:1.35;color:#5d6d7e}
+.achievement-catalog-item em{font-size:9px;font-style:normal;font-weight:800;color:#8794a3}
+.achievement-catalog-item .achievement-medal{width:37px;height:37px}
+.achievement-medal.locked{filter:grayscale(1);opacity:.35;background:#dce2e9;border-color:#c5ced8;box-shadow:inset 0 0 0 2px rgba(255,255,255,.7)}
+.achievement-catalog-item.is-earned{border-color:#eadba9;background:#fffdf6}
+.profile-notifications{padding:0;overflow:hidden;border:1px solid #e2eaf2;border-radius:16px}
+.notifications-heading{display:flex;align-items:center;gap:11px;width:100%;padding:14px 15px;border:0;background:#fff;color:#12325e;text-align:left;cursor:pointer}
+.notifications-heading>span:nth-child(2){display:flex;flex:1;flex-direction:column;gap:3px}
+.notifications-heading b{font-size:13px}
+.notifications-heading small{font-size:10px;color:#7a8796}
+.notifications-heading-icon{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:11px;background:#eef5d7;color:#59751b;font-size:17px}
+.notifications-count{min-width:21px;padding:3px 6px;border-radius:20px;background:#e8f2c7;color:#49621a;font-size:10px;font-weight:900;text-align:center}
+.notifications-chevron{font-size:20px;color:#718196}
+.notifications-content{padding:0 15px 13px;border-top:1px solid #edf1f5}
+.notification-item{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:1px solid #edf1f5}
+.notification-symbol{width:29px;height:29px;flex:none;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#f6edce;color:#8b6518;font-weight:900}
+.notification-item>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.notification-item b{font-size:11px;color:#183554}
+.notification-item p{margin:0;font-size:10px;line-height:1.4;color:#637386}
+.notification-item small{font-size:9px;color:#8b97a4}
+.notification-item.is-unread{background:linear-gradient(90deg,#fbfdf5,transparent);border-radius:9px}
+.notification-item.is-unread b:after{content:" NUEVA";font-size:8px;color:#68851f;letter-spacing:.05em}
+.notifications-read-all{width:auto;margin:12px 0 0}
+@media(max-width:520px){.achievement-modal{padding:15px;border-radius:18px}.achievement-catalog-grid{grid-template-columns:1fr}.achievement-modal-backdrop{padding:9px}.profile-hero .achievement-medal-row{gap:5px}}
