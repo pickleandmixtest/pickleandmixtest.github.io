@@ -134,3 +134,11 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .profile-form small{font-size:13px;line-height:1.35;color:var(--mut)}
 .profile-form .hint{margin:5px 0}
 .profile-form button{margin-top:10px}
+
+/* Gestión de foto de perfil */
+.avatar-tools{margin:14px 0 4px;padding-top:12px;border-top:1px solid #e1e8f1}
+.avatar-tools>label{display:block;font-weight:800;color:var(--court);margin-bottom:8px}
+.avatar-actions{display:flex;flex-direction:column;gap:6px}
+.avatar-actions input{padding:9px;min-height:44px;font-size:14px}
+.avatar-actions small{font-size:13px;color:var(--mut)}
+.avatar-actions .btn{margin:4px 0 0}
