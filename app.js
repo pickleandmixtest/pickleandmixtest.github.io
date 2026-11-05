@@ -193,7 +193,7 @@ const HIST={items:[],sessions:[],selectedSessionId:null,invites:[],inviteBusy:''
 const PUB={id:null,profile:null,stats:null,history:[],achievements:null,error:'',loading:false,statsHidden:false,historyHidden:false};
 const ACH={summary:null,loading:false,error:''};
 const FR={items:[],people:[],query:'',results:[],loading:false,searching:false,error:'',loaded:false,ranking:[],rankingLoading:false,activity:[],activityLoading:false,busy:'',panel:''};
-const CL={items:[],members:[],people:[],selectedId:null,loading:false,error:'',busy:'',createOpen:false};
+const CL={items:[],members:[],people:[],selectedId:null,loading:false,error:'',busy:'',createOpen:false,requests:[],invitations:[],links:[],events:[],registrations:[],inviteUrl:'',eventOpen:false,settingsOpen:false,inviteRedeemBusy:false};
 const ACH_BADGES=[
 {id:'first_match',title:'Primera pala',desc:'Juega tu primer partido',group:'Actividad',mark:'01'},
 {id:'matches_10',title:'Calentando motores',desc:'Completa 10 partidos',group:'Actividad',mark:'10'},
