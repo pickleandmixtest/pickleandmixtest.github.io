@@ -1070,7 +1070,7 @@ async function showMiniGameLeaderboard(game){
     list.innerHTML=data.map((row,i)=>`<div class="mini-lb-row"><span class="mini-lb-pos">${i+1}</span><b>${miniGameEscape(row.player_name)}</b><strong>${Number(row.score).toLocaleString('es-ES')}</strong><time>${row.updated_at?new Date(row.updated_at).toLocaleDateString('es-ES'):''}</time></div>`).join('');
   }catch(error){panel.querySelector('.mini-lb-list').innerHTML='<p class="mini-lb-empty">No se ha podido cargar el ranking. Inténtalo de nuevo.</p>';console.warn('[minigames] leaderboard:',error&&error.message)}
 }
-function openGame(id){if($('#ov'))return;const src=document.getElementById('g-'+id);if(!src)return;
+function openGame(id){if((id==='kitchen'||id==='dink')&&!AU.user){toast('Este minijuego es exclusivo para usuarios registrados. Inicia sesión para jugar.');return}if($('#ov'))return;const src=document.getElementById('g-'+id);if(!src)return;
   const o=document.createElement('div');o.id='ov';o.dataset.game=id;o.className='ov';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');o.setAttribute('aria-label',GN[id]);
   o.innerHTML=`<div class="ovh"><span>${GN[id]}</span><div class="ov-actions">${id==='pairs'?'':'<button class=\"btn sm\" data-lb>Top 10</button>'}<button class="btn sm red" data-a="closeg">Cerrar ✕</button></div></div><iframe title="${GN[id]}" allow="autoplay"></iframe>`;
   const f=o.querySelector('iframe');
