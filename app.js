@@ -8,7 +8,8 @@ const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
 const ROUTE_TO_VIEW={inicio:'home',preparar:'setup',partido:'game',jugadores:'more',resumen:'final',perfil:'profile',amigos:'friends',historial:'history',quedadas:'sessions',clubes:'clubs',admin:'admin'};
 const VIEW_TO_ROUTE={home:'inicio',setup:'preparar',game:'partido',more:'jugadores',final:'resumen',profile:'perfil',friends:'amigos',history:'historial',sessions:'quedadas','session-detail':'quedadas','user-profile':'amigos',clubs:'clubes','club-detail':'clubes',admin:'admin'};
 const initialRoute=location.hash.replace(/^#\/?/,'').toLowerCase();
-let view=ROUTE_TO_VIEW[initialRoute]||(S.started?'game':'home'),tmp=null,msg='',err='',nerr='',ed=null,ct=1,SC={};
+const initialClubId=initialRoute.startsWith('clubes/')?decodeURIComponent(initialRoute.slice(7)):null;
+let view=initialClubId?'club-detail':(ROUTE_TO_VIEW[initialRoute]||(S.started?'game':'home')),tmp=null,msg='',err='',nerr='',ed=null,ct=1,SC={};
 const nameErrBox=()=>nerr?`<div class="err">${esc(nerr)}</div>`:'';
 
 /* ---------- Algoritmo de rotación ---------- */
@@ -182,7 +183,7 @@ const bar=()=>{const t=S.matches.length,d=S.matches.filter(m=>m.status!=='pendin
 /* Pie de página: visible en todas las pestañas */
 const foot=()=>`<p class="mut foot">Plataforma para pickleballers creada por <a href="https://kikebarcelodg.github.io/" target="_blank" rel="noopener">KBDG</a></p>`;
 function render(){
-  const route='#'+(VIEW_TO_ROUTE[view]||'inicio');
+  const route=view==='club-detail'&&CL.selectedId?'#clubes/'+encodeURIComponent(CL.selectedId):'#'+(VIEW_TO_ROUTE[view]||'inicio');
   if(location.hash!==route)history.replaceState(null,'',location.pathname+location.search+route);
   const f={home:vHome,setup:vSetup,game:vGame,more:vMore,final:vFinal,profile:vProfile,friends:vFriends,history:vHistory,sessions:vSessions,'session-detail':vSessionDetail,'user-profile':vUserProfile,clubs:vClubs,'club-detail':vClubDetail,admin:vAdmin}[view];
   $('#app').innerHTML=header()+f()+(err?`<div class="err">${esc(err)}</div>`:'')+foot();err='';nerr='';if(view==='home')initPong('pong',null,true);
@@ -193,7 +194,7 @@ const HIST={items:[],sessions:[],selectedSessionId:null,invites:[],inviteBusy:''
 const PUB={id:null,profile:null,stats:null,history:[],achievements:null,error:'',loading:false,statsHidden:false,historyHidden:false};
 const ACH={summary:null,loading:false,error:'',open:false,publicMode:false,notifications:[],notificationsOpen:false};
 const FR={items:[],people:[],query:'',results:[],loading:false,searching:false,error:'',loaded:false,ranking:[],rankingLoading:false,activity:[],activityLoading:false,busy:'',panel:''};
-const CL={items:[],members:[],people:[],selectedId:null,loading:false,error:'',busy:'',createOpen:false,requests:[],invitations:[],links:[],events:[],registrations:[],inviteUrl:'',eventOpen:false,settingsOpen:false,inviteRedeemBusy:false,myRequest:null,incomingInvites:[]};
+const CL={items:[],members:[],people:[],selectedId:initialClubId,loading:false,error:'',busy:'',createOpen:false,requests:[],invitations:[],links:[],events:[],registrations:[],inviteUrl:'',eventOpen:false,settingsOpen:false,inviteRedeemBusy:false,myRequest:null,incomingInvites:[]};
 const ADMIN={isAdmin:false,role:'',tab:'dashboard',users:[],clubs:[],admins:[],audit:[],activity:[],activityTag:'all',analytics:null,analyticsRange:30,page:1,busy:false,error:''};
 const MATCH_CLUBS={items:[],loading:false,loaded:false,open:false,busy:false,selected:''};
 const ACH_BADGES=[
@@ -387,7 +388,7 @@ async function loadClubs(){
     const ids=[...new Set(CL.members.map(m=>m.user_id))];
     if(ids.length){const p=await sbc.from('profiles').select('id,display_name,alias,avatar_url').in('id',ids);if(p.error)throw p.error;CL.people=p.data||[]}else CL.people=[];
   }catch(error){console.warn('[clubs] load:',error&&error.message);CL.error='No se han podido cargar los clubes. Inténtalo de nuevo.'}
-  finally{CL.loading=false;paintClubs()}
+  finally{CL.loading=false;paintClubs();if(view==='club-detail'&&CL.selectedId&&CL.items.some(c=>c.id===CL.selectedId))loadClubData(CL.selectedId)}
 }
 function clubPerson(id){return CL.people.find(p=>p.id===id)||{id,display_name:'Jugador',alias:''}}
 function clubMember(clubId,userId){return CL.members.find(m=>m.club_id===clubId&&m.user_id===userId)}
@@ -1281,7 +1282,7 @@ if(typeof window!=='undefined'&&typeof document!=='undefined'){
       if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))AU.profileLoading=true;
       if(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'){if(view==='home')render();else paintAuth();setTimeout(checkAdminAccess,0)}
       if(u&&(ch||ev==='INITIAL_SESSION'))watchFriendships(u.id);
-      if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))setTimeout(()=>{loadProfile(u.id);loadMyHistory();loadFriends();loadMyAchievements();if(view==='clubs')loadClubs();redeemClubInviteFromUrl()},0);
+      if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))setTimeout(()=>{loadProfile(u.id);loadMyHistory();loadFriends();loadMyAchievements();if(view==='clubs'||view==='club-detail')loadClubs();redeemClubInviteFromUrl()},0);
       if(u&&ch&&AU.oauth&&ev==='SIGNED_IN'){AU.oauth=false;toast('Sesión iniciada como '+auName(u))}});
     setTimeout(()=>{if(!AU.ready){AU.ready=true;paintAuth()}},4000)}
   catch(e){sbc=null;console.warn('[auth] onAuthStateChange:',e&&e.message)}}
@@ -1290,8 +1291,8 @@ if(typeof window!=='undefined'&&typeof document!=='undefined'){
   document.addEventListener('error',e=>{const t=e.target;if(t&&t.tagName==='IMG'&&t.classList.contains('av')){const s=document.createElement('span');s.className='av';s.setAttribute('aria-hidden','true');s.textContent=t.dataset.i||'?';t.replaceWith(s)}},true);
 }
 if(typeof window!=='undefined')window.addEventListener('hashchange',()=>{
-  const route=location.hash.replace(/^#\/?/,'').toLowerCase(),next=ROUTE_TO_VIEW[route];
-  if(next&&next!==view){view=next;ed=null;render();if(next==='clubs'&&AU.user)loadClubs()}
+  const route=location.hash.replace(/^#\/?/,'').toLowerCase(),clubId=route.startsWith('clubes/')?decodeURIComponent(route.slice(7)):null,next=clubId?'club-detail':ROUTE_TO_VIEW[route];
+  if(next&&(next!==view||(next==='club-detail'&&clubId!==CL.selectedId))){view=next;ed=null;CL.selectedId=clubId||null;render();if((next==='clubs'||next==='club-detail')&&AU.user){if(!CL.items.length)loadClubs();else if(clubId)loadClubData(clubId)}}
 });
 if(typeof document!=='undefined'&&document.getElementById('app'))render();
 if(typeof module!=='undefined')module.exports={gen,trial,genQ,rotInfo};
