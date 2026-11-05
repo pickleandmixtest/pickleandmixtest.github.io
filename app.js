@@ -5,8 +5,8 @@ const fresh=()=>({players:[],settings:{courts:1,points:11,cycles:3,mode:'rot',pa
 function valid(d){return d&&Array.isArray(d.players)&&Array.isArray(d.matches)&&d.settings&&d.players.every(p=>p&&typeof p.id=='number'&&typeof p.name=='string')&&d.matches.every(m=>m&&Array.isArray(m.a)&&Array.isArray(m.b)&&m.a.length==2&&m.b.length==2&&['pending','done','skipped'].includes(m.status))&&(d.settings.mode!=='fixed'||Array.isArray(d.teams))&&['courts','points','cycles'].every(k=>Number.isInteger(d.settings[k])&&d.settings[k]>0)}
 let S=fresh();try{const d=JSON.parse(localStorage.getItem(K));if(valid(d)){S=d;if(!S.started&&S.settings.points===7)S.settings.points=11}}catch(e){}
 const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
-const ROUTE_TO_VIEW={inicio:'home',preparar:'setup',partido:'game',jugadores:'more',resumen:'final',perfil:'profile',amigos:'friends',historial:'history'};
-const VIEW_TO_ROUTE={home:'inicio',setup:'preparar',game:'partido',more:'jugadores',final:'resumen',profile:'perfil',friends:'amigos',history:'historial','user-profile':'amigos'};
+const ROUTE_TO_VIEW={inicio:'home',preparar:'setup',partido:'game',jugadores:'more',resumen:'final',perfil:'profile',amigos:'friends',historial:'history',quedadas:'sessions'};
+const VIEW_TO_ROUTE={home:'inicio',setup:'preparar',game:'partido',more:'jugadores',final:'resumen',profile:'perfil',friends:'amigos',history:'historial',sessions:'quedadas','session-detail':'quedadas','user-profile':'amigos'};
 const initialRoute=location.hash.replace(/^#\/?/,'').toLowerCase();
 let view=ROUTE_TO_VIEW[initialRoute]||(S.started?'game':'home'),tmp=null,msg='',err='',nerr='',ed=null,ct=1,SC={};
 const nameErrBox=()=>nerr?`<div class="err">${esc(nerr)}</div>`:'';
@@ -184,12 +184,12 @@ const foot=()=>`<p class="mut foot">Plataforma para pickleballers creada por <a 
 function render(){
   const route='#'+(VIEW_TO_ROUTE[view]||'inicio');
   if(location.hash!==route)history.replaceState(null,'',location.pathname+location.search+route);
-  const f={home:vHome,setup:vSetup,game:vGame,more:vMore,final:vFinal,profile:vProfile,friends:vFriends,history:vHistory,'user-profile':vUserProfile}[view];
+  const f={home:vHome,setup:vSetup,game:vGame,more:vMore,final:vFinal,profile:vProfile,friends:vFriends,history:vHistory,sessions:vSessions,'session-detail':vSessionDetail,'user-profile':vUserProfile}[view];
   $('#app').innerHTML=header()+f()+(err?`<div class="err">${esc(err)}</div>`:'')+foot();err='';nerr='';if(view==='home')initPong('pong',null,true);
   if(msg){toast(msg);msg=''}
 }
 let PG={u:0,c:0};
-const HIST={items:[],invites:[],inviteBusy:'',stats:{played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0},loading:false,error:'',loaded:false};
+const HIST={items:[],sessions:[],selectedSessionId:null,invites:[],inviteBusy:'',stats:{played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0},loading:false,error:'',loaded:false};
 const PUB={id:null,profile:null,stats:null,history:[],error:'',loading:false,statsHidden:false,historyHidden:false};
 const FR={items:[],people:[],query:'',results:[],loading:false,searching:false,error:'',loaded:false,ranking:[],rankingLoading:false,activity:[],activityLoading:false,busy:''};
 function initPong(cid,hid,pre){
@@ -398,6 +398,17 @@ async function friendAction(action,id){
 function historyRow(item){
   return '<div class="history-row"><div><b>'+esc(item.sessionTitle)+'</b><span class="mut">'+new Date(item.playedAt).toLocaleDateString('es-ES')+' · Partido '+item.matchNumber+'</span><small>'+esc(item.teammates.join(' / '))+' vs '+esc(item.opponents.join(' / '))+'</small></div><strong class="'+(item.won?'win':'loss')+'">'+item.ownScore+'–'+item.oppScore+'</strong></div>';
 }
+function vSessions(){
+  if(!AU.user)return '<h2>Mis quedadas</h2><p class="lead">Inicia sesión para consultar tus quedadas guardadas.</p><div class="card acct">'+authInner()+'</div>';
+  if(HIST.loading)return '<h2>Mis quedadas</h2><div class="card"><p class="hint">Cargando tus quedadas…</p></div>';
+  if(HIST.error)return '<h2>Mis quedadas</h2><div class="card err">'+esc(HIST.error)+'</div><button class="btn ghost" data-a="profile">Volver a Mi perfil</button>';
+  const cards=HIST.sessions.map(s=>'<button class="session-grid-card" data-session-open="'+s.id+'"><span class="session-grid-date">'+(s.createdAt?new Date(s.createdAt).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}):'Fecha no disponible')+'</span><b>'+esc(s.title)+'</b><span class="session-grid-meta">'+s.played+' partidos · '+s.wins+' victorias</span><span class="session-grid-bottom"><span class="tag">'+(s.mode==='fixed'?'Parejas fijas':'Parejas rotatorias')+'</span><span class="session-grid-arrow">›</span></span></button>').join('');
+  return '<div class="sessions-page"><div class="sessions-page-head"><div><h2>Mis quedadas</h2><p class="lead">Tu registro de quedadas, con sus resultados y participantes.</p></div><span class="sessions-total">'+HIST.sessions.length+'</span></div>'+(cards?'<div class="session-grid">'+cards+'</div>':'<div class="card empty"><b>Aún no tienes quedadas guardadas</b><br>Cuando guardes una quedada, aparecerá aquí.</div>')+'<button class="btn ghost" data-a="profile">Volver a Mi perfil</button></div>';
+}
+function vSessionDetail(){
+  const s=HIST.sessions.find(x=>x.id===HIST.selectedSessionId);if(!s)return vSessions();
+  return '<div class="sessions-page"><button class="btn sm ghost sessions-back" data-a="sessions">← Todas las quedadas</button><section class="card session-detail-hero"><span class="section-kicker">DETALLE DE LA QUEDADA</span><h2>'+esc(s.title)+'</h2><p class="lead">'+(s.createdAt?new Date(s.createdAt).toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}):'Fecha no disponible')+' · '+(s.mode==='fixed'?'Parejas fijas':'Parejas rotatorias')+'</p><div class="session-detail-stats"><div><b>'+s.played+'</b><span>Partidos</span></div><div><b>'+s.wins+'</b><span>Victorias</span></div><div><b>'+s.losses+'</b><span>Derrotas</span></div></div></section><section class="card session-detail-matches"><div class="profile-card-heading"><h3>Resultados</h3><span class="section-kicker">'+s.matches.length+' PARTIDOS</span></div>'+(s.matches.length?s.matches.map(historyRow).join(''):'<p class="empty">Esta quedada no tiene partidos registrados.</p>')+'</section><button class="btn ghost" data-a="sessions">Volver al registro</button></div>';
+}
 function vHistory(){
   if(!AU.user)return '<h2>Mi historial</h2><p class="lead">Inicia sesión para consultar tus partidos guardados.</p><div class="card acct">'+authInner()+'</div>';
   return '<h2>Mi historial</h2><p class="lead">Tus partidos guardados en PICKLE &amp; MIX.</p>'+
@@ -462,40 +473,33 @@ async function respondSessionInvitation(action,id){
 async function loadMyHistory(){
   if(!sbc||!AU.user)return;
   const uid=AU.user.id;HIST.loading=true;HIST.error='';HIST.loaded=false;await loadSessionInvitations(uid);
-  if(view==='history')render();else paintAuth();
+  if(['history','sessions','session-detail'].includes(view))render();else paintAuth();
   try{
     const {data:mine,error:e1}=await sbc.from('play_session_players').select('id,session_id,player_name').eq('user_id',uid).eq('approval_status','accepted');
     if(e1)throw e1;
-    if(!mine||!mine.length){HIST.items=[];HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0};HIST.loaded=true;return}
+    if(!mine||!mine.length){HIST.items=[];HIST.sessions=[];HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0};HIST.loaded=true;return}
     const playerIds=mine.map(x=>x.id),sessionIds=[...new Set(mine.map(x=>x.session_id))];
-    const {data:mineLinks,error:e2}=await sbc.from('play_match_players').select('match_id,session_player_id,side').in('session_player_id',playerIds);
-    if(e2)throw e2;
-    const matchIds=[...new Set((mineLinks||[]).map(x=>x.match_id))];
-    if(!matchIds.length){HIST.items=[];HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:sessionIds.length};HIST.loaded=true;return}
-    const [mr,lr,sr]=await Promise.all([
-      sbc.from('play_session_matches').select('id,session_id,match_number,cycle,court,phase,side_a_score,side_b_score,played_at').in('id',matchIds).order('played_at',{ascending:false}),
-      sbc.from('play_match_players').select('match_id,session_player_id,side').in('match_id',matchIds),
-      sbc.from('play_sessions').select('id,title,mode,created_at').in('id',sessionIds)
-    ]);
-    for(const x of [mr,lr,sr])if(x.error)throw x.error;
-    const allLinks=lr.data||[];
-    const {data:playerRows,error:playerError}=await sbc.from('play_session_players').select('id,player_name,user_id').in('id',[...new Set(allLinks.map(x=>x.session_player_id))]);
+    const [linksResult,sessionsResult]=await Promise.all([sbc.from('play_match_players').select('match_id,session_player_id,side').in('session_player_id',playerIds),sbc.from('play_sessions').select('id,title,mode,created_at').in('id',sessionIds)]);
+    if(linksResult.error)throw linksResult.error;if(sessionsResult.error)throw sessionsResult.error;
+    const mineLinks=linksResult.data||[],sessionRows=sessionsResult.data||[],matchIds=[...new Set(mineLinks.map(x=>x.match_id))];
+    if(!matchIds.length){HIST.items=[];HIST.sessions=sessionRows.map(s=>({id:s.id,title:s.title||'Quedada',mode:s.mode,createdAt:s.created_at,matches:[],played:0,wins:0,losses:0}));HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:sessionIds.length};HIST.loaded=true;return}
+    const [mr,lr]=await Promise.all([sbc.from('play_session_matches').select('id,session_id,match_number,cycle,court,phase,side_a_score,side_b_score,played_at').in('id',matchIds).order('played_at',{ascending:false}),sbc.from('play_match_players').select('match_id,session_player_id,side').in('match_id',matchIds)]);
+    for(const x of [mr,lr])if(x.error)throw x.error;
+    const allLinks=lr.data||[],{data:playerRows,error:playerError}=await sbc.from('play_session_players').select('id,player_name,user_id').in('id',[...new Set(allLinks.map(x=>x.session_player_id))]);
     if(playerError)throw playerError;
-    const playerMap=new Map((playerRows||[]).map(x=>[x.id,x])),sessionMap=new Map((sr.data||[]).map(x=>[x.id,x]));
-    const myMap=new Map(mine.map(x=>[x.id,x])),items=(mr.data||[]).map(m=>{
-      const mineLink=(mineLinks||[]).find(x=>x.match_id===m.id);if(!mineLink)return null;
+    const playerMap=new Map((playerRows||[]).map(x=>[x.id,x]));
+    const items=(mr.data||[]).map(m=>{
+      const mineLink=mineLinks.find(x=>x.match_id===m.id);if(!mineLink)return null;
       const ownSide=mineLink.side,won=ownSide==='a'?m.side_a_score>m.side_b_score:m.side_b_score>m.side_a_score;
       const peers=allLinks.filter(x=>x.match_id===m.id&&x.session_player_id!==mineLink.session_player_id);
-      const names=peers.map(x=>playerMap.get(x.session_player_id)?.player_name||'Jugador');
-      const teammates=peers.filter(x=>x.side===ownSide).map(x=>playerMap.get(x.session_player_id)?.player_name||'Jugador');
-      const opponents=peers.filter(x=>x.side!==ownSide).map(x=>playerMap.get(x.session_player_id)?.player_name||'Jugador');
-      const ses=sessionMap.get(m.session_id);
-      return{matchId:m.id,sessionId:m.session_id,sessionTitle:ses?.title||'Quedada',matchNumber:m.match_number,playedAt:m.played_at,scoreA:m.side_a_score,scoreB:m.side_b_score,ownSide,ownScore:ownSide==='a'?m.side_a_score:m.side_b_score,oppScore:ownSide==='a'?m.side_b_score:m.side_a_score,won,teammates,opponents};
+      const teammates=peers.filter(x=>x.side===ownSide).map(x=>playerMap.get(x.session_player_id)?.player_name||'Jugador'),opponents=peers.filter(x=>x.side!==ownSide).map(x=>playerMap.get(x.session_player_id)?.player_name||'Jugador');
+      return{matchId:m.id,sessionId:m.session_id,sessionTitle:sessionRows.find(s=>s.id===m.session_id)?.title||'Quedada',matchNumber:m.match_number,playedAt:m.played_at,scoreA:m.side_a_score,scoreB:m.side_b_score,ownSide,ownScore:ownSide==='a'?m.side_a_score:m.side_b_score,oppScore:ownSide==='a'?m.side_b_score:m.side_a_score,won,teammates,opponents};
     }).filter(Boolean);
-    const wins=items.filter(x=>x.won).length,losses=items.length-wins;
-    HIST.items=items;HIST.stats={played:items.length,wins,losses,winRate:items.length?wins/items.length:0,pointsFor:items.reduce((n,x)=>n+(x.ownSide==='a'?x.scoreA:x.scoreB),0),pointsAgainst:items.reduce((n,x)=>n+(x.ownSide==='a'?x.scoreB:x.scoreA),0),sessions:sessionIds.length};HIST.loaded=true;
+    const wins=items.filter(x=>x.won).length,losses=items.length-wins;HIST.items=items;
+    HIST.sessions=sessionRows.map(s=>{const matches=items.filter(x=>x.sessionId===s.id),w=matches.filter(x=>x.won).length;return{id:s.id,title:s.title||'Quedada',mode:s.mode,createdAt:s.created_at,matches,played:matches.length,wins:w,losses:matches.length-w}}).sort((x,y)=>new Date(y.createdAt||0)-new Date(x.createdAt||0));
+    HIST.stats={played:items.length,wins,losses,winRate:items.length?wins/items.length:0,pointsFor:items.reduce((n,x)=>n+x.ownScore,0),pointsAgainst:items.reduce((n,x)=>n+x.oppScore,0),sessions:sessionIds.length};HIST.loaded=true;
   }catch(error){console.warn('[history] load:',error&&error.message);HIST.error='No se ha podido cargar tu historial guardado.';HIST.loaded=true}
-  finally{HIST.loading=false;if(view==='history')render();else paintAuth()}
+  finally{HIST.loading=false;if(['history','sessions','session-detail'].includes(view))render();else paintAuth()}
 }
 function vProfile(){
   const body=AU.user||AU.guest?authInner():'<div id="authbox">'+authInner()+'</div>';
@@ -763,7 +767,7 @@ const A={
       .catch(e=>{AU.err='No se pudo cerrar la sesión. Inténtalo de nuevo.';console.warn('[auth] logout:',e&&e.message);paintAuth()})},
   guest(){AU.guest=true;try{localStorage.setItem(GUEST_K,'1')}catch(e){}},
   reloadProfile(){if(AU.user)loadProfile(AU.user.id)},
-  setup(){view='setup'},home(){view='home'},profile(){view='profile';AU.profileSettingsOpen=false;loadFriendActivity()},friends(){view='friends';FR.error='';loadFriends()},history(){view='history';loadMyHistory()},profileSettings(){AU.profileSettingsOpen=true;paintAuth()},profileOverview(){AU.profileSettingsOpen=false;paintAuth()},go(){view='game';ed=null},more(){view='more'},final(){view='final'},
+  setup(){view='setup'},home(){view='home'},profile(){view='profile';AU.profileSettingsOpen=false;loadFriendActivity()},sessions(){view='sessions';HIST.selectedSessionId=null;if(!HIST.loaded)loadMyHistory()},friends(){view='friends';FR.error='';loadFriends()},history(){view='history';loadMyHistory()},profileSettings(){AU.profileSettingsOpen=true;paintAuth()},profileOverview(){AU.profileSettingsOpen=false;paintAuth()},go(){view='game';ed=null},more(){view='more'},final(){view='final'},
   start(){S.savedSessionId=null;const c=S.settings;if(S.players.length<4){err='Necesitas al menos 4 jugadores.';return}
     if(S.players.length<4*c.courts){err=`Con ${c.courts} pistas necesitas al menos ${4*c.courts} jugadores.`;return}
     if(FX()&&S.players.length%2){err='Con parejas fijas necesitas un número par de jugadores.';return}
@@ -800,7 +804,7 @@ document.addEventListener('click',e=>{
   // Navegación explícita: no depende de las acciones genéricas del resto de la app.
   if(d.a==='friends'){view='friends';FR.error='';render();loadFriends();return}
   if(d.a==='profile'){view='profile';AU.profileSettingsOpen=false;render();if(AU.user){loadMyHistory();loadFriends()}return}
-  if(d.sessionResponse){respondSessionInvitation(d.sessionResponse,d.id);return}
+  if(d.sessionResponse){respondSessionInvitation(d.sessionResponse,d.id);return};if(d.sessionOpen){HIST.selectedSessionId=d.sessionOpen;view='session-detail';render();return}
   if(d.fa){friendAction(d.fa,d.id);return}
   if(d.addself!==undefined){addSelfPlayer();return}
   if(d.linkplayer){const friend=linkedFriends().find(p=>p.id===d.linkplayer);if(friend&&!S.players.some(p=>p.userId===friend.id)){let name=(friend.display_name||friend.alias||'Jugador').slice(0,24);if(nameTaken(name))name=('@'+(friend.alias||friend.display_name||'amigo')).slice(0,24);S.players.push({id:S.nid++,name,userId:friend.id,status:'active'});save()}else if(friend)toast('Ese amigo ya está en la quedada.');render();return}
@@ -869,7 +873,7 @@ function authInner(){
       return '<div class="profile-dashboard"><section class="card acct profile-hero"><div class="profile-hero-main"><div class="profile-avatar-large">'+avatar+'</div><div class="profile-hero-copy"><span class="tag d">TU PERFIL</span><b>'+esc(auName(AU.user))+'</b><span class="profile-alias">'+(p.alias?'@'+esc(p.alias):'Aún no has elegido un alias')+'</span><span class="profile-location">'+(p.city||p.country?'⌖ '+esc([p.city,p.country].filter(Boolean).join(', ')):'Añade tu ciudad en configuración')+'</span></div></div><button class="btn ghost profile-settings-btn" data-a="profileSettings">Editar perfil</button></section>'+
         sessionInvitesPanel()+
         '<button class="profile-community card" data-a="friends"><span class="community-symbol">✦</span><span class="community-copy"><b>Amigos y comunidad</b><small>Busca jugadores, gestiona solicitudes y consulta la clasificación</small></span>'+(pending?'<span class="community-count">'+pending+'</span>':'')+'<span class="community-arrow">›</span></button>'+
-        '<section class="profile-stat-block"><h3 class="profile-section-title">Tu rendimiento</h3><div class="profile-metrics"><div class="card profile-metric"><b>'+(HIST.loaded?HIST.stats.sessions:'—')+'</b><span>Quedadas jugadas</span></div><div class="card profile-metric"><b>'+(HIST.loaded?HIST.stats.wins:'—')+'</b><span>Partidos ganados</span></div><div class="card profile-metric"><b>'+(HIST.loaded?(HIST.stats.played?Math.round(HIST.stats.winRate*100)+'%':'0%'):'—')+'</b><span>% de partidos ganados</span></div></div></section>'+
+        '<section class="profile-stat-block"><h3 class="profile-section-title">Tu rendimiento</h3><div class="profile-metrics"><button type="button" class="card profile-metric profile-metric-click" data-a="sessions" '+(!HIST.loaded?'disabled':'')+'><b>'+(HIST.loaded?HIST.stats.sessions:'—')+'</b><span>Quedadas jugadas</span><small>Ver registro ›</small></button><div class="card profile-metric"><b>'+(HIST.loaded?HIST.stats.wins:'—')+'</b><span>Partidos ganados</span></div><div class="card profile-metric"><b>'+(HIST.loaded?(HIST.stats.played?Math.round(HIST.stats.winRate*100)+'%':'0%'):'—')+'</b><span>% de partidos ganados</span></div></div></section>'+
         '<section class="card profile-empty profile-activity-card"><div class="profile-card-heading"><h3>Tu actividad</h3><span class="section-kicker">RECIENTE</span></div>'+(HIST.loading?'<p>Cargando tu historial…</p>':HIST.error?'<p>'+esc(HIST.error)+'</p>':HIST.items.length?HIST.items.slice(0,3).map(historyRow).join(''):'<p>Todavía no has guardado partidos en tu historial. Al terminar una quedada, podrás guardarla y vincular tu jugador con tu cuenta.</p>')+'</section>'+' <section class="card profile-empty profile-activity-card"><div class="profile-card-heading"><h3>Actividad de tus amigos</h3><span class="section-kicker">COMUNIDAD</span></div>'+(FR.activityLoading?'<p>Cargando actividad…</p>':FR.activity.length?FR.activity.slice(0,3).map(friendActivityRow).join(''):'<p>Cuando tengas amigos y compartan su historial, verás aquí sus últimos partidos.</p>')+'</section>'+
         (HIST.items.length?'<button class="btn ghost" data-a="history">Ver historial completo</button>':'')+e+
         '<button class="btn ghost" data-a="logout">Cerrar sesión</button></div>';
