@@ -222,7 +222,7 @@ function achievementPanel(summary,publicMode){
   return '<section class="card achievement-panel"><div class="achievement-head"><div><span class="section-kicker">LOGROS PICKLE &amp; MIX</span><h3>'+(publicMode?'Logros':'Tu progresión')+'</h3></div><span class="achievement-level">NIVEL '+String(level).padStart(2,'0')+'</span></div>'+
     '<div class="achievement-level-row"><div><b>'+cur.name+'</b><small>'+xp.toLocaleString('es-ES')+' XP'+(next?' · '+(next.min-xp)+' XP para '+next.name:' · Nivel máximo')+'</small></div><strong>'+done+'/'+total+'</strong></div>'+
     '<div class="achievement-progress"><i style="width:'+progress+'%"></i></div>'+
-    '<div class="achievement-stats"><span><b>'+(metrics.matches||0)+'</b> partidos</span><span><b>'+(metrics.tournaments||0)+'</b> torneos</span><span><b>'+(metrics.friends||0)+'</b> amigos</span><span><b>'+(metrics.clubs||0)+'</b> clubes</span></div>'+
+    (publicMode?'':'<div class="achievement-stats"><span><b>'+(metrics.matches||0)+'</b> partidos</span><span><b>'+(metrics.tournaments||0)+'</b> torneos</span><span><b>'+(metrics.friends||0)+'</b> amigos</span><span><b>'+(metrics.clubs||0)+'</b> clubes</span></div>')+
     '<div class="achievement-grid">'+ACH_BADGES.map(b=>{const at=earned.get(b.id),ok=!!at;return '<article class="achievement-badge'+(ok?' earned':' locked')+'"><span class="achievement-mark">'+b.mark+'</span><div><b>'+b.title+'</b><small>'+b.desc+'</small><em>'+b.group+(ok?' · '+new Date(at).toLocaleDateString('es-ES'):' · Pendiente')+'</em></div></article>'}).join('')+'</div></section>';
 }
 async function loadMyAchievements(){
@@ -563,7 +563,7 @@ async function savePlaySession(form){
   try{
     const {data,error}=await sbc.rpc('save_play_session',{p_title:title,p_mode:FX()?'fixed':'rot',p_points:S.settings.points,p_courts:S.settings.courts,p_self_player_id:selfId,p_players:players,p_matches:matches});
     if(error)throw error;
-    S.savedSessionId=data;save();const invited=players.filter(p=>p.user_id&&p.user_id!==AU.user.id).length;toast(invited?'Quedada guardada. Se ha avisado a '+invited+' amigo'+(invited===1?'':'s')+' para confirmar su participación.':'Quedada guardada en tu historial.');render();loadMyHistory();
+    S.savedSessionId=data;save();const invited=players.filter(p=>p.user_id&&p.user_id!==AU.user.id).length;toast(invited?'Quedada guardada. Se ha avisado a '+invited+' amigo'+(invited===1?'':'s')+' para confirmar su participación.':'Quedada guardada en tu historial.');render();loadMyHistory();loadMyAchievements();
   }catch(error){console.warn('[history] save:',error&&error.message);if(btn){btn.disabled=false;btn.textContent='Guardar quedada'}toast('No se ha podido guardar la quedada. Comprueba la conexión e inténtalo de nuevo.')}
 }
 async function loadSessionInvitations(uid){
@@ -592,7 +592,7 @@ async function respondSessionInvitation(action,id){
     const {data,error}=await sbc.rpc('respond_play_session_invitation',{p_player_id:id,p_accept:action==='accept'});
     if(error)throw error;
     toast(action==='accept'?'Torneo añadido a tu perfil.':'Participación rechazada.');
-    await loadMyHistory();
+    await loadMyHistory();loadMyAchievements();
   }catch(error){console.warn('[history] invitation response:',error&&error.message);toast('No se ha podido guardar tu respuesta. Actualiza el perfil e inténtalo de nuevo.')}
   finally{HIST.inviteBusy='';paintAuth()}
 }
