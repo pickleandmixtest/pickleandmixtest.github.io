@@ -872,10 +872,11 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 /* Clubes: evitar solapamientos en tarjetas, especialmente en pantallas estrechas */
 .club-card{min-width:0;box-sizing:border-box}
 .club-card-main{display:grid;grid-template-columns:44px minmax(0,1fr);align-items:start;min-width:0;gap:12px}
-.club-card-copy{min-width:0;width:100%;overflow-wrap:anywhere}
-.club-card-type{display:inline-flex;flex-wrap:wrap;align-items:center;white-space:normal;overflow-wrap:anywhere;line-height:1.35;max-width:100%;box-sizing:border-box}
-.club-card-copy>b{min-width:0;overflow-wrap:anywhere;line-height:1.25}
-.club-card-copy>span{min-width:0;overflow-wrap:anywhere;line-height:1.45}
+.club-card-copy{display:flex;flex-direction:column;align-items:flex-start;min-width:0;width:100%;overflow-wrap:anywhere}
+.club-card-copy>.club-card-type{position:static;display:flex;float:none;clear:both;flex:0 0 auto;align-self:flex-start;width:fit-content;max-width:100%;height:auto;min-height:0;margin:0 0 8px;padding:4px 8px;box-sizing:border-box;white-space:normal;overflow-wrap:anywhere;line-height:1.35}
+.club-card-copy>b{display:block;position:static;flex:0 0 auto;min-width:0;margin:0;overflow-wrap:anywhere;line-height:1.25}
+.club-card-copy>span{display:block;position:static;flex:0 0 auto;min-width:0;margin:5px 0 0;overflow-wrap:anywhere;line-height:1.45}
+.club-card-copy>p{position:static;flex:0 0 auto;min-width:0;overflow-wrap:anywhere;word-break:normal}
 .club-card-copy p{min-width:0;overflow-wrap:anywhere;word-break:normal}
 .club-card-actions{min-width:0;flex-wrap:wrap;row-gap:8px}
 .club-card-actions>.tag{max-width:100%;white-space:normal;overflow-wrap:anywhere;text-align:center}
