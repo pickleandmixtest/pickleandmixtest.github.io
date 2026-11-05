@@ -495,3 +495,6 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 @media(max-width:520px){.club-image-settings{grid-template-columns:1fr}.club-request-row{flex-wrap:wrap}.club-request-row>div{flex-basis:100%}.club-member-actions{flex-basis:100%;margin-left:48px}.club-inline-form{align-items:stretch;flex-direction:column}.club-inline-form .btn{width:100%}.club-share-link{flex-direction:column}}
 
 .club-pending-request{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap}.club-pending-request .btn{width:auto;margin:0}
+
+.club-inbox{padding:14px}.club-inbox h3{margin:0 0 9px}.club-incoming-invite{display:flex;align-items:center;gap:8px;padding:9px 0;border-top:1px solid #edf1f6}.club-incoming-invite>div{display:flex;flex:1;flex-direction:column;gap:3px;min-width:0}.club-incoming-invite b{font-size:12px}.club-incoming-invite small{font-size:10px;color:var(--mut)}.club-incoming-invite .btn{flex:none;width:auto;margin:0}
+@media(max-width:480px){.club-incoming-invite{flex-wrap:wrap}.club-incoming-invite>div{flex-basis:100%}}
