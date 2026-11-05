@@ -830,7 +830,51 @@ function rotSummary(){
   <div class="sl"><span class="ic">⏱</span><div>Duración estimada: <b>aprox. ${fmtMin(r.tot)}</b><br><span class="mut">${r.rounds} turnos de ~${Math.round(r.dur)} min + 2 min de transición, con ${r.P} partido${r.P>1?'s':''} a la vez. Estimación aproximada, no una garantía.</span></div></div></div>`}
 function matchClubPicker(){if(!AU.user)return'';return '<section class="card match-club-import"><div class="row" style="justify-content:space-between;align-items:center"><div><b>Añadir jugadores de un club</b><p class="hint">Incorpora de una vez a los miembros de uno de tus clubes (máximo 40).</p></div><button type="button" class="btn sm ghost" data-match-club-toggle>'+(MATCH_CLUBS.open?'Cerrar':'＋ Elegir club')+'</button></div>'+(MATCH_CLUBS.open?MATCH_CLUBS.loading?'<p class="hint">Cargando tus clubes…</p>':MATCH_CLUBS.items.length?'<div class="row"><select data-match-club-select aria-label="Selecciona un club"><option value="">Selecciona un club</option>'+MATCH_CLUBS.items.map(c=>'<option value="'+c.club_id+'" '+(MATCH_CLUBS.selected===c.club_id?'selected':'')+' '+(Number(c.member_count)>40?'disabled':'')+'>'+esc(c.club_name)+' · '+c.member_count+' miembros'+(Number(c.member_count)>40?' · supera el límite':'')+'</option>').join('')+'</select><button type="button" class="btn sm" data-match-club-import '+(!MATCH_CLUBS.selected||MATCH_CLUBS.busy?'disabled':'')+'>'+(MATCH_CLUBS.busy?'Añadiendo…':'Añadir miembros')+'</button></div><p class="hint">Solo aparecen clubes de los que ya formas parte. Los clubes con más de 40 miembros no se pueden importar.</p>':'<p class="hint">No perteneces a ningún club todavía.</p>':'')+'</section>'}
 async function loadMatchClubs(){if(!sbc||!AU.user)return;MATCH_CLUBS.loading=true;if(view==='setup')render();try{const {data,error}=await sbc.rpc('get_my_match_clubs');if(error)throw error;MATCH_CLUBS.items=data||[];MATCH_CLUBS.loaded=true;if(!MATCH_CLUBS.items.some(c=>c.club_id===MATCH_CLUBS.selected))MATCH_CLUBS.selected=''}catch(e){toast(e.message||'No se han podido cargar tus clubes.')}finally{MATCH_CLUBS.loading=false;if(view==='setup')render()}}
-async function importMatchClub(){if(!AU.user||!MATCH_CLUBS.selected||MATCH_CLUBS.busy)return;MATCH_CLUBS.busy=true;render();try{const {data,error}=await sbc.rpc('get_match_club_players',{p_club_id:MATCH_CLUBS.selected});if(error)throw error;const people=data||[];let added=0,linked=0,skipped=0;people.forEach(p=>{if(S.players.some(x=>x.userId===p.user_id)){skipped++;return}const base=String(p.display_name||p.alias||'Jugador').trim().slice(0,24)||'Jugador';let existing=S.players.find(x=>!x.userId&&normName(x.name)===normName(base));if(existing){existing.userId=p.user_id;linked++;return}let name=base;if(nameTaken(name)){const suffix=p.alias?' (@'+p.alias+')':' '+(added+1);name=(base.slice(0,Math.max(1,24-suffix.length))+suffix).slice(0,24);let n=2;while(nameTaken(name)){const extra=' '+n++;name=(base.slice(0,24-extra.length)+extra).slice(0,24)}}S.players.push({id:S.nid++,name,userId:p.user_id,status:'active'});added++});save();MATCH_CLUBS.open=false;toast('Club importado: '+(added+linked)+' jugadores añadidos'+(skipped?', '+skipped+' ya estaban en la lista':'')+'.');render()}catch(e){toast(e.message||'No se han podido importar los jugadores.')}finally{MATCH_CLUBS.busy=false;if(view==='setup')render()}}
+async function importMatchClub(){
+  const select=document.querySelector('[data-match-club-select]');
+  const selected=select?select.value:MATCH_CLUBS.selected;
+  if(!AU.user||!selected||MATCH_CLUBS.busy)return;
+  MATCH_CLUBS.selected=selected;
+  const club=MATCH_CLUBS.items.find(c=>String(c.club_id)===String(selected));
+  if(club&&Number(club.member_count)>40){toast('Este club supera el límite de 40 miembros.');return}
+  MATCH_CLUBS.busy=true;
+  const button=document.querySelector('[data-match-club-import]');
+  if(button){button.disabled=true;button.textContent='Añadiendo…'}
+  try{
+    if(!sbc)throw new Error('No se ha podido conectar con el servicio. Recarga la página e inténtalo de nuevo.');
+    const {data,error}=await sbc.rpc('get_match_club_players',{p_club_id:selected});
+    if(error)throw error;
+    const people=Array.isArray(data)?data:[];
+    if(!people.length)throw new Error('Este club no tiene miembros disponibles para importar.');
+    let added=0,linked=0,skipped=0;
+    people.forEach(p=>{
+      if(S.players.some(x=>x.userId===p.user_id)){skipped++;return}
+      const base=String(p.display_name||p.alias||'Jugador').trim().slice(0,24)||'Jugador';
+      let existing=S.players.find(x=>!x.userId&&normName(x.name)===normName(base));
+      if(existing){existing.userId=p.user_id;linked++;return}
+      let name=base;
+      if(nameTaken(name)){
+        const suffix=p.alias?' (@'+p.alias+')':' '+(added+1);
+        name=(base.slice(0,Math.max(1,24-suffix.length))+suffix).slice(0,24);
+        let n=2;
+        while(nameTaken(name)){const extra=' '+n++;name=(base.slice(0,24-extra.length)+extra).slice(0,24)}
+      }
+      S.players.push({id:S.nid++,name,userId:p.user_id,status:'active'});added++;
+    });
+    save();
+    MATCH_CLUBS.open=false;
+    toast('Club importado: '+(added+linked)+' jugadores añadidos'+(skipped?', '+skipped+' ya estaban en la lista':'')+'.');
+    render();
+  }catch(e){
+    toast(e.message||'No se han podido importar los jugadores.');
+  }finally{
+    MATCH_CLUBS.busy=false;
+    if(view==='setup'){
+      const btn=document.querySelector('[data-match-club-import]');
+      if(btn){btn.disabled=!MATCH_CLUBS.selected;btn.textContent='Añadir miembros'}
+    }
+  }
+}
 function vSetup(){const c=S.settings,n=S.players.length,per=Math.floor(n/4)||0,T=Math.floor(n/2),tot=FX()?fxTotal(T):(n>=4?Math.ceil(n*c.cycles/4):0);
   return`${modeSel()}
   <form class="card player-add" data-f="add"><label class="mut">Añadir jugadores</label><div class="row"><input name="n" autocomplete="off" placeholder="Nombre o @alias"><button class="btn sm fix">Añadir</button></div><div id="player-suggestions" class="player-suggestions" hidden></div><p class="hint">Usa un nombre normal para invitados, <b>@alias</b> para vincular a un amigo o escribe <b>@yo</b> / tu propio alias para añadirte a ti. Los invitados no acumulan estadísticas personales.</p>${AU.user?'<button type="button" class="btn sm ghost" data-addself '+(S.players.some(p=>p.userId===AU.user.id)?'disabled':'')+'>'+(S.players.some(p=>p.userId===AU.user.id)?'Ya estás en la quedada':'＋ Añadirme como jugador')+'</button><p class="hint">Así quedarán vinculados tus resultados a tu perfil.</p>':''}${nameErrBox()}</form>
@@ -1205,7 +1249,7 @@ document.addEventListener('submit',e=>{e.preventDefault();if(e.target.dataset.f=
   /* los nombres rechazados se quedan en el cuadro para poder corregirlos */
   if(r.dups.length){const i=document.querySelector(`form[data-f="${f}"] input[name="n"]`);if(i){i.value=r.dups.join(', ');i.focus();i.select()}}});
 document.addEventListener('change',e=>{const t=e.target;
-  if(t.matches('[data-match-club-select]')){MATCH_CLUBS.selected=t.value;render();return}
+  if(t.matches('[data-match-club-select]')){MATCH_CLUBS.selected=t.value;const b=document.querySelector('[data-match-club-import]');if(b)b.disabled=!t.value||MATCH_CLUBS.busy;return}
   if(t.dataset.dr){const[i,j]=t.dataset.dr.split('-').map(Number);S.draft[i][j]=+t.value;save();render();return}
   if(t.dataset.ren){const p=S.players.find(x=>x.id==t.dataset.ren),nv=t.value.trim().slice(0,24).trim();
     if(nv&&nameTaken(nv,p.id)){t.value=p.name;toast(`«${nv}» ya existe. Usa un nombre distinto, por ejemplo «${nv} A».`);return}
