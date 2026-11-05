@@ -1013,3 +1013,66 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
   .clubs-create-row .btn{align-self:flex-end}
   .clubs-section-tabs button{font-size:11px}
 }
+
+
+/* Fichas de club: estructura editorial y jerarquía */
+.club-detail-page{gap:15px}
+.club-detail-page>.sessions-back{align-self:flex-start;margin-bottom:1px}
+.club-detail-top{overflow:hidden;border-radius:19px;background:#12325e;box-shadow:0 5px 16px rgba(18,50,94,.12)}
+.club-detail-top .club-cover{height:174px;border-radius:0;background-position:center 45%}
+.club-detail-top .club-detail-hero{min-height:112px;padding:19px 20px;border:0;border-radius:0;background:linear-gradient(135deg,#12325e,#1b4777);box-shadow:none}
+.club-detail-top .club-detail-hero.official{background:linear-gradient(135deg,#75420f,#a96320)}
+.club-detail-identity{align-items:center;gap:14px;width:100%}
+.club-detail-avatar{flex:none;width:66px;height:66px;border:2px solid rgba(255,255,255,.8);border-radius:18px;box-shadow:0 3px 10px rgba(0,0,0,.13)}
+.club-detail-avatar-fallback{display:grid;place-items:center;background:rgba(255,255,255,.15);color:#fff;font:900 28px "Arial Black",sans-serif}
+.club-detail-title{min-width:0}
+.club-detail-title h2{margin:0;color:#fff;font:900 25px/1.12 "Arial Black",Impact,sans-serif;overflow-wrap:anywhere}
+.club-detail-title p{margin:7px 0 0;color:#d7e4f2;font-size:12px}
+.club-detail-status{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:13px 15px;border:1px solid #dfe7f0;border-radius:14px;background:#fff;box-shadow:0 2px 7px rgba(20,45,75,.035)}
+.club-detail-status .club-detail-labels{flex-direction:row;align-items:center;flex-wrap:wrap;gap:7px;margin:0}
+.club-detail-status .club-detail-type,.club-detail-status .club-detail-access{margin:0;font-size:10px}
+.club-detail-status-stats{display:flex;align-items:center;gap:12px;flex-wrap:wrap;color:#718197;font-size:10px}
+.club-detail-status-stats b{color:#183c63;font-size:13px}
+.club-detail-page .club-description,.club-detail-page .club-official-contact,.club-detail-page .club-members,.club-detail-page .club-admin-section{padding:17px;border:1px solid #e0e8f1;border-radius:16px;background:#fff;box-shadow:0 2px 8px rgba(20,45,75,.035)}
+.club-section-heading{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.club-section-kicker{display:block;color:#8291a4;font-size:9px;font-weight:900;letter-spacing:1.15px;line-height:1.3}
+.club-section-heading h3,.club-section-heading-row h3{margin:0;color:#15385f;font-size:17px;font-weight:900;letter-spacing:-.2px}
+.club-detail-page .club-description>p{margin:0;color:#4e6075;font-size:13px;line-height:1.65}
+.club-detail-page .club-official-contact{border-color:#efcfaa;background:#fffdf9}
+.club-detail-page .club-official-contact .club-section-heading h3{color:#99510e}
+.club-contact-list{display:flex;flex-direction:column}
+.club-contact-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:10px 0;border-top:1px solid #f1e6d9;font-size:12px}
+.club-contact-row>span{flex:none;color:#8a755e}
+.club-contact-row>b,.club-contact-row>a{min-width:0;color:#3e5268;text-align:right;overflow-wrap:anywhere}
+.club-contact-row>a{color:#245c9e;text-decoration:underline}
+.club-detail-page .club-join-card{padding:20px;border:1px solid #cbdcf0;border-radius:16px;background:linear-gradient(145deg,#f7faff,#edf4fc);text-align:left;box-shadow:0 3px 10px rgba(30,70,110,.05)}
+.club-detail-page .club-join-card h3{margin:5px 0 7px;color:#15385f;font-size:19px}
+.club-detail-page .club-join-card p{margin:0 0 13px;color:#5d7188;line-height:1.5}
+.club-detail-page .club-join-card .btn{width:100%;max-width:280px}
+.club-detail-page .club-pending-request{justify-content:flex-start}
+.club-detail-page .club-events-section{gap:12px}
+.club-section-heading-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.club-section-heading-row .club-section-heading{margin:0}
+.club-section-heading-row>.btn{flex:none;width:auto;margin:0}
+.club-detail-page .club-event-card:first-of-type{margin-top:2px}
+.club-detail-page .club-event-card{padding:15px 0;border-top:1px solid #e9eef4}
+.club-detail-page .club-members .friends-section-head{margin-bottom:8px}
+.club-admin-zone{display:flex;flex-direction:column;gap:11px;padding-top:5px}
+.club-admin-zone-heading{padding:0 2px 2px}
+.club-admin-zone-heading h3{margin:4px 0;color:#15385f;font-size:17px}
+.club-admin-zone-heading p{margin:0;color:#718197;font-size:11px;line-height:1.45}
+.club-admin-zone .club-admin-section{box-shadow:none}
+.club-admin-zone .club-admin-section h3{font-size:14px}
+.club-admin-zone .club-admin-section+.club-admin-section{margin-top:0}
+.club-admin-zone .club-admin-section .friends-section-head{align-items:center}
+.club-danger-zone{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px;border:1px solid #f0d5d5;border-radius:13px;background:#fffafa}
+.club-danger-zone>div{display:flex;flex-direction:column;gap:3px;min-width:0}
+.club-danger-zone b{color:#934040;font-size:12px}
+.club-danger-zone small{color:#987777;font-size:10px}
+.club-danger-zone .btn{flex:none;width:auto;margin:0}
+.club-leave-action{align-self:flex-start;width:auto;margin:0}
+.club-invitation-panel{border-color:#ead9b8!important;background:#fffaf1!important}
+@media(max-width:520px){
+.club-detail-page{gap:12px}.club-detail-top{border-radius:16px}.club-detail-top .club-cover{height:135px}.club-detail-top .club-detail-hero{min-height:100px;padding:15px}.club-detail-avatar{width:56px;height:56px;border-radius:15px}.club-detail-title h2{font-size:21px}.club-detail-status{align-items:flex-start;flex-direction:column;gap:9px;padding:12px}.club-detail-status-stats{gap:9px}.club-detail-page .club-description,.club-detail-page .club-official-contact,.club-detail-page .club-members,.club-detail-page .club-admin-section{padding:14px}.club-contact-row{gap:10px;font-size:11px}.club-section-heading-row{align-items:flex-start}.club-section-heading-row>.btn{padding:7px 9px;font-size:10px}.club-danger-zone{align-items:flex-start;flex-direction:column}.club-danger-zone .btn{width:100%}
+}
+@media(max-width:360px){.club-detail-top .club-cover{height:115px}.club-detail-title h2{font-size:19px}.club-detail-status .club-detail-labels{gap:6px}}
