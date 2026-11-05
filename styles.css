@@ -918,3 +918,98 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .club-empty-state b{max-width:260px;color:#60748a;font-size:12px;line-height:1.4}
 .clubs-list>.club-type-section:first-child{margin-top:0}
 @media(max-width:380px){.clubs-section-tabs button{gap:5px;padding:8px 6px;font-size:12px}.clubs-create-row>span{font-size:10px}}
+
+
+/* Clubes: jerarquía visual de Mis Clubes y Explorar */
+.clubs-page{gap:16px}
+.clubs-page>.clubs-hero{padding:22px 20px;min-height:112px;box-shadow:0 5px 14px rgba(10,35,65,.12)}
+.clubs-page>.clubs-hero h2{font-size:30px;letter-spacing:-.5px}
+.clubs-page>.clubs-hero p{font-size:13px;max-width:360px}
+.clubs-section-tabs{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;
+  padding:6px;border:1px solid #d7e1ed;border-radius:16px;background:#eaf0f7;
+  box-shadow:inset 0 1px 2px rgba(18,50,94,.05)
+}
+.clubs-section-tabs button{
+  position:relative;display:flex;flex-direction:row;align-items:center;justify-content:center;
+  gap:9px;min-height:50px;padding:10px 12px;border:1px solid transparent;border-radius:12px;
+  color:#64778e;font-size:13px;font-weight:850;letter-spacing:.05px
+}
+.clubs-section-tabs button.active{
+  border-color:#12325e;background:#12325e;color:#fff;
+  box-shadow:0 3px 8px rgba(18,50,94,.2)
+}
+.clubs-section-tabs button small{
+  min-width:23px;height:23px;padding:0 6px;background:#dce7f4;color:#24496f;font-size:11px
+}
+.clubs-section-tabs button.active small{background:#d4f53c;color:#18304b}
+.clubs-create-row{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin:0;padding:11px 13px;border:1px solid #e0e8f1;border-radius:13px;background:#f8fafc
+}
+.clubs-create-row>span{color:#53677e;font-size:12px;font-weight:650}
+.clubs-create-row .btn{min-height:34px;padding:7px 11px;border:1px solid #cbd8e7;border-radius:9px;background:#fff;color:#24496f;font-size:11px;font-weight:850}
+.clubs-list{gap:16px}
+.clubs-list>.club-type-section{
+  gap:12px;margin:0;padding:15px;border:1px solid #dfe7f0;border-radius:17px;
+  background:#fff;box-shadow:0 3px 10px rgba(22,48,79,.045)
+}
+.clubs-list>.club-type-section+.club-type-section{margin-top:0}
+.club-type-heading{
+  align-items:center;gap:12px;margin:0;padding:0 0 11px;
+  border-bottom:1px solid #e9eef4
+}
+.club-type-heading>div{min-width:0}
+.club-type-heading h3{color:#15385f;font-size:15px;font-weight:900;letter-spacing:-.15px}
+.club-type-heading p{margin:4px 0 0;color:#728197;font-size:11px;line-height:1.4}
+.club-type-heading>span{
+  flex:none;min-width:30px;height:30px;background:#edf3fa;color:#24496f;
+  font-size:12px;box-shadow:inset 0 0 0 1px #dfe8f2
+}
+.club-type-section[data-club-group="managed"] .club-type-heading>span{background:#e7f0ff;color:#245c9e}
+.club-type-section[data-club-group="member"] .club-type-heading>span{background:#eaf5ee;color:#287448}
+.club-card{
+  gap:13px;padding:15px;border:1px solid #e0e8f1;border-radius:14px;
+  box-shadow:0 2px 5px rgba(20,45,75,.045);transition:transform .16s,box-shadow .16s
+}
+.club-card:hover{transform:translateY(-1px);box-shadow:0 5px 13px rgba(20,45,75,.09)}
+.club-card-copy>b{font-size:17px;line-height:1.2;letter-spacing:-.2px}
+.club-card-copy>span{font-size:11px;color:#6b7c91}
+.club-card-copy>p{margin-top:9px;color:#536579;font-size:12px;line-height:1.5}
+.club-card-actions{padding-top:10px;border-top:1px solid rgba(30,60,90,.08)}
+.club-card-actions>.tag{padding:5px 9px;border-radius:8px;background:#edf3f9;color:#385674;font-size:10px;font-weight:800}
+.club-card-actions .btn{min-width:94px;min-height:36px;padding:8px 13px;border-radius:10px;font-size:11px;font-weight:850}
+.club-empty-state{
+  min-height:118px;justify-content:center;padding:20px 15px;border:1px dashed #cbd8e6;
+  background:linear-gradient(180deg,#fbfcfe,#f6f9fc)
+}
+.club-empty-state .club-empty-mark{width:42px;height:42px;background:#eaf0f7;color:#55718e}
+.club-empty-state b{font-size:12px;color:#62758b}
+.clubs-list-head{
+  align-items:flex-end;padding:0 2px 3px
+}
+.clubs-list-head h3{color:#15385f;font-size:18px;font-weight:900;letter-spacing:-.3px}
+.clubs-list-head>div p{margin-top:5px;font-size:12px;line-height:1.4}
+.clubs-list-head input{max-width:220px;min-height:40px;border-color:#d5e0eb;border-radius:11px;background:#fff;font-size:12px}
+.club-inbox{padding:14px;border:1px solid #e6d8b5;background:#fffaf0}
+.club-inbox h3{margin:0 0 10px;color:#805b1d;font-size:14px}
+@media(max-width:520px){
+  .clubs-page{gap:13px}
+  .clubs-page>.clubs-hero{min-height:104px;padding:18px 16px}
+  .clubs-page>.clubs-hero h2{font-size:27px}
+  .clubs-section-tabs{gap:5px;padding:5px}
+  .clubs-section-tabs button{min-height:48px;padding:8px 6px;font-size:12px}
+  .clubs-list>.club-type-section{padding:12px;border-radius:15px}
+  .club-type-heading h3{font-size:14px}
+  .club-card{padding:12px;gap:11px}
+  .club-card-copy>b{font-size:16px}
+  .club-card-actions{justify-content:space-between}
+  .clubs-list-head{align-items:stretch}
+  .clubs-list-head h3{font-size:17px}
+  .clubs-list-head input{max-width:none}
+}
+@media(max-width:360px){
+  .clubs-create-row{align-items:flex-start;flex-direction:column}
+  .clubs-create-row .btn{align-self:flex-end}
+  .clubs-section-tabs button{font-size:11px}
+}
