@@ -5,7 +5,10 @@ const fresh=()=>({players:[],settings:{courts:1,points:11,cycles:3,mode:'rot',pa
 function valid(d){return d&&Array.isArray(d.players)&&Array.isArray(d.matches)&&d.settings&&d.players.every(p=>p&&typeof p.id=='number'&&typeof p.name=='string')&&d.matches.every(m=>m&&Array.isArray(m.a)&&Array.isArray(m.b)&&m.a.length==2&&m.b.length==2&&['pending','done','skipped'].includes(m.status))&&(d.settings.mode!=='fixed'||Array.isArray(d.teams))&&['courts','points','cycles'].every(k=>Number.isInteger(d.settings[k])&&d.settings[k]>0)}
 let S=fresh();try{const d=JSON.parse(localStorage.getItem(K));if(valid(d)){S=d;if(!S.started&&S.settings.points===7)S.settings.points=11}}catch(e){}
 const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
-let view=S.started?'game':'home',tmp=null,msg='',err='',nerr='',ed=null,ct=1,SC={};
+const ROUTE_TO_VIEW={inicio:'home',preparar:'setup',partido:'game',jugadores:'more',resumen:'final',perfil:'profile'};
+const VIEW_TO_ROUTE={home:'inicio',setup:'preparar',game:'partido',more:'jugadores',final:'resumen',profile:'perfil'};
+const initialRoute=location.hash.replace(/^#\/?/,'').toLowerCase();
+let view=ROUTE_TO_VIEW[initialRoute]||(S.started?'game':'home'),tmp=null,msg='',err='',nerr='',ed=null,ct=1,SC={};
 const nameErrBox=()=>nerr?`<div class="err">${esc(nerr)}</div>`:'';
 
 /* ---------- Algoritmo de rotación ---------- */
@@ -179,6 +182,8 @@ const bar=()=>{const t=S.matches.length,d=S.matches.filter(m=>m.status!=='pendin
 /* Pie de página: visible en todas las pestañas */
 const foot=()=>`<p class="mut foot">Plataforma para pickleballers creada por <a href="https://kikebarcelodg.github.io/" target="_blank" rel="noopener">Kike Barceló</a></p>`;
 function render(){
+  const route='#'+(VIEW_TO_ROUTE[view]||'inicio');
+  if(location.hash!==route)history.replaceState(null,'',location.pathname+location.search+route);
   const f={home:vHome,setup:vSetup,game:vGame,more:vMore,final:vFinal,profile:vProfile}[view];
   $('#app').innerHTML=header()+f()+(err?`<div class="err">${esc(err)}</div>`:'')+foot();err='';nerr='';if(view==='home')initPong('pong',null,true);
   if(msg){toast(msg);msg=''}
@@ -676,6 +681,10 @@ if(typeof window!=='undefined'&&typeof document!=='undefined'){
   /* Si la foto de Google no carga, se muestra la inicial */
   document.addEventListener('error',e=>{const t=e.target;if(t&&t.tagName==='IMG'&&t.classList.contains('av')){const s=document.createElement('span');s.className='av';s.setAttribute('aria-hidden','true');s.textContent=t.dataset.i||'?';t.replaceWith(s)}},true);
 }
+if(typeof window!=='undefined')window.addEventListener('hashchange',()=>{
+  const route=location.hash.replace(/^#\/?/,'').toLowerCase(),next=ROUTE_TO_VIEW[route];
+  if(next&&next!==view){view=next;ed=null;render()}
+});
 if(typeof document!=='undefined'&&document.getElementById('app'))render();
 if(typeof module!=='undefined')module.exports={gen,trial,genQ,rotInfo};
 
