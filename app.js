@@ -954,7 +954,8 @@ if(typeof window!=='undefined'&&typeof document!=='undefined'){
     /* Solo se repinta la tarjeta y la cabecera (no toda la app) y solo si cambia la persona: así un refresco de token no interrumpe lo que se esté escribiendo */
     sbc.auth.onAuthStateChange((ev,ses)=>{const u=(ses&&ses.user)||null,was=AU.user&&AU.user.id,ch=(u&&u.id)!==was;
       AU.user=u;AU.ready=true;AU.busy=false;if(u)AU.err='';
-      if(ch){HIST.invites=[];HIST.inviteBusy='';HIST.items=[];HIST.loaded=false;HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0}}\n      if(ch&&!u){watchFriendships(null);AU.profile=null;AU.profileErr='';AU.profileLoading=false;HIST.loaded=false;HIST.items=[];HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0}}
+      if(ch){HIST.invites=[];HIST.inviteBusy='';HIST.items=[];HIST.loaded=false;HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0}}
+      if(ch&&!u){watchFriendships(null);AU.profile=null;AU.profileErr='';AU.profileLoading=false;HIST.loaded=false;HIST.items=[];HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0}}
       if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))AU.profileLoading=true;
       if(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED')paintAuth();
       if(u&&(ch||ev==='INITIAL_SESSION'))watchFriendships(u.id);
