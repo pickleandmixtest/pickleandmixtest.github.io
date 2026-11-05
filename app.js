@@ -320,7 +320,7 @@ async function friendAction(action,id){
   }catch(error){console.warn('[friends] action:',error&&error.message);FR.error=error&&error.message&&/alias/i.test(error.message)?'Elige un alias en Configuración antes de enviar solicitudes.':'No se ha podido completar la acción. Puede que la solicitud ya no esté disponible.';paintFriends()}
 }
 function historyRow(item){
-  return '<div class="history-row"><div><b>'+esc(item.sessionTitle)+'</b><span class="mut">'+new Date(item.playedAt).toLocaleDateString('es-ES')+' · Partido '+item.matchNumber+'</span><small>'+esc(item.teammates.join(' / '))+' vs '+esc(item.opponents.join(' / '))+'</small></div><strong class="'+(item.won?'win':'loss')+'">'+item.scoreA+'–'+item.scoreB+'</strong></div>';
+  return '<div class="history-row"><div><b>'+esc(item.sessionTitle)+'</b><span class="mut">'+new Date(item.playedAt).toLocaleDateString('es-ES')+' · Partido '+item.matchNumber+'</span><small>'+esc(item.teammates.join(' / '))+' vs '+esc(item.opponents.join(' / '))+'</small></div><strong class="'+(item.won?'win':'loss')+'">'+item.ownScore+'–'+item.oppScore+'</strong></div>';
 }
 function vHistory(){
   return '<h2>Mi historial</h2><p class="lead">Tus partidos guardados en PICKLE &amp; MIX.</p>'+
