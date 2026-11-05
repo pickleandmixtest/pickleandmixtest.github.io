@@ -1190,8 +1190,8 @@ function authInner(){
     return '<div class="card acct"><div class="profile-settings-head"><button class="btn sm ghost" type="button" data-a="profileOverview">← Volver a Mi perfil</button></div><div class="me">'+avatar+'<div><span class="tag d">Configuración</span><b>'+esc(auName(AU.user))+'</b><span class="mut">Correo de acceso (solo visible para ti): '+esc(AU.user.email||'')+'</span></div></div>'+e+
       '<form data-f="profile" class="profile-form">'+
       '<label for="profile-name">Nombre público</label><input id="profile-name" name="display_name" maxlength="40" minlength="1" required value="'+esc(p.display_name||'')+'" autocomplete="nickname">'+
-      '<label for="profile-alias">Alias único</label><input id="profile-alias" name="alias" maxlength="21" value="'+esc(p.alias?'@'+p.alias:'')+'" placeholder="@tu_alias" autocapitalize="none" spellcheck="false">'+
-      '<small>Entre 3 y 20 caracteres: letras minúsculas, números y guion bajo. Puedes dejarlo vacío.</small>'+
+      '<label for="profile-alias">Alias único</label><input id="profile-alias" name="alias" maxlength="21" minlength="3" required value="'+esc(p.alias?'@'+p.alias:'')+'" placeholder="@tu_alias" autocapitalize="none" spellcheck="false">'+
+      '<small>Obligatorio. Entre 3 y 20 caracteres: letras minúsculas, números y guion bajo.</small>'+
       '<label for="profile-country">País</label><input id="profile-country" name="country" list="profile-country-options" maxlength="80" value="'+esc(p.country||'')+'" placeholder="España" autocomplete="country-name"><datalist id="profile-country-options"><option value="España"><option value="Portugal"><option value="Francia"><option value="Andorra"><option value="Italia"><option value="Reino Unido"><option value="Alemania"><option value="Países Bajos"><option value="Bélgica"><option value="Suiza"><option value="Estados Unidos"><option value="México"><option value="Argentina"><option value="Brasil"><option value="Chile"><option value="Colombia"><option value="Uruguay"><option value="Perú"><option value="Marruecos"></datalist><label for="profile-city">Ciudad</label><input id="profile-city" name="city" maxlength="80" value="'+esc(p.city||'')+'" placeholder="Málaga" autocomplete="address-level2"><small>Indica tu ubicación manualmente. No se utiliza el GPS.</small>'+
       '<label for="profile-stats">Quién puede ver tus estadísticas</label><select id="profile-stats" name="stats_visibility">'+opt('stats_visibility','everyone','Todo el mundo')+opt('stats_visibility','friends','Solo amigos')+opt('stats_visibility','nobody','Nadie')+'</select>'+
       '<label for="profile-history">Quién puede ver tu historial</label><select id="profile-history" name="history_visibility">'+opt('history_visibility','everyone','Todo el mundo')+opt('history_visibility','friends','Solo amigos')+opt('history_visibility','nobody','Nadie')+'</select>'+
@@ -1242,7 +1242,8 @@ async function saveProfile(form){
   const name=String(form.querySelector('[name="display_name"]').value||'').trim();
   const raw=String(form.querySelector('[name="alias"]').value||'').trim().replace(/^@/,'').toLowerCase();
   if(!name||name.length>40){toast('El nombre público debe tener entre 1 y 40 caracteres.');return}
-  if(raw&&!/^[a-z0-9_]{3,20}$/.test(raw)){toast('El alias debe tener entre 3 y 20 caracteres: letras, números o guion bajo.');return}
+  if(!raw){toast('El alias es obligatorio. Elige uno para tu cuenta.');return}
+  if(!/^[a-z0-9_]{3,20}$/.test(raw)){toast('El alias debe tener entre 3 y 20 caracteres: letras, números o guion bajo.');return}
   const country=String(form.querySelector('[name="country"]').value||'').trim().slice(0,80),city=String(form.querySelector('[name="city"]').value||'').trim().slice(0,80);
   const payload={display_name:name,alias:raw||null,country:country||null,city:city||null,stats_visibility:form.querySelector('[name="stats_visibility"]').value,history_visibility:form.querySelector('[name="history_visibility"]').value,location_visibility:form.querySelector('[name="location_visibility"]').value};
   const btn=form.querySelector('button[type="submit"]');if(btn){btn.disabled=true;btn.textContent='Guardando…'}
