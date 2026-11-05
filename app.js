@@ -494,6 +494,7 @@ const A={
     sbc.auth.signOut({scope:'local'}).then(r=>{if(r&&r.error)throw r.error;toast('Sesión cerrada.')})
       .catch(e=>{AU.err='No se pudo cerrar la sesión. Inténtalo de nuevo.';console.warn('[auth] logout:',e&&e.message);paintAuth()})},
   guest(){AU.guest=true;try{localStorage.setItem(GUEST_K,'1')}catch(e){}},
+  reloadProfile(){if(AU.user)loadProfile(AU.user.id)},
   setup(){view='setup'},home(){view='home'},go(){view='game';ed=null},more(){view='more'},final(){view='final'},
   start(){const c=S.settings;if(S.players.length<4){err='Necesitas al menos 4 jugadores.';return}
     if(S.players.length<4*c.courts){err=`Con ${c.courts} pistas necesitas al menos ${4*c.courts} jugadores.`;return}
@@ -539,7 +540,7 @@ document.addEventListener('click',e=>{
   else if(d.pd){const p=S.players.find(x=>x.id==d.pd);if(!confirm(`¿Quitar a ${p.name}? Sus partidos jugados se conservan.`))return;p.status='out';p.removed=true;S.players=S.players.filter(x=>x!==p||S.matches.some(m=>m.status==='done'&&[...m.a,...m.b].includes(p.id)));replan('Jugador quitado.')}
   save();render();
 });
-document.addEventListener('submit',e=>{e.preventDefault();const f=e.target.dataset.f,v=e.target.n.value;if(!v.trim())return;
+document.addEventListener('submit',e=>{e.preventDefault();if(e.target.dataset.f==='profile'){saveProfile(e.target);return}const f=e.target.dataset.f,v=e.target.n.value;if(!v.trim())return;
   const r=addNames(v);if(r.added&&f==='addlive')replan('Jugador añadido.');
   if(r.dups.length)nerr=dupMsg(r.dups,r.added);
   save();render();
@@ -557,23 +558,60 @@ document.addEventListener('change',e=>{const t=e.target;
    La clave «publishable» está pensada para ir en el navegador; lo que protege los datos son las políticas RLS del proyecto.
    NUNCA pongas aquí la clave secreta de Supabase ni el Client Secret de Google (van solo en el panel de Supabase). */
 const SB_URL='https://woolozllrvabjrflmqec.supabase.co',SB_KEY='sb_publishable_A3wn2gZDvhIpIkAdg4riuA_6GpG41oS',GUEST_K='pickleMix.auth.guest';
-const AU={user:null,ready:false,busy:false,err:'',guest:false,oauth:false};
+const AU={user:null,profile:null,profileLoading:false,profileErr:'',ready:false,busy:false,err:'',guest:false,oauth:false};
 let sbc=null;
 const auRedirect=()=>location.origin+location.pathname.replace(/index\.html$/,'');
-const auName=u=>{const m=(u&&u.user_metadata)||{};return String(m.full_name||m.name||(u&&u.email?u.email.split('@')[0]:'')||'Jugador').trim().slice(0,40)||'Jugador'};
-const auPic=u=>{const m=(u&&u.user_metadata)||{},p=m.avatar_url||m.picture||'';return/^https:\/\//i.test(p)?p:''};
+const auName=u=>{const p=AU.profile&&u&&AU.profile.id===u.id?AU.profile:null,m=(u&&u.user_metadata)||{};return String((p&&p.display_name)||m.full_name||m.name||(u&&u.email?u.email.split('@')[0]:'')||'Jugador').trim().slice(0,40)||'Jugador'};
+const auPic=u=>{const p=AU.profile&&u&&AU.profile.id===u.id?AU.profile:null,m=(u&&u.user_metadata)||{},v=(p&&p.avatar_url)||m.avatar_url||m.picture||'';return/^https:\/\//i.test(v)?v:''};
 const auAvatar=u=>{const n=auName(u),i=esc(n.charAt(0).toUpperCase()||'?'),p=auPic(u);
   return p?`<img class="av" src="${esc(p)}" alt="" data-i="${i}" referrerpolicy="no-referrer" width="40" height="40">`:`<span class="av" aria-hidden="true">${i}</span>`};
 const GLOGO='<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
 const authChipIn=()=>AU.user?`<span class="sr">Sesión iniciada como ${esc(auName(AU.user))}</span>${auAvatar(AU.user)}<span class="nm" aria-hidden="true">${esc(auName(AU.user).split(/\s+/)[0])}</span>`:'';
 function authInner(){
-  const e=AU.err?`<div class="err" role="alert">${esc(AU.err)}</div>`:'';
-  if(AU.user)return`<div class="card acct"><div class="me">${auAvatar(AU.user)}<div><span class="tag d">Sesión iniciada</span><b>${esc(auName(AU.user))}</b>${AU.user.email?`<span class="mut">${esc(AU.user.email)}</span>`:''}</div></div>${e}<button class="btn ghost" data-a="logout">Cerrar sesión</button></div>`;
-  if(!sbc)return AU.guest?'':`<p class="hint">El acceso con Google no está disponible ahora mismo. La app funciona con normalidad sin cuenta.</p>`;
-  if(!AU.ready)return`<p class="hint" role="status">Comprobando sesión…</p>`;
-  const go=AU.busy?'<button class="btn gg" disabled>Conectando con Google…</button>':`<button class="btn gg" data-a="login">${GLOGO}Continuar con Google</button>`;
-  if(AU.guest)return`<div class="card acct mini"><span class="mut">Modo invitado · sin cuenta</span>${AU.busy?'<button class="btn sm gg" disabled>Conectando…</button>':'<button class="btn sm ghost" data-a="login">Iniciar sesión</button>'}</div>${e}`;
-  return`<div class="card acct"><h3>Entra con tu cuenta</h3><p class="lead">Inicia sesión con Google para tener tu perfil (nombre y foto) en PICKLE &amp; MIX. La app funciona igual sin cuenta.</p>${e}${go}<button class="btn ghost" data-a="guest">Continuar sin registrarse</button></div>`}
+  const e=AU.err?'<div class="err" role="alert">'+esc(AU.err)+'</div>':'';
+  if(AU.user){
+    if(AU.profileLoading)return '<div class="card acct"><div class="me">'+auAvatar(AU.user)+'<div><span class="tag d">Sesión iniciada</span><b>'+esc(auName(AU.user))+'</b></div></div><p class="hint" role="status">Cargando tu perfil…</p><button class="btn ghost" data-a="logout">Cerrar sesión</button></div>';
+    if(!AU.profile)return '<div class="card acct"><h3>Tu perfil</h3>'+(AU.profileErr?'<div class="err" role="alert">'+esc(AU.profileErr)+'</div>':'<p class="hint">No se ha podido cargar tu perfil.</p>')+'<button class="btn" data-a="reloadProfile">Reintentar</button><button class="btn ghost" data-a="logout">Cerrar sesión</button></div>';
+    const p=AU.profile;
+    const opt=(k,v,t)=>'<option value="'+v+'"'+(p[k]===v?' selected':'')+'>'+t+'</option>';
+    return '<div class="card acct"><div class="me">'+auAvatar(AU.user)+'<div><span class="tag d">Tu perfil</span><b>'+esc(auName(AU.user))+'</b><span class="mut">Correo de acceso (solo visible para ti): '+esc(AU.user.email||'')+'</span></div></div>'+e+
+      '<form data-f="profile" class="profile-form">'+
+      '<label for="profile-name">Nombre público</label><input id="profile-name" name="display_name" maxlength="40" minlength="1" required value="'+esc(p.display_name||'')+'" autocomplete="nickname">'+
+      '<label for="profile-alias">Alias único</label><input id="profile-alias" name="alias" maxlength="21" value="'+esc(p.alias?'@'+p.alias:'')+'" placeholder="@tu_alias" autocapitalize="none" spellcheck="false">'+
+      '<small>Entre 3 y 20 caracteres: letras minúsculas, números y guion bajo. Puedes dejarlo vacío.</small>'+
+      '<label for="profile-stats">Quién puede ver tus estadísticas</label><select id="profile-stats" name="stats_visibility">'+opt('stats_visibility','everyone','Todo el mundo')+opt('stats_visibility','friends','Solo amigos')+opt('stats_visibility','nobody','Nadie')+'</select>'+
+      '<label for="profile-history">Quién puede ver tu historial</label><select id="profile-history" name="history_visibility">'+opt('history_visibility','everyone','Todo el mundo')+opt('history_visibility','friends','Solo amigos')+opt('history_visibility','nobody','Nadie')+'</select>'+
+      '<label for="profile-location">Quién puede ver tu ubicación</label><select id="profile-location" name="location_visibility">'+opt('location_visibility','everyone','Todo el mundo')+opt('location_visibility','friends','Solo amigos')+opt('location_visibility','nobody','Nadie')+'</select>'+
+      '<p class="hint">La foto actual procede de Google. Más adelante añadiremos la opción de subir otra.</p><button class="btn" type="submit">Guardar perfil</button></form><button class="btn ghost" data-a="logout">Cerrar sesión</button></div>';
+  }
+  if(!sbc)return AU.guest?'':'<p class="hint">El acceso con Google no está disponible ahora mismo. La app funciona con normalidad sin cuenta.</p>';
+  if(!AU.ready)return '<p class="hint" role="status">Comprobando sesión…</p>';
+  const go=AU.busy?'<button class="btn gg" disabled>Conectando con Google…</button>':'<button class="btn gg" data-a="login">'+GLOGO+'Continuar con Google</button>';
+  if(AU.guest)return '<div class="card acct mini"><span class="mut">Modo invitado · sin cuenta</span>'+(AU.busy?'<button class="btn sm gg" disabled>Conectando…</button>':'<button class="btn sm ghost" data-a="login">Iniciar sesión</button>')+'</div>'+e;
+  return '<div class="card acct"><h3>Entra con tu cuenta</h3><p class="lead">Inicia sesión con Google para tener tu perfil (nombre y foto) en PICKLE &amp; MIX. La app funciona igual sin cuenta.</p>'+e+go+'<button class="btn ghost" data-a="guest">Continuar sin registrarse</button></div>';
+}
+async function loadProfile(id){
+  if(!sbc||!id)return;
+  AU.profile=null;AU.profileErr='';AU.profileLoading=true;paintAuth();
+  try{const {data,error}=await sbc.from('profiles').select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility').eq('id',id).single();
+    if(!AU.user||AU.user.id!==id)return;AU.profileLoading=false;
+    if(error){AU.profileErr='No se ha podido cargar tu perfil. Comprueba la conexión e inténtalo de nuevo.';console.warn('[profile] load:',error.code,error.message)}else{AU.profile=data;AU.profileErr=''}
+  }catch(error){if(!AU.user||AU.user.id!==id)return;AU.profileLoading=false;AU.profileErr='No se ha podido cargar tu perfil. Comprueba la conexión e inténtalo de nuevo.';console.warn('[profile] load:',error&&error.message)}
+  paintAuth();
+}
+async function saveProfile(form){
+  if(!sbc||!AU.user||!AU.profile)return;
+  const name=String(form.querySelector('[name="display_name"]').value||'').trim();
+  const raw=String(form.querySelector('[name="alias"]').value||'').trim().replace(/^@/,'').toLowerCase();
+  if(!name||name.length>40){toast('El nombre público debe tener entre 1 y 40 caracteres.');return}
+  if(raw&&!/^[a-z0-9_]{3,20}$/.test(raw)){toast('El alias debe tener entre 3 y 20 caracteres: letras, números o guion bajo.');return}
+  const payload={display_name:name,alias:raw||null,stats_visibility:form.querySelector('[name="stats_visibility"]').value,history_visibility:form.querySelector('[name="history_visibility"]').value,location_visibility:form.querySelector('[name="location_visibility"]').value};
+  const btn=form.querySelector('button[type="submit"]');if(btn){btn.disabled=true;btn.textContent='Guardando…'}
+  try{const {data,error}=await sbc.from('profiles').update(payload).eq('id',AU.user.id).select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility').single();
+    if(error){if(btn){btn.disabled=false;btn.textContent='Guardar perfil'}const message=error.code==='23505'?'Ese alias ya está en uso. Prueba con otro.':error.code==='23514'?'El alias o alguno de los datos no cumple el formato permitido.':'No se ha podido guardar el perfil. Inténtalo de nuevo.';toast(message);console.warn('[profile] save:',error.code,error.message);return}
+    AU.profile=data;AU.profileErr='';AU.err='';paintAuth();toast('Perfil guardado.');
+  }catch(error){if(btn){btn.disabled=false;btn.textContent='Guardar perfil'}toast('No se ha podido guardar el perfil. Comprueba tu conexión.');console.warn('[profile] save:',error&&error.message)}
+}
 function paintAuth(){const b=$('#authbox'),c=$('#authchip');if(b)b.innerHTML=authInner();if(c)c.innerHTML=authChipIn()}
 if(typeof window!=='undefined'&&typeof document!=='undefined'){
   try{AU.guest=localStorage.getItem(GUEST_K)==='1'}catch(e){}
@@ -589,7 +627,9 @@ if(typeof window!=='undefined'&&typeof document!=='undefined'){
     /* Solo se repinta la tarjeta y la cabecera (no toda la app) y solo si cambia la persona: así un refresco de token no interrumpe lo que se esté escribiendo */
     sbc.auth.onAuthStateChange((ev,ses)=>{const u=(ses&&ses.user)||null,was=AU.user&&AU.user.id,ch=(u&&u.id)!==was;
       AU.user=u;AU.ready=true;AU.busy=false;if(u)AU.err='';
+      if(ch&&!u){AU.profile=null;AU.profileErr='';AU.profileLoading=false}
       if(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED')paintAuth();
+      if(u&&(ch||!AU.profile||AU.profile.id!==u.id))setTimeout(()=>loadProfile(u.id),0);
       if(u&&ch&&AU.oauth&&ev==='SIGNED_IN'){AU.oauth=false;toast('Sesión iniciada como '+auName(u))}});
     setTimeout(()=>{if(!AU.ready){AU.ready=true;paintAuth()}},4000)}
   catch(e){sbc=null;console.warn('[auth] onAuthStateChange:',e&&e.message)}}
