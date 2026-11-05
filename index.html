@@ -438,6 +438,32 @@ h2{margin:0;font:900 clamp(28px,9vw,40px)/1.05 "Arial Black",Impact,sans-serif;c
 .cf{position:fixed;top:-16px;width:9px;height:13px;border-radius:2px;animation:fall 2.6s linear forwards;z-index:11;pointer-events:none}
 @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
 @media (prefers-reduced-motion:reduce){.in{transition:none}.tro,.cf,.pill,.done svg{animation:none}}
+
+/* ---------- Niveles e insignias de perfil ---------- */
+.achievement-panel{margin:18px 0;overflow:hidden}
+.achievement-head,.achievement-level-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.achievement-head h3{margin:4px 0 0}
+.achievement-level{background:#fff1d9;color:#a95e12;border:1px solid #f3d6a7;border-radius:999px;padding:6px 10px;font-size:.72rem;font-weight:800;letter-spacing:.04em;white-space:nowrap}
+.achievement-level-row{margin-top:16px}
+.achievement-level-row>div{display:grid;gap:3px}
+.achievement-level-row small{color:var(--muted,#718096);font-size:.8rem}
+.achievement-level-row>strong{font-size:.85rem;color:var(--muted,#718096)}
+.achievement-progress{height:8px;border-radius:99px;background:#e9edf3;overflow:hidden;margin:10px 0 14px}
+.achievement-progress i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#f0a43a,#f5c66e);transition:width .25s ease}
+.achievement-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0 18px}
+.achievement-stats span{display:grid;gap:2px;padding:9px 7px;background:var(--soft,#f5f7fa);border-radius:10px;text-align:center;font-size:.7rem;color:var(--muted,#718096)}
+.achievement-stats b{font-size:1rem;color:var(--ink,#18304f)}
+.achievement-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.achievement-badge{display:flex;align-items:flex-start;gap:9px;min-width:0;padding:10px;border:1px solid var(--line,#e6eaf0);border-radius:12px;background:var(--surface,#fff)}
+.achievement-badge.locked{opacity:.48;filter:grayscale(.8)}
+.achievement-mark{flex:0 0 36px;width:36px;height:36px;display:grid;place-items:center;border-radius:11px;background:#fff0d8;color:#a95e12;font-size:.78rem;font-weight:900}
+.achievement-badge.earned .achievement-mark{background:#ffdfaa;box-shadow:inset 0 0 0 1px #f0c477}
+.achievement-badge>div{display:grid;gap:3px;min-width:0}
+.achievement-badge b{font-size:.78rem;line-height:1.2}
+.achievement-badge small{font-size:.68rem;line-height:1.3;color:var(--muted,#718096)}
+.achievement-badge em{font-style:normal;font-size:.62rem;color:var(--muted,#8793a3)}
+@media(min-width:700px){.achievement-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:390px){.achievement-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.achievement-grid{grid-template-columns:1fr}}
 </style></head><body>
 <div id="app">
 <section id="menu"><button class="ib snd" aria-label="Sonido"></button>
@@ -539,4 +565,4 @@ $('#play').onclick=newGame;$('#quit').onclick=toMenu;menu();
 </script>
 <!-- Supabase JS (librería oficial, versión fija) · si no carga, la app funciona igual sin acceso con Google -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" crossorigin="anonymous"></script>
-<script src="app.js?v=53"></script></body></html>
+<script src="app.js?v=54"></script></body></html>
