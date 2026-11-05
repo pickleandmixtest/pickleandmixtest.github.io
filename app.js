@@ -241,10 +241,8 @@ function initPong(cid,hid,pre){
   (function f(now){if(!document.body.contains(c))return;fit();if(W){const dt=Math.min(.033,(now-last)/1000);step(dt);draw()}last=now;requestAnimationFrame(f)})(last);
 }
 function header(){
-  const pendingFriends=FR.items.filter(f=>f.status==='pending'&&f.addressee_id===AU.user?.id).length;
-  const friendLabel='Amigos'+(pendingFriends?' · '+pendingFriends:'');
-  const t=S.started?[['home','Inicio'],['go','Partido'],['more','Jugadores'],['final','Resumen'],['friends',friendLabel],['profile','Mi perfil']]:[['home','Inicio'],['setup','Preparar'],['final','Resumen'],['friends',friendLabel],['profile','Mi perfil']];
-  const cur={home:'home',game:'go',more:'more',final:'final',setup:'setup',profile:'profile',friends:'friends',history:'profile','user-profile':'friends'}[view];
+  const t=S.started?[['home','Inicio'],['go','Partido'],['more','Jugadores'],['final','Resumen'],['profile','Mi perfil']]:[['home','Inicio'],['setup','Preparar'],['final','Resumen'],['profile','Mi perfil']];
+  const cur={home:'home',game:'go',more:'more',final:'final',setup:'setup',profile:'profile',friends:'profile',history:'profile','user-profile':'profile'}[view];
   return`<header class="top"><div class="mark">PICKLE<b>&amp;MIX</b></div><div class="who" id="authchip">${authChipIn()}</div><nav class="tabs" aria-label="Acceso rápido">${t.map(x=>`<button data-a="${x[0]}"${x[0]===cur?' aria-current="page"':''}>${x[1]}</button>`).join('')}</nav></header>`}
 const GT={
 pong:`<svg viewBox="0 0 160 96" aria-hidden="true"><rect width="160" height="96" fill="#2f6fbd"/><rect x="6" y="6" width="148" height="84" rx="4" fill="none" stroke="#fff" stroke-width="2" opacity=".8"/><path d="M6 48H154" stroke="#fff" stroke-width="2" stroke-dasharray="6 5" opacity=".8"/><rect x="56" y="12" width="46" height="8" rx="4" fill="#ff6a4d"/><rect x="66" y="76" width="46" height="8" rx="4" fill="#fff"/><circle cx="84" cy="62" r="4" fill="#d4f53c" opacity=".35"/><circle cx="92" cy="54" r="7" fill="#d4f53c" stroke="#0e1c33" stroke-width="2"/></svg>`,
@@ -463,7 +461,7 @@ async function loadMyHistory(){
 }
 function vProfile(){
   const body=AU.user||AU.guest?authInner():'<div id="authbox">'+authInner()+'</div>';
-  return '<h2>Mi perfil</h2><p class="lead">'+(AU.user&&AU.profile&&!AU.profileSettingsOpen?'Tu espacio en PICKLE &amp; MIX.':'Gestiona tu cuenta y tus preferencias.')+'</p><div id="authbox">'+(AU.user||AU.guest?body:authInner())+'</div>';
+  return '<h2>Mi perfil</h2><p class="lead">'+(AU.user&&AU.profile&&!AU.profileSettingsOpen?'Tu espacio personal en PICKLE &amp; MIX.':'Tu cuenta, tus estadísticas y tu comunidad de jugadores.')+'</p><div id="authbox">'+(AU.user||AU.guest?body:authInner())+'</div>';
 }
 /* Resumen del modo rotatorio: reparto por jugador y duración estimada (valores medios orientativos) */
 const CMAX=20; /* máximo de ciclos (partidos por jugador) que admite el campo «Ciclos» */
@@ -781,7 +779,6 @@ document.addEventListener('change',e=>{const t=e.target;
 const SB_URL='https://woolozllrvabjrflmqec.supabase.co',SB_KEY='sb_publishable_A3wn2gZDvhIpIkAdg4riuA_6GpG41oS',GUEST_K='pickleMix.auth.guest';
 const AU={user:null,profile:null,profileLoading:false,profileErr:'',profileSettingsOpen:false,ready:false,busy:false,err:'',guest:false,oauth:false};
 let sbc=null,friendChannel=null;
-function paintFriendBadge(){const n=FR.items.filter(f=>f.status==='pending'&&f.addressee_id===AU.user?.id).length,b=document.querySelector('.tabs button[data-a="friends"]');if(b)b.textContent='Amigos'+(n?' · '+n:'')}
 function watchFriendships(userId){
   if(friendChannel&&sbc){sbc.removeChannel(friendChannel);friendChannel=null}
   if(!sbc||!userId)return;
@@ -809,7 +806,9 @@ function authInner(){
     const p=AU.profile;
     const avatar='<label class="avatar-picker" for="profile-avatar" title="Cambiar foto de perfil" aria-label="Cambiar foto de perfil">'+auAvatar(AU.user)+'<span class="avatar-camera" aria-hidden="true">✎</span></label><input id="profile-avatar" class="sr" type="file" accept="image/jpeg,image/png,image/webp" data-avatar-file>';
     if(!AU.profileSettingsOpen){
+      const pending=FR.items.filter(f=>f.status==='pending'&&f.addressee_id===AU.user.id).length;
       return '<div class="profile-dashboard"><section class="card acct profile-identity"><div class="me">'+avatar+'<div><span class="tag d">Tu perfil</span><b>'+esc(auName(AU.user))+'</b><span class="mut">'+(p.alias?'@'+esc(p.alias):'Aún no has elegido un alias')+'</span></div></div><button class="btn ghost profile-settings-btn" data-a="profileSettings">Configuración</button></section>'+
+        '<button class="profile-community card" data-a="friends"><span class="community-symbol">✦</span><span class="community-copy"><b>Amigos y comunidad</b><small>Busca jugadores, gestiona solicitudes y consulta la clasificación</small></span>'+(pending?'<span class="community-count">'+pending+'</span>':'')+'<span class="community-arrow">›</span></button>'+
         '<h3 class="profile-section-title">Tus estadísticas</h3><div class="profile-metrics"><div class="card profile-metric"><b>'+(HIST.loaded?HIST.stats.played:'—')+'</b><span>Partidos jugados</span></div><div class="card profile-metric"><b>'+(HIST.loaded?HIST.stats.wins:'—')+'</b><span>Victorias</span></div><div class="card profile-metric"><b>'+(HIST.loaded?(HIST.stats.played?Math.round(HIST.stats.winRate*100)+'%':'0%'):'—')+'</b><span>% de victorias</span></div></div>'+
         '<section class="card profile-empty"><h3>Tu actividad</h3>'+(HIST.loading?'<p>Cargando tu historial…</p>':HIST.error?'<p>'+esc(HIST.error)+'</p>':HIST.items.length?HIST.items.slice(0,3).map(historyRow).join(''):'<p>Todavía no has guardado partidos en tu historial. Al terminar una quedada, podrás guardarla y vincular tu jugador con tu cuenta.</p>')+'</section>'+'<section class="card profile-empty"><h3>Actividad de tus amigos</h3>'+(FR.activityLoading?'<p>Cargando actividad…</p>':FR.activity.length?FR.activity.slice(0,3).map(friendActivityRow).join(''):'<p>Cuando tengas amigos y compartan su historial, verás aquí sus últimos partidos.</p>')+'</section>'+
         (HIST.items.length?'<button class="btn ghost" data-a="history">Ver historial completo</button>':'')+e+
@@ -830,8 +829,8 @@ function authInner(){
   if(!sbc)return AU.guest?'':'<p class="hint">El acceso con Google no está disponible ahora mismo. La app funciona con normalidad sin cuenta.</p>';
   if(!AU.ready)return '<p class="hint" role="status">Comprobando sesión…</p>';
   const go=AU.busy?'<button class="btn gg" disabled>Conectando con Google…</button>':'<button class="btn gg" data-a="login">'+GLOGO+'Continuar con Google</button>';
-  if(AU.guest)return '<div class="card acct mini"><span class="mut">Modo invitado · sin cuenta</span>'+(AU.busy?'<button class="btn sm gg" disabled>Conectando…</button>':'<button class="btn sm ghost" data-a="login">Iniciar sesión</button>')+'</div>'+e;
-  return '<div class="card acct"><h3>Entra con tu cuenta</h3><p class="lead">Inicia sesión con Google para tener tu perfil (nombre y foto) en PICKLE &amp; MIX. La app funciona igual sin cuenta.</p>'+e+go+'<button class="btn ghost" data-a="guest">Continuar sin registrarse</button></div>';
+  const guestState=AU.guest?'<span class="guest-mode">Modo invitado · estás jugando sin cuenta</span>':'';
+  return '<div class="guest-welcome"><section class="guest-hero"><span class="guest-free">REGISTRO GRATUITO</span><h3>Tu juego. Tus estadísticas. Tu comunidad.</h3><p>Crea tu cuenta gratuita y lleva tu experiencia de pickleball un paso más allá.</p>'+go+'<small>Accede rápidamente con tu cuenta de Google.</small></section>'+guestState+'<section class="guest-benefits"><h3>¿Qué consigues al registrarte?</h3><div class="guest-benefit"><span class="guest-icon">01</span><div><b>Tus estadísticas personales</b><small>Partidos, victorias y porcentaje de triunfos.</small></div></div><div class="guest-benefit"><span class="guest-icon">02</span><div><b>Tu historial de partidos</b><small>Guarda tus quedadas y consulta resultados anteriores.</small></div></div><div class="guest-benefit"><span class="guest-icon">03</span><div><b>Amigos y comunidad</b><small>Busca jugadores, envía solicitudes y visita sus perfiles.</small></div></div><div class="guest-benefit"><span class="guest-icon">04</span><div><b>Clasificación entre amigos</b><small>Compara resultados y sigue vuestra evolución.</small></div></div><div class="guest-benefit"><span class="guest-icon">05</span><div><b>Notificaciones sociales</b><small>Recibe avisos de solicitudes y nuevas conexiones.</small></div></div></section><section class="guest-continue"><b>¿Prefieres seguir sin registrarte?</b><p>No hay problema. Puedes seguir utilizando las funciones principales de PICKLE &amp; MIX como invitado, sin crear una cuenta.</p>'+(AU.guest?'':'<button class="btn ghost" data-a="guest">Continuar sin registrarse</button>')+'</section></div>'+e;
 }
 async function loadProfile(id){
   if(!sbc||!id)return;
