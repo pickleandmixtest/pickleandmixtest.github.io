@@ -309,7 +309,7 @@ function vUserProfile(){
   const stat=PUB.stats?'<div class="profile-metrics"><div class="card profile-metric"><b>'+PUB.stats.played+'</b><span>Partidos</span></div><div class="card profile-metric"><b>'+PUB.stats.wins+'</b><span>Victorias</span></div><div class="card profile-metric"><b>'+Math.round(PUB.stats.win_rate*100)+'%</b><span>Victorias</span></div></div><p class="mut">Diferencia de puntos: '+(PUB.stats.points_for-PUB.stats.points_against>0?'+':'')+(PUB.stats.points_for-PUB.stats.points_against)+'</p>':PUB.statsHidden?'<p class="mut">Este usuario no comparte sus estadísticas contigo.</p>':'<p class="mut">Todavía no hay estadísticas registradas.</p>';
   const hist=PUB.history.length?PUB.history.map(h=>'<div class="history-row"><div><b>'+esc(h.session_title||'Quedada')+'</b><span class="mut">'+new Date(h.played_at).toLocaleDateString('es-ES')+' · '+(h.won?'Victoria':'Derrota')+'</span><small>'+esc((h.teammates||[]).join(' / '))+' vs '+esc((h.opponents||[]).join(' / '))+'</small></div><strong class="'+(h.won?'win':'loss')+'">'+h.own_score+'–'+h.opponent_score+'</strong></div>').join(''):PUB.historyHidden?'<p class="mut">Este usuario no comparte su historial contigo.</p>':'<p class="mut">Todavía no hay partidos guardados.</p>';
   return '<h2>Perfil de jugador</h2><section class="card acct"><div class="me">'+(p.avatar_url?'<img class="av" src="'+esc(p.avatar_url)+'" alt="">':'<span class="av">'+esc((p.display_name||'?').slice(0,1).toUpperCase())+'</span>')+'<div><span class="tag d">Jugador de PICKLE &amp; MIX</span><b>'+esc(p.display_name)+'</b><span class="mut">@'+esc(p.alias)+'</span></div></div><div class="profile-public-actions">'+action+'</div></section>'+
-    '<h3 class="profile-section-title">Estadísticas</h3>'+stat+
+    '<p class="mut">'+(!PUB.locationHidden&&(p.city||p.country)?esc([p.city,p.country].filter(Boolean).join(', ')):'')+'</p>'+'<h3 class="profile-section-title">Estadísticas</h3>'+stat+
     '<section class="card profile-empty"><h3>Historial de partidos</h3>'+hist+'</section>'+
     '<button class="btn ghost" data-a="friends">Volver a Amigos</button>';
 }
@@ -317,11 +317,13 @@ async function openUserProfile(id){
   if(!sbc||!AU.user)return;
   PUB.id=id;PUB.profile=null;PUB.stats=null;PUB.history=[];PUB.error='';PUB.loading=true;PUB.statsHidden=false;PUB.historyHidden=false;view='user-profile';render();
   try{
-    const {data,error}=await sbc.from('profiles').select('id,display_name,alias,avatar_url,stats_visibility,history_visibility').eq('id',id).single();
+    const {data,error}=await sbc.from('profiles').select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility,country,city').eq('id',id).single();
     if(error)throw error;PUB.profile=data;
     const isSelf=id===AU.user.id,isFriend=friendState(id)==='friend';
     const canStats=isSelf||data.stats_visibility==='everyone'||(data.stats_visibility==='friends'&&isFriend);
     const canHistory=isSelf||data.history_visibility==='everyone'||(data.history_visibility==='friends'&&isFriend);
+    const canLocation=isSelf||data.location_visibility==='everyone'||(data.location_visibility==='friends'&&isFriend);
+    PUB.locationHidden=!canLocation;
     if(canStats){const r=await sbc.rpc('get_user_stats',{p_user_id:id});if(r.error)throw r.error;PUB.stats=r.data}
     else PUB.statsHidden=true;
     if(canHistory){const r=await sbc.rpc('get_user_history',{p_user_id:id,p_limit:20});if(r.error)throw r.error;PUB.history=Array.isArray(r.data)?r.data:[]}
@@ -819,6 +821,7 @@ function authInner(){
       '<label for="profile-name">Nombre público</label><input id="profile-name" name="display_name" maxlength="40" minlength="1" required value="'+esc(p.display_name||'')+'" autocomplete="nickname">'+
       '<label for="profile-alias">Alias único</label><input id="profile-alias" name="alias" maxlength="21" value="'+esc(p.alias?'@'+p.alias:'')+'" placeholder="@tu_alias" autocapitalize="none" spellcheck="false">'+
       '<small>Entre 3 y 20 caracteres: letras minúsculas, números y guion bajo. Puedes dejarlo vacío.</small>'+
+      '<label for="profile-country">País</label><input id="profile-country" name="country" list="profile-country-options" maxlength="80" value="'+esc(p.country||'')+'" placeholder="España" autocomplete="country-name"><datalist id="profile-country-options"><option value="España"><option value="Portugal"><option value="Francia"><option value="Andorra"><option value="Italia"><option value="Reino Unido"><option value="Alemania"><option value="Países Bajos"><option value="Bélgica"><option value="Suiza"><option value="Estados Unidos"><option value="México"><option value="Argentina"><option value="Brasil"><option value="Chile"><option value="Colombia"><option value="Uruguay"><option value="Perú"><option value="Marruecos"></datalist><label for="profile-city">Ciudad</label><input id="profile-city" name="city" maxlength="80" value="'+esc(p.city||'')+'" placeholder="Málaga" autocomplete="address-level2"><small>Indica tu ubicación manualmente. No se utiliza el GPS.</small>'+
       '<label for="profile-stats">Quién puede ver tus estadísticas</label><select id="profile-stats" name="stats_visibility">'+opt('stats_visibility','everyone','Todo el mundo')+opt('stats_visibility','friends','Solo amigos')+opt('stats_visibility','nobody','Nadie')+'</select>'+
       '<label for="profile-history">Quién puede ver tu historial</label><select id="profile-history" name="history_visibility">'+opt('history_visibility','everyone','Todo el mundo')+opt('history_visibility','friends','Solo amigos')+opt('history_visibility','nobody','Nadie')+'</select>'+
       '<label for="profile-location">Quién puede ver tu ubicación</label><select id="profile-location" name="location_visibility">'+opt('location_visibility','everyone','Todo el mundo')+opt('location_visibility','friends','Solo amigos')+opt('location_visibility','nobody','Nadie')+'</select>'+
@@ -833,7 +836,7 @@ function authInner(){
 async function loadProfile(id){
   if(!sbc||!id)return;
   AU.profile=null;AU.profileErr='';AU.profileLoading=true;paintAuth();
-  try{const {data,error}=await sbc.from('profiles').select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility').eq('id',id).single();
+  try{const {data,error}=await sbc.from('profiles').select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility,country,city').eq('id',id).single();
     if(!AU.user||AU.user.id!==id)return;AU.profileLoading=false;
     if(error){AU.profileErr='No se ha podido cargar tu perfil. Comprueba la conexión e inténtalo de nuevo.';console.warn('[profile] load:',error.code,error.message)}else{AU.profile=data;AU.profileErr=''}
   }catch(error){if(!AU.user||AU.user.id!==id)return;AU.profileLoading=false;AU.profileErr='No se ha podido cargar tu perfil. Comprueba la conexión e inténtalo de nuevo.';console.warn('[profile] load:',error&&error.message)}
@@ -842,7 +845,7 @@ async function loadProfile(id){
 async function storeAvatarUrl(url){
   if(!sbc||!AU.user||!AU.profile)throw new Error('Inicia sesión para cambiar tu foto.');
   const {data,error}=await sbc.from('profiles').update({avatar_url:url}).eq('id',AU.user.id)
-    .select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility').single();
+    .select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility,country,city').single();
   if(error)throw error;AU.profile=data;paintAuth();
 }
 async function uploadAvatar(input){
@@ -869,7 +872,8 @@ async function saveProfile(form){
   const raw=String(form.querySelector('[name="alias"]').value||'').trim().replace(/^@/,'').toLowerCase();
   if(!name||name.length>40){toast('El nombre público debe tener entre 1 y 40 caracteres.');return}
   if(raw&&!/^[a-z0-9_]{3,20}$/.test(raw)){toast('El alias debe tener entre 3 y 20 caracteres: letras, números o guion bajo.');return}
-  const payload={display_name:name,alias:raw||null,stats_visibility:form.querySelector('[name="stats_visibility"]').value,history_visibility:form.querySelector('[name="history_visibility"]').value,location_visibility:form.querySelector('[name="location_visibility"]').value};
+  const country=String(form.querySelector('[name="country"]').value||'').trim().slice(0,80),city=String(form.querySelector('[name="city"]').value||'').trim().slice(0,80);
+  const payload={display_name:name,alias:raw||null,country:country||null,city:city||null,stats_visibility:form.querySelector('[name="stats_visibility"]').value,history_visibility:form.querySelector('[name="history_visibility"]').value,location_visibility:form.querySelector('[name="location_visibility"]').value};
   const btn=form.querySelector('button[type="submit"]');if(btn){btn.disabled=true;btn.textContent='Guardando…'}
   try{const {data,error}=await sbc.from('profiles').update(payload).eq('id',AU.user.id).select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility').single();
     if(error){if(btn){btn.disabled=false;btn.textContent='Guardar perfil'}const message=error.code==='23505'?'Ese alias ya está en uso. Prueba con otro.':error.code==='23514'?'El alias o alguno de los datos no cumple el formato permitido.':'No se ha podido guardar el perfil. Inténtalo de nuevo.';toast(message);console.warn('[profile] save:',error.code,error.message);return}
