@@ -199,3 +199,8 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .session-save p,.session-saved .mut{font-size:13px;color:var(--mut);line-height:1.4}
 .session-save button{margin-top:14px}
 .session-saved{display:flex;flex-direction:column;gap:6px}
+
+.friend-profile-link{display:flex;align-items:center;min-width:0;flex:1;padding:0;border:0;background:transparent;text-align:left;cursor:pointer}
+.friend-profile-link:hover .friend-person-info b{text-decoration:underline}
+.profile-public-actions{display:flex;justify-content:flex-end;margin-top:12px}
+.profile-public-actions .btn{width:auto;margin:0}
