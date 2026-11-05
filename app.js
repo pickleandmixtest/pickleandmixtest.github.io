@@ -553,6 +553,7 @@ function vFinal(){
   <div class="note">${FX()?'<b>🏆 Parejas fijas:</b> fase de grupos y eliminatorias. El orden final lo decide la eliminatoria; el resto, por <b>victorias</b> y <b>diferencia de puntos</b>.':'<b>🏆 Cómo se decide:</b> gana quien tiene mayor <b>porcentaje de victorias</b>. Si hay empate, decide la <b>diferencia de puntos</b> (a favor menos en contra). Todos juegan el mismo número de partidos, o uno de diferencia, con parejas distintas.'}</div></div>
   ${FX()&&S.started&&S.teams.length?fxFlow(true):''}
   ${aw.map(a=>`<div class="ok"><b>🏅 ${a[0]}</b><br>${esc(a[1])}</div>`).join('')}
+  ${sessionSavePanel()}
   ${dn.length?`<button class="btn ball" data-a="story">Descargar imagen de ranking</button>${share?'<button class="btn ghost" data-a="storyshare">Compartir imagen…</button>':''}`:''}
   ${S.started&&S.matches.length&&!pending().length?'<button class="btn ghost" data-a="repeat">Repetir con los mismos jugadores</button><button class="btn red" data-a="reset">Nueva quedada (borra todo)</button>':''}
   <button class="btn ghost" data-a="${S.started?'go':'home'}">Volver</button>`}
