@@ -1205,6 +1205,7 @@ document.addEventListener('submit',e=>{e.preventDefault();if(e.target.dataset.f=
   /* los nombres rechazados se quedan en el cuadro para poder corregirlos */
   if(r.dups.length){const i=document.querySelector(`form[data-f="${f}"] input[name="n"]`);if(i){i.value=r.dups.join(', ');i.focus();i.select()}}});
 document.addEventListener('change',e=>{const t=e.target;
+  if(t.matches('[data-match-club-select]')){MATCH_CLUBS.selected=t.value;render();return}
   if(t.dataset.dr){const[i,j]=t.dataset.dr.split('-').map(Number);S.draft[i][j]=+t.value;save();render();return}
   if(t.dataset.ren){const p=S.players.find(x=>x.id==t.dataset.ren),nv=t.value.trim().slice(0,24).trim();
     if(nv&&nameTaken(nv,p.id)){t.value=p.name;toast(`«${nv}» ya existe. Usa un nombre distinto, por ejemplo «${nv} A».`);return}
