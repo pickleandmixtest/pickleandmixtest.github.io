@@ -674,6 +674,7 @@ const normName=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+
 const nameTaken=(n,except)=>S.players.some(p=>p.id!==except&&normName(p.name)===normName(n));
 function addNames(txt){const names=txt.split(/[\n,;]+/).map(s=>s.trim().slice(0,24).trim()).filter(Boolean),dups=[];let added=0;
   names.forEach(n=>{if(nameTaken(n)){if(!dups.includes(n))dups.push(n);return}S.players.push({id:S.nid++,name:n,status:'active'});added++});return{added,dups}}
+function linkedFriends(){if(!AU.user)return[];const ids=new Set(FR.items.filter(f=>f.status==='accepted').map(f=>f.requester_id===AU.user.id?f.addressee_id:f.requester_id));return FR.people.filter(p=>ids.has(p.id))}
 const dupMsg=(dups,added)=>(dups.length===1?`«${dups[0]}» ya existe. Usa un nombre distinto, por ejemplo «${dups[0]} A» o una abreviatura.`:`Ya existen: ${dups.map(d=>`«${d}»`).join(', ')}. Usa nombres distintos, por ejemplo añadiendo una inicial.`)+(added?' El resto se ha añadido.':'');
 /* Límite de puntos: nadie puede pasar de P, salvo en el desempate por diferencia de 2 (p. ej. a 9: 10-8, 11-9, 12-10…) */
 const okState=(a,b,P)=>Math.max(a,b)<=P||Math.abs(a-b)<=2;
