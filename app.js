@@ -264,7 +264,7 @@ function vFriends(){
   const outgoing=FR.items.filter(f=>f.status==='pending'&&f.requester_id===AU.user.id);
   const accepted=FR.items.filter(f=>f.status==='accepted');
   const byId=id=>FR.people.find(p=>p.id===id)||{id,display_name:'Jugador',alias:''};
-  const search=FR.people.filter(p=>p.id!==AU.user.id);
+  const search=FR.results.filter(p=>p.id!==AU.user.id);
   const results=search.map(p=>{const s=friendState(p.id);return '<div class="friend-row">'+profileMini(p)+(s==='friend'?'<span class="tag">Amigos</span>':s==='sent'?'<span class="tag">Enviada</span>':s==='received'?'<button class="btn sm" data-fa="accept" data-id="'+p.id+'">Aceptar</button>':'<button class="btn sm" data-fa="send" data-id="'+p.id+'">Añadir</button>')+'</div>'}).join('');
   const requests=incoming.map(f=>'<div class="friend-row">'+profileMini(byId(f.requester_id))+'<div class="friend-actions"><button class="btn sm" data-fa="accept" data-id="'+f.id+'">Aceptar</button><button class="btn sm ghost" data-fa="reject" data-id="'+f.id+'">Rechazar</button></div></div>').join('');
   const sent=outgoing.map(f=>'<div class="friend-row">'+profileMini(byId(f.addressee_id))+'<button class="btn sm ghost" data-fa="cancel" data-id="'+f.id+'">Cancelar</button></div>').join('');
@@ -294,14 +294,14 @@ async function loadFriends(){
 }
 function paintFriends(){if(view==='friends'){const root=document.querySelector('#app');if(root)root.innerHTML=header()+vFriends()+foot()}}
 async function searchFriends(form){
-  const q=String(form.querySelector('[name="q"]').value||'').trim().replace(/^@/,'').slice(0,40);FR.query=q;FR.people=[];FR.error='';
+  const q=String(form.querySelector('[name="q"]').value||'').trim().replace(/^@/,'').slice(0,40);FR.query=q;FR.results=[];FR.error='';
   if(!q){paintFriends();return}
   if(!AU.user||!sbc)return;
   FR.searching=true;paintFriends();
   try{
-    const safe=q.replace(/[,%()]/g,' ').trim();if(!safe){FR.people=[];return}
+    const safe=q.replace(/[,%()]/g,' ').trim();if(!safe){FR.results=[];return}
     const {data,error}=await sbc.from('profiles').select('id,display_name,alias,avatar_url').or('alias.ilike.%'+safe+'%,display_name.ilike.%'+safe+'%').neq('id',AU.user.id).not('alias','is',null).limit(20);
-    if(error)throw error;FR.people=data||[];
+    if(error)throw error;FR.results=data||[];
   }catch(error){console.warn('[friends] search:',error&&error.message);FR.error='No se ha podido realizar la búsqueda. Inténtalo de nuevo.'}
   finally{FR.searching=false;paintFriends()}
 }
@@ -679,7 +679,7 @@ async function loadProfile(id){
     if(!AU.user||AU.user.id!==id)return;AU.profileLoading=false;
     if(error){AU.profileErr='No se ha podido cargar tu perfil. Comprueba la conexión e inténtalo de nuevo.';console.warn('[profile] load:',error.code,error.message)}else{AU.profile=data;AU.profileErr=''}
   }catch(error){if(!AU.user||AU.user.id!==id)return;AU.profileLoading=false;AU.profileErr='No se ha podido cargar tu perfil. Comprueba la conexión e inténtalo de nuevo.';console.warn('[profile] load:',error&&error.message)}
-  paintAuth();
+  paintAuth();if(view==='friends')loadFriends();
 }
 async function storeAvatarUrl(url){
   if(!sbc||!AU.user||!AU.profile)throw new Error('Inicia sesión para cambiar tu foto.');
