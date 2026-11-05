@@ -196,7 +196,7 @@ function render(){
 }
 let PG={u:0,c:0};
 const HIST={items:[],sessions:[],selectedSessionId:null,invites:[],inviteBusy:'',stats:{played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0},loading:false,error:'',loaded:false};
-const PUB={id:null,profile:null,stats:null,history:[],achievements:null,error:'',loading:false,statsHidden:false,historyHidden:false};
+const PUB={id:null,profile:null,stats:null,history:[],achievements:null,clubs:[],clubsLoading:false,error:'',loading:false,statsHidden:false,historyHidden:false};
 const ACH={summary:null,loading:false,error:'',open:false,publicMode:false,notifications:[],notificationsOpen:false};
 const FR={items:[],people:[],query:'',results:[],loading:false,searching:false,error:'',loaded:false,ranking:[],rankingLoading:false,activity:[],activityLoading:false,busy:'',panel:''};
 const CL={items:[],members:[],people:[],selectedId:initialClubId,section:'mine',loading:false,error:'',busy:'',createOpen:false,requests:[],invitations:[],links:[],events:[],registrations:[],posts:[],comments:[],postOpen:false,inviteUrl:'',eventOpen:false,settingsOpen:false,inviteRedeemBusy:false,myRequest:null,incomingInvites:[]};
@@ -599,16 +599,22 @@ function vUserProfile(){
   const p=PUB.profile,rel=friendState(p.id),request=FR.items.find(f=>(f.requester_id===p.id&&f.addressee_id===AU.user.id)||(f.addressee_id===p.id&&f.requester_id===AU.user.id));
   const action=rel==='friend'?'<span class="tag">Amigos</span>':rel==='sent'?'<span class="tag">Solicitud enviada</span>':rel==='received'?'<button class="btn sm" data-fa="accept" data-id="'+request.id+'">Aceptar solicitud</button>':'<button class="btn sm" data-fa="send" data-id="'+p.id+'">Añadir amigo</button>';
   const stat=PUB.stats?'<div class="profile-metrics"><div class="card profile-metric"><b>'+PUB.stats.played+'</b><span>Partidos</span></div><div class="card profile-metric"><b>'+PUB.stats.wins+'</b><span>Victorias</span></div><div class="card profile-metric"><b>'+Math.round(PUB.stats.win_rate*100)+'%</b><span>Victorias</span></div></div><p class="mut">Diferencia de puntos: '+(PUB.stats.points_for-PUB.stats.points_against>0?'+':'')+(PUB.stats.points_for-PUB.stats.points_against)+'</p>':PUB.statsHidden?'<p class="mut">Este usuario no comparte sus estadísticas contigo.</p>':'<p class="mut">Todavía no hay estadísticas registradas.</p>';
-    return '<h2>Perfil de jugador</h2><section class="card acct"><div class="me">'+(p.avatar_url?'<img class="av" src="'+esc(p.avatar_url)+'" alt="">':'<span class="av">'+esc((p.display_name||'?').slice(0,1).toUpperCase())+'</span>')+'<div><span class="tag d">Jugador de PICKLE &amp; MIX</span><b>'+esc(p.display_name)+'</b><span class="mut">@'+esc(p.alias)+'</span></div></div><div class="profile-public-actions">'+action+'</div></section>'+
-    '<p class="mut">'+(!PUB.locationHidden&&(p.city||p.country)?esc([p.city,p.country].filter(Boolean).join(', ')):'')+'</p>'+achievementPanel(PUB.achievements,true)+achievementCatalog(PUB.achievements,true)+'<h3 class="profile-section-title">Estadísticas</h3>'+stat+
+    const clubs=PUB.clubsLoading?'<p class="mut">Cargando clubes…</p>':PUB.clubs.length?'<div class="profile-clubs-list">'+PUB.clubs.map(c=>'<button type="button" class="profile-club-row" data-club-open="'+c.id+'"><span class="profile-club-avatar">'+(c.avatar_url?'<img src="'+esc(c.avatar_url)+'" alt="">':'⌂')+'</span><span class="profile-club-info"><b>'+esc(c.name)+'</b><small>'+esc([c.city,c.club_type==='official'?'Club Oficial':'Club de amigos'].filter(Boolean).join(' · '))+'</small></span><span class="tag">'+(c.role==='admin'?'Administrador':'Miembro')+'</span><span class="profile-club-arrow">›</span></button>').join('')+'</div>':'<p class="mut">Este jugador todavía no pertenece a ningún club.</p>';
+    return '<section class="card acct"><div class="me">'+(p.avatar_url?'<img class="av" src="'+esc(p.avatar_url)+'" alt="">':'<span class="av">'+esc((p.display_name||'?').slice(0,1).toUpperCase())+'</span>')+'<div><span class="tag d">Jugador de PICKLE &amp; MIX</span><b>'+esc(p.display_name)+'</b><span class="mut">@'+esc(p.alias)+'</span></div></div><div class="profile-public-actions">'+action+'</div></section>'+
+    '<p class="mut">'+(!PUB.locationHidden&&(p.city||p.country)?esc([p.city,p.country].filter(Boolean).join(', ')):'')+'</p>'+achievementPanel(PUB.achievements,true)+achievementCatalog(PUB.achievements,true)+'<h3 class="profile-section-title">Clubes</h3><section class="card profile-clubs-card">'+clubs+'</section><h3 class="profile-section-title">Estadísticas</h3>'+stat+
         '<button class="btn ghost" data-a="friends">Volver a Amigos</button>';
 }
 async function openUserProfile(id){
   if(!sbc||!AU.user)return;
-  PUB.id=id;PUB.profile=null;PUB.stats=null;PUB.history=[];PUB.achievements=null;PUB.error='';PUB.loading=true;PUB.statsHidden=false;PUB.historyHidden=false;view='user-profile';render();
+  PUB.id=id;PUB.profile=null;PUB.stats=null;PUB.history=[];PUB.achievements=null;PUB.clubs=[];PUB.clubsLoading=true;PUB.error='';PUB.loading=true;PUB.statsHidden=false;PUB.historyHidden=false;view='user-profile';render();
   try{
     const {data,error}=await sbc.from('profiles').select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility,country,city').eq('id',id).single();
     if(error)throw error;PUB.profile=data;
+    const memberships=await sbc.from('club_members').select('club_id,role').eq('user_id',id);
+    if(memberships.error)throw memberships.error;
+    const clubIds=(memberships.data||[]).map(m=>m.club_id);
+    if(clubIds.length){const clubsResult=await sbc.from('clubs').select('id,name,city,club_type,avatar_url').in('id',clubIds);if(clubsResult.error)throw clubsResult.error;PUB.clubs=(clubsResult.data||[]).map(c=>({...c,role:memberships.data.find(m=>m.club_id===c.id)?.role||'member'})).sort((a,b)=>a.name.localeCompare(b.name,'es'))}else PUB.clubs=[];
+    PUB.clubsLoading=false;
     const ach=await sbc.rpc('get_profile_achievement_summary',{p_user_id:id});if(!ach.error)PUB.achievements=ach.data;
     const isSelf=id===AU.user.id,isFriend=friendState(id)==='friend';
     const canStats=isSelf||data.stats_visibility==='everyone'||(data.stats_visibility==='friends'&&isFriend);
@@ -617,7 +623,7 @@ async function openUserProfile(id){
     if(canStats){const r=await sbc.rpc('get_user_stats',{p_user_id:id});if(r.error)throw r.error;PUB.stats=r.data}
     else PUB.statsHidden=true;
       }catch(error){console.warn('[public profile] load:',error&&error.message);PUB.error='No se ha podido cargar este perfil o sus datos públicos.'}
-  finally{PUB.loading=false;if(view==='user-profile')render()}
+  finally{PUB.loading=false;PUB.clubsLoading=false;if(view==='user-profile')render()}
 }
 function friendActivityRow(item){
   return '<div class="history-row"><div><b>'+esc(item.friendName)+' · '+esc(item.session_title||'Quedada')+'</b><span class="mut">'+new Date(item.played_at).toLocaleDateString('es-ES')+' · '+(item.won?'Victoria':'Derrota')+'</span><small>'+esc((item.teammates||[]).join(' / '))+' vs '+esc((item.opponents||[]).join(' / '))+'</small></div><strong class="'+(item.won?'win':'loss')+'">'+item.own_score+'–'+item.opponent_score+'</strong></div>';
