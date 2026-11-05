@@ -218,9 +218,9 @@ function achievementPanel(summary,publicMode){
   if(!summary)return '';
   const earned=new Map((summary.earned||[]).map(x=>[x.id,x.earned_at]));
   const unlocked=ACH_BADGES.filter(b=>earned.has(b.id));
-  const shown=unlocked.slice(0,6).map(b=>'<span class="achievement-medal earned" title="'+esc(b.title)+'" aria-label="'+esc(b.title)+'"><b>'+b.mark+'</b></span>').join('');
-  const more=unlocked.length>6?'<span class="achievement-medal-more">+'+(unlocked.length-6)+'</span>':'';
-  return '<button type="button" class="achievement-medal-launch" data-a="'+(publicMode?'publicAchievements':'achievements')+'" aria-label="Ver colección de insignias"><span class="achievement-medal-row">'+(shown||'<span class="achievement-medal-empty">Aún no has desbloqueado insignias</span>')+more+'</span><span class="achievement-medal-caption">'+unlocked.length+' de '+ACH_BADGES.length+' insignias <b>Ver colección ›</b></span></button>';
+  const shown=unlocked.slice(0,3).map(b=>'<span class="achievement-profile-badge"><i>'+esc(b.mark)+'</i><b>'+esc(b.title)+'</b></span>').join('');
+  const extra=unlocked.length>3?'<span class="achievement-profile-extra">+'+(unlocked.length-3)+'</span>':'';
+  return '<section class="card achievement-profile-card"><button type="button" class="achievement-profile-launch" data-a="'+(publicMode?'publicAchievements':'achievements')+'" aria-label="Ver colección de insignias"><span class="achievement-profile-copy"><b>Insignias</b><small>'+unlocked.length+' de '+ACH_BADGES.length+' desbloqueadas · Ver colección ›</small></span><span class="achievement-profile-list">'+(shown||'<span class="achievement-profile-empty">Todavía no has desbloqueado insignias</span>')+extra+'</span></button></section>';
 }
 function achievementCatalog(summary,publicMode){
   if(!ACH.open||ACH.publicMode!==publicMode||!summary)return '';
@@ -1026,21 +1026,21 @@ document.addEventListener('click',e=>{
   if(d.clubJoin){joinClub(d.clubJoin);return}
   if(d.clubLeave){leaveClub(d.clubLeave);return}
   if(d.clubDelete){deleteClub(d.clubDelete);return}
-  if(d.clubSettingsToggle){CL.settingsOpen=!CL.settingsOpen;paintClubs();return}
-  if(d.clubLinkCreate){createClubInviteLink();return}
+  if(t.hasAttribute('data-club-settings-toggle')){CL.settingsOpen=!CL.settingsOpen;paintClubs();return}
+  if(t.hasAttribute('data-club-link-create')){createClubInviteLink();return}
   if(d.clubLinkCopy){const u=location.origin+location.pathname+'?club_invite='+d.clubLinkCopy;if(navigator.clipboard)navigator.clipboard.writeText(u).then(()=>toast('Enlace copiado.')).catch(()=>prompt('Copia este enlace:',u));else prompt('Copia este enlace:',u);return}
-  if(d.clubCopyCurrent){if(CL.inviteUrl&&navigator.clipboard)navigator.clipboard.writeText(CL.inviteUrl).then(()=>toast('Enlace copiado.')).catch(()=>prompt('Copia este enlace:',CL.inviteUrl));else if(CL.inviteUrl)prompt('Copia este enlace:',CL.inviteUrl);return}
+  if(t.hasAttribute('data-club-copy-current')){if(CL.inviteUrl&&navigator.clipboard)navigator.clipboard.writeText(CL.inviteUrl).then(()=>toast('Enlace copiado.')).catch(()=>prompt('Copia este enlace:',CL.inviteUrl));else if(CL.inviteUrl)prompt('Copia este enlace:',CL.inviteUrl);return}
   if(d.clubLinkRevoke){revokeClubInviteLink(d.clubLinkRevoke);return}
   if(d.clubInviteRevoke){revokeClubInvitation(d.clubInviteRevoke);return}
   if(d.clubRequest){respondClubRequest(d.id,d.clubRequest==='accept');return}
-  if(d.clubRequestCancel){cancelClubJoinRequest();return}
+  if(t.hasAttribute('data-club-request-cancel')){cancelClubJoinRequest();return}
   if(d.clubInvitation){respondClubInvite(d.id,d.clubInvitation==='accept');return}
   if(d.clubMemberAction){manageClubMember(d.id,d.clubMemberAction);return}
-  if(d.clubEventToggle){CL.eventOpen=!CL.eventOpen;paintClubs();return}
+  if(t.hasAttribute('data-club-event-toggle')){CL.eventOpen=!CL.eventOpen;paintClubs();return}
   if(d.clubEventRegister){registerClubEvent(d.clubEventRegister);return}
   if(d.clubEventCancel){cancelClubEventRegistration(d.clubEventCancel);return}
   if(d.clubEventDelete){deleteClubEvent(d.clubEventDelete);return}
-  if(d.clubCreateToggle){e.preventDefault();CL.createOpen=!CL.createOpen;paintClubs();return}
+  if(t.hasAttribute('data-club-create-toggle')){e.preventDefault();CL.createOpen=!CL.createOpen;paintClubs();return}
   if(d.sessionResponse){respondSessionInvitation(d.sessionResponse,d.id);return};if(d.sessionOpen){HIST.selectedSessionId=d.sessionOpen;view='session-detail';render();return}
   if(d.communityPanel){FR.panel=FR.panel===d.communityPanel?'':d.communityPanel;paintFriends();return}
   if(d.fa){friendAction(d.fa,d.id);return}
@@ -1108,7 +1108,7 @@ function authInner(){
     const avatar='<label class="avatar-picker" for="profile-avatar" title="Cambiar foto de perfil" aria-label="Cambiar foto de perfil">'+auAvatar(AU.user)+'<span class="avatar-camera" aria-hidden="true">✎</span></label><input id="profile-avatar" class="sr" type="file" accept="image/jpeg,image/png,image/webp" data-avatar-file>';
     if(!AU.profileSettingsOpen){
       const pending=FR.items.filter(f=>f.status==='pending'&&f.addressee_id===AU.user.id).length;
-      return '<div class="profile-dashboard"><section class="card acct profile-hero"><div class="profile-hero-main"><div class="profile-avatar-large">'+avatar+'</div><div class="profile-hero-copy"><span class="tag d">TU PERFIL</span><b>'+esc(auName(AU.user))+'</b><span class="profile-alias">'+(p.alias?'@'+esc(p.alias):'Aún no has elegido un alias')+'</span><span class="profile-location">'+(p.city||p.country?'⌖ '+esc([p.city,p.country].filter(Boolean).join(', ')):'Añade tu ciudad en configuración')+'</span></div></div>'+achievementPanel(ACH.summary,false)+'<button class="btn ghost profile-settings-btn" data-a="profileSettings">Editar perfil</button></section>'+achievementCatalog(ACH.summary,false)+notificationsPanel()+sessionInvitesPanel()+
+      return '<div class="profile-dashboard"><section class="card acct profile-hero"><div class="profile-hero-main"><div class="profile-avatar-large">'+avatar+'</div><div class="profile-hero-copy"><span class="tag d">TU PERFIL</span><b>'+esc(auName(AU.user))+'</b><span class="profile-alias">'+(p.alias?'@'+esc(p.alias):'Aún no has elegido un alias')+'</span><span class="profile-location">'+(p.city||p.country?'⌖ '+esc([p.city,p.country].filter(Boolean).join(', ')):'Añade tu ciudad en configuración')+'</span></div></div>'+'<button class="btn ghost profile-settings-btn" data-a="profileSettings">Editar perfil</button></section>'+achievementPanel(ACH.summary,false)+achievementCatalog(ACH.summary,false)+notificationsPanel()+sessionInvitesPanel()+
         '<button class="profile-community card" data-a="friends"><span class="community-symbol">✦</span><span class="community-copy"><b>Amigos y comunidad</b><small>Busca jugadores, gestiona solicitudes y consulta la clasificación</small></span>'+(pending?'<span class="community-count">'+pending+'</span>':'')+'<span class="community-arrow">›</span></button>'+
         '<section class="profile-stat-block"><h3 class="profile-section-title">Tu rendimiento</h3><div class="profile-metrics"><button type="button" class="card profile-metric profile-metric-click" data-a="sessions" '+(!HIST.loaded?'disabled':'')+'><b>'+(HIST.loaded?HIST.stats.sessions:'—')+'</b><span>Quedadas jugadas</span><small>Ver registro ›</small></button><div class="card profile-metric"><b>'+(HIST.loaded?HIST.stats.wins:'—')+'</b><span>Partidos ganados</span></div><div class="card profile-metric"><b>'+(HIST.loaded?(HIST.stats.played?Math.round(HIST.stats.winRate*100)+'%':'0%'):'—')+'</b><span>% de partidos ganados</span></div></div></section>'+
         '<section class="card profile-empty profile-activity-card"><div class="profile-card-heading"><h3>Tu actividad</h3><span class="section-kicker">RECIENTE</span></div>'+(HIST.loading?'<p>Cargando tu historial…</p>':HIST.error?'<p>'+esc(HIST.error)+'</p>':HIST.items.length?HIST.items.slice(0,3).map(historyRow).join(''):'<p>Todavía no has guardado partidos en tu historial. Al terminar una quedada, podrás guardarla y vincular tu jugador con tu cuenta.</p>')+'</section>'+' <section class="card profile-empty profile-activity-card"><div class="profile-card-heading"><h3>Actividad de tus amigos</h3><span class="section-kicker">COMUNIDAD</span></div>'+(FR.activityLoading?'<p>Cargando actividad…</p>':FR.activity.length?FR.activity.slice(0,3).map(friendActivityRow).join(''):'<p>Cuando tengas amigos y compartan su historial, verás aquí sus últimos partidos.</p>')+'</section>'+
