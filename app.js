@@ -191,7 +191,7 @@ function render(){
 let PG={u:0,c:0};
 const HIST={items:[],stats:{played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0},loading:false,error:'',loaded:false};
 const PUB={id:null,profile:null,stats:null,history:[],error:'',loading:false,statsHidden:false,historyHidden:false};
-const FR={items:[],people:[],query:'',results:[],loading:false,searching:false,error:'',loaded:false,ranking:[],rankingLoading:false,activity:[],activityLoading:false};
+const FR={items:[],people:[],query:'',results:[],loading:false,searching:false,error:'',loaded:false,ranking:[],rankingLoading:false,activity:[],activityLoading:false,busy:''};
 function initPong(cid,hid,pre){
   const c=document.getElementById(cid);if(!c)return;const x=c.getContext('2d'),d=window.devicePixelRatio||1,hint=hid&&document.getElementById(hid);
   let W=0,H=0,k=1,PW,PH,UY,CY,NY,RI,RP;if(!pre)PG.u=PG.c=0;const WIN=7,HIT=()=>PW/2+s.r*.7,s={m:'idle',bx:0,by:0,vx:0,vy:0,r:0,a:0,sp:300,ux:0,cx:0,t:0,dir:-1,err:0};
@@ -283,8 +283,8 @@ function vFriends(){
   const accepted=FR.items.filter(f=>f.status==='accepted');
   const byId=id=>FR.people.find(p=>p.id===id)||{id,display_name:'Jugador',alias:''};
   const search=FR.results.filter(p=>p.id!==AU.user.id);
-  const results=search.map(p=>{const s=friendState(p.id);return '<div class="friend-row">'+profileLink(p)+(s==='friend'?'<span class="tag">Amigos</span>':s==='sent'?'<span class="tag">Enviada</span>':s==='received'?'<button class="btn sm" data-fa="accept" data-id="'+p.id+'">Aceptar</button>':'<button class="btn sm" data-fa="send" data-id="'+p.id+'">Añadir</button>')+'</div>'}).join('');
-  const requests=incoming.map(f=>'<div class="friend-row">'+profileLink(byId(f.requester_id))+'<div class="friend-actions"><button class="btn sm" data-fa="accept" data-id="'+f.id+'">Aceptar</button><button class="btn sm ghost" data-fa="reject" data-id="'+f.id+'">Rechazar</button></div></div>').join('');
+  const results=search.map(p=>{const s=friendState(p.id),req=FR.items.find(f=>f.status==='pending'&&f.requester_id===p.id&&f.addressee_id===AU.user.id),busy=FR.busy===('accept:'+((req&&req.id)||''))||FR.busy===('send:'+p.id);return '<div class="friend-row">'+profileLink(p)+(s==='friend'?'<span class="tag">Amigos</span>':s==='sent'?'<span class="tag">Enviada</span>':s==='received'?'<button class="btn sm" data-fa="accept" data-id="'+(req?req.id:'')+'" '+(!req||busy?'disabled':'')+'>Aceptar</button>':'<button class="btn sm" data-fa="send" data-id="'+p.id+'" '+(busy?'disabled':'')+'>Añadir</button>')+'</div>'}).join('');
+  const requests=incoming.map(f=>{const busy=FR.busy==='accept:'+f.id||FR.busy==='reject:'+f.id;return '<div class="friend-row">'+profileLink(byId(f.requester_id))+'<div class="friend-actions"><button class="btn sm" data-fa="accept" data-id="'+f.id+'" '+(busy?'disabled':'')+'>Aceptar</button><button class="btn sm ghost" data-fa="reject" data-id="'+f.id+'" '+(busy?'disabled':'')+'>Rechazar</button></div></div>'}).join('');
   const sent=outgoing.map(f=>'<div class="friend-row">'+profileLink(byId(f.addressee_id))+'<button class="btn sm ghost" data-fa="cancel" data-id="'+f.id+'">Cancelar</button></div>').join('');
   const friends=accepted.map(f=>{const id=f.requester_id===AU.user.id?f.addressee_id:f.requester_id;return '<div class="friend-row">'+profileLink(byId(id))+'<button class="btn sm ghost" data-fa="remove" data-id="'+f.id+'">Eliminar</button></div>'}).join('');
   const ranking=FR.rankingLoading?'<p class="mut">Calculando clasificación…</p>':FR.ranking.length?FR.ranking.map((p,i)=>'<div class="friend-row leaderboard-row"><span class="leader-position">'+(i+1)+'</span>'+profileLink(p)+'<span class="leader-stats"><b>'+Math.round(p.stats.win_rate*100)+'%</b><small>'+p.stats.wins+'V · '+p.stats.played+' PJ</small></span></div>').join(''):'<p class="mut">Todavía no hay partidos guardados suficientes para crear una clasificación. Guarda tus quedadas y las de tus amigos.</p>';
@@ -375,18 +375,25 @@ async function searchFriends(form){
   finally{FR.searching=false;paintFriends()}
 }
 async function friendAction(action,id){
-  if(!sbc||!AU.user)return;
+  if(!sbc||!AU.user||!id||FR.busy)return;
+  if(action==='remove'&&!confirm('¿Eliminar esta amistad?'))return;
+  FR.busy=action+':'+id;paintFriends();if(view==='user-profile')render();
   try{
     let result;
     if(action==='send')result=await sbc.rpc('send_friend_request',{p_addressee_id:id});
     else if(action==='accept')result=await sbc.rpc('respond_friend_request',{p_request_id:id,p_accept:true});
     else if(action==='reject')result=await sbc.rpc('respond_friend_request',{p_request_id:id,p_accept:false});
     else if(action==='cancel')result=await sbc.rpc('cancel_friend_request',{p_request_id:id});
-    else if(action==='remove'){if(!confirm('¿Eliminar esta amistad?'))return;result=await sbc.rpc('remove_friend',{p_friendship_id:id})}
+    else if(action==='remove')result=await sbc.rpc('remove_friend',{p_friendship_id:id});
     if(result&&result.error)throw result.error;
     toast(({send:'Solicitud enviada.',accept:'Solicitud aceptada.',reject:'Solicitud rechazada.',cancel:'Solicitud cancelada.',remove:'Amistad eliminada.'})[action]||'Actualizado.');
-    await loadFriends();if(view==='user-profile'&&PUB.id)openUserProfile(PUB.id);
-  }catch(error){console.warn('[friends] action:',error&&error.message);FR.error=error&&error.message&&/alias/i.test(error.message)?'Elige un alias en Configuración antes de enviar solicitudes.':'No se ha podido completar la acción. Puede que la solicitud ya no esté disponible.';paintFriends()}
+    await loadFriends();
+    if(view==='user-profile'&&PUB.id)await openUserProfile(PUB.id);
+  }catch(error){
+    const msg=String(error&&error.message||'');console.warn('[friends] action:',error);
+    if(/ya existe una solicitud|already exists/i.test(msg)){toast('Ya existe una solicitud o amistad con este jugador.');await loadFriends()}
+    else{FR.error=/alias/i.test(msg)?'Elige un alias en Configuración antes de enviar solicitudes.':/solicitud inexistente|ya respondida|sin permisos|no puedes/i.test(msg)?'Esta solicitud ya no está disponible. Actualiza la lista para ver su estado.':'No se ha podido completar la acción. Revisa tu conexión e inténtalo de nuevo.';paintFriends()}
+  }finally{FR.busy='';paintFriends();if(view==='user-profile')render()}
 }
 function historyRow(item){
   return '<div class="history-row"><div><b>'+esc(item.sessionTitle)+'</b><span class="mut">'+new Date(item.playedAt).toLocaleDateString('es-ES')+' · Partido '+item.matchNumber+'</span><small>'+esc(item.teammates.join(' / '))+' vs '+esc(item.opponents.join(' / '))+'</small></div><strong class="'+(item.won?'win':'loss')+'">'+item.ownScore+'–'+item.oppScore+'</strong></div>';
@@ -488,7 +495,7 @@ function rotSummary(){
   <div class="sl"><span class="ic">⏱</span><div>Duración estimada: <b>aprox. ${fmtMin(r.tot)}</b><br><span class="mut">${r.rounds} turnos de ~${Math.round(r.dur)} min + 2 min de transición, con ${r.P} partido${r.P>1?'s':''} a la vez. Estimación aproximada, no una garantía.</span></div></div></div>`}
 function vSetup(){const c=S.settings,n=S.players.length,per=Math.floor(n/4)||0,T=Math.floor(n/2),tot=FX()?fxTotal(T):(n>=4?Math.ceil(n*c.cycles/4):0);
   return`<h2>Prepara la quedada</h2><p class="lead">Añade a los jugadores y ajusta pistas, puntos${FX()?'':' y ciclos'}.</p>${modeSel()}
-  <form class="card player-add" data-f="add"><label class="mut">Añadir jugadores</label><div class="row"><input name="n" autocomplete="off" placeholder="Nombre o @alias"><button class="btn sm fix">Añadir</button></div><div id="player-suggestions" class="player-suggestions" hidden></div><p class="hint">Usa un nombre normal para invitados o <b>@alias</b> para vincular a un amigo. Los invitados salen en el resultado de la quedada, pero sus estadísticas no se guardan en un perfil.</p>${nameErrBox()}</form>
+  <form class="card player-add" data-f="add"><label class="mut">Añadir jugadores</label><div class="row"><input name="n" autocomplete="off" placeholder="Nombre o @alias"><button class="btn sm fix">Añadir</button></div><div id="player-suggestions" class="player-suggestions" hidden></div><p class="hint">Usa un nombre normal para invitados o <b>@alias</b> para vincular a un amigo. Los invitados salen en el resultado de la quedada, pero sus estadísticas no se guardan en un perfil.</p>${AU.user?'<button type="button" class="btn sm ghost" data-addself '+(S.players.some(p=>p.userId===AU.user.id)?'disabled':'')+'>'+(S.players.some(p=>p.userId===AU.user.id)?'Ya estás en la quedada':'＋ Añadirme como jugador')+'</button><p class="hint">Así quedarán vinculados tus resultados a tu perfil.</p>':''}${nameErrBox()}</form>
   <div class="card">${n?S.players.map(p=>`<div class="row player-entry" style="margin:6px 0"><input value="${esc(p.name)}" data-ren="${p.id}" aria-label="Nombre"><span class="player-account ${p.userId?'linked':''}">${p.userId?'Cuenta vinculada':'Invitado'}</span><button class="btn sm red fix" data-del="${p.id}" aria-label="Eliminar ${esc(p.name)}">✕</button></div>`).join(''):'<div class="empty">👥<br><b>Aún no hay jugadores</b><br>Añade al menos 4 para empezar.</div>'}</div>
   ${pairsCard()}
   <div class="card"><div class="row"><label>Pistas<input type="number" min="1" max="4" value="${c.courts}" data-set="courts"></label><label>Puntos<input type="number" min="3" max="21" value="${c.points}" data-set="points"></label>${FX()?'':`<label>Ciclos<input type="number" min="1" max="${CMAX}" value="${c.cycles}" data-set="cycles"></label>`}</div>${FX()?'':'<p class="hint">🔁 <b>Ciclos</b> = partidos que juega cada persona.</p>'}</div>
@@ -748,6 +755,7 @@ document.addEventListener('click',e=>{
   if(d.a==='friends'){view='friends';FR.error='';render();loadFriends();return}
   if(d.a==='profile'){view='profile';AU.profileSettingsOpen=false;render();if(AU.user){loadMyHistory();loadFriends()}return}
   if(d.fa){friendAction(d.fa,d.id);return}
+  if(d.addself!==undefined){if(!AU.user)return;const existing=S.players.find(p=>p.userId===AU.user.id);if(existing){toast('Ya estás en la quedada.');return}const display=(AU.profile&&AU.profile.display_name)||(AU.user.user_metadata&&(AU.user.user_metadata.full_name||AU.user.user_metadata.name))||(AU.user.email?AU.user.email.split('@')[0]:'Yo');let player=S.players.find(p=>!p.userId&&normName(p.name)===normName(display));if(player){player.userId=AU.user.id}else{let name=String(display||'Yo').slice(0,24);if(nameTaken(name))name=('@'+String((AU.profile&&AU.profile.alias)||'yo')).slice(0,24);if(nameTaken(name))name='Yo';S.players.push({id:S.nid++,name,userId:AU.user.id,status:'active'})}save();render();return}
   if(d.linkplayer){const friend=linkedFriends().find(p=>p.id===d.linkplayer);if(friend&&!S.players.some(p=>p.userId===friend.id)){let name=(friend.display_name||friend.alias||'Jugador').slice(0,24);if(nameTaken(name))name=('@'+(friend.alias||friend.display_name||'amigo')).slice(0,24);S.players.push({id:S.nid++,name,userId:friend.id,status:'active'});save()}else if(friend)toast('Ese amigo ya está en la quedada.');render();return}
   if(d.up){openUserProfile(d.up);return}
   if(d.a){A[d.a]();}
