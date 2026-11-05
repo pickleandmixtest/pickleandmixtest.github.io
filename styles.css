@@ -454,3 +454,42 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .party-subnav button{border:1px solid rgba(18,50,94,.14);border-radius:999px;background:rgba(255,255,255,.72);color:var(--court);padding:7px 13px;font:700 12px inherit;cursor:pointer;transition:background .16s,border-color .16s}
 .party-subnav button[aria-current="page"]{background:var(--court);border-color:var(--court);color:#fff}
 @media(max-width:420px){.party-subnav{gap:5px;padding-bottom:9px}.party-subnav button{padding:7px 10px;font-size:11px}}
+
+/* Gestión avanzada de clubes y eventos */
+.club-avatar img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.club-cover{height:150px;border-radius:18px 18px 0 0;background-size:cover;background-position:center;background-color:#e8eef6}
+.club-cover+.clubs-hero{border-radius:0 0 18px 18px}
+.club-detail-identity{display:flex;align-items:center;gap:13px;min-width:0}
+.club-detail-avatar{width:62px;height:62px;object-fit:cover;border:2px solid rgba(255,255,255,.7);border-radius:17px}
+.club-admin-section{padding:15px;display:flex;flex-direction:column;gap:12px}
+.club-admin-section h3{margin:0}
+.club-admin-form{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.club-admin-form label,.club-image-settings b{font-size:12px;font-weight:800;color:var(--court)}
+.club-admin-form input,.club-admin-form textarea,.club-admin-form select,.club-inline-form input,.club-share-link input{width:100%;min-width:0;padding:10px 12px;border:1px solid #dce5ef;border-radius:10px;background:#fff;color:var(--ink);font:inherit}
+.club-admin-form textarea{resize:vertical}
+.club-inline-form{display:flex;gap:8px;align-items:center}
+.club-inline-form .btn{flex:none;width:auto;margin:0}
+.club-image-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+.club-image-settings>div{display:flex;flex-direction:column;gap:6px;min-width:0}
+.club-image-settings small{font-size:10px;color:var(--mut)}
+.club-image-settings input{width:100%;font-size:10px}
+.club-admin-list{display:flex;flex-direction:column;gap:5px}
+.club-request-row{display:flex;align-items:center;gap:7px;padding:10px 0;border-top:1px solid #edf1f6}
+.club-request-row>div{display:flex;flex:1;flex-direction:column;gap:3px;min-width:0}
+.club-request-row b{font-size:12px}
+.club-request-row small{font-size:10px;color:var(--mut)}
+.club-request-row .btn{flex:none;width:auto;margin:0}
+.club-member-actions{display:flex;flex-wrap:wrap;gap:4px;margin-left:auto}
+.club-member-actions .btn{width:auto;margin:0}
+.club-share-link{display:flex;gap:7px}
+.club-share-link .btn{flex:none;width:auto;margin:0}
+.club-event-card{padding:14px 0;border-top:1px solid #edf1f6}
+.club-event-card h4{margin:8px 0 5px;color:var(--court);font-size:15px}
+.club-event-card p{margin:0 0 9px;color:#45566b;font-size:12px;line-height:1.5}
+.club-event-top,.club-event-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.club-event-meta{display:flex;flex-wrap:wrap;gap:9px;color:var(--mut);font-size:10px}
+.club-event-attendees{display:block;margin-top:8px;color:var(--mut);font-size:10px}
+.club-event-actions{margin-top:10px}
+.club-event-actions .btn{width:auto;margin:0}
+.club-event-card .tag{font-size:9px}
+@media(max-width:520px){.club-image-settings{grid-template-columns:1fr}.club-request-row{flex-wrap:wrap}.club-request-row>div{flex-basis:100%}.club-member-actions{flex-basis:100%;margin-left:48px}.club-inline-form{align-items:stretch;flex-direction:column}.club-inline-form .btn{width:100%}.club-share-link{flex-direction:column}}
