@@ -532,7 +532,7 @@ const A={
 };
 document.addEventListener('click',e=>{
   const t=e.target.closest('[data-a],[data-sc],[data-ct],[data-del],[data-st],[data-pd],[data-edit],[data-mode],[data-pm]');if(!t)return;const d=t.dataset;
-  if(d.a)A[d.a]();
+  if(d.a){if(d.a==='removeAvatar'){removeCustomAvatar();return}A[d.a]();}
   else if(d.sc){const c=d.sc[0],v=+d.sc.slice(1),r=scoreStep(tmp,c,v,S.settings.points);if(r.ok)tmp[c]=r.val;else toast(r.msg);$('#app').innerHTML=header()+vGame()+foot();return}
   else if(d.ct){ct=+d.ct;ed=null}
   else if(d.mode)S.settings.mode=d.mode;
@@ -543,6 +543,7 @@ document.addEventListener('click',e=>{
   else if(d.pd){const p=S.players.find(x=>x.id==d.pd);if(!confirm(`¿Quitar a ${p.name}? Sus partidos jugados se conservan.`))return;p.status='out';p.removed=true;S.players=S.players.filter(x=>x!==p||S.matches.some(m=>m.status==='done'&&[...m.a,...m.b].includes(p.id)));replan('Jugador quitado.')}
   save();render();
 });
+document.addEventListener('change',e=>{if(e.target.matches('[data-avatar-file]'))uploadAvatar(e.target)});
 document.addEventListener('submit',e=>{e.preventDefault();if(e.target.dataset.f==='profile'){saveProfile(e.target);return}const f=e.target.dataset.f,v=e.target.n.value;if(!v.trim())return;
   const r=addNames(v);if(r.added&&f==='addlive')replan('Jugador añadido.');
   if(r.dups.length)nerr=dupMsg(r.dups,r.added);
@@ -585,7 +586,8 @@ function authInner(){
       '<label for="profile-stats">Quién puede ver tus estadísticas</label><select id="profile-stats" name="stats_visibility">'+opt('stats_visibility','everyone','Todo el mundo')+opt('stats_visibility','friends','Solo amigos')+opt('stats_visibility','nobody','Nadie')+'</select>'+
       '<label for="profile-history">Quién puede ver tu historial</label><select id="profile-history" name="history_visibility">'+opt('history_visibility','everyone','Todo el mundo')+opt('history_visibility','friends','Solo amigos')+opt('history_visibility','nobody','Nadie')+'</select>'+
       '<label for="profile-location">Quién puede ver tu ubicación</label><select id="profile-location" name="location_visibility">'+opt('location_visibility','everyone','Todo el mundo')+opt('location_visibility','friends','Solo amigos')+opt('location_visibility','nobody','Nadie')+'</select>'+
-      '<p class="hint">La foto actual procede de Google. Más adelante añadiremos la opción de subir otra.</p><button class="btn" type="submit">Guardar perfil</button></form><button class="btn ghost" data-a="logout">Cerrar sesión</button></div>';
+      '<div class="avatar-tools"><label for="profile-avatar">Foto de perfil</label><div class="avatar-actions"><input id="profile-avatar" type="file" accept="image/jpeg,image/png,image/webp" data-avatar-file><small>JPG, PNG o WebP · máximo 2 MB</small><button class="btn sm ghost" type="button" data-a="removeAvatar">Usar foto de Google</button></div></div>'+
+      '<button class="btn" type="submit">Guardar perfil</button></form><button class="btn ghost" data-a="logout">Cerrar sesión</button></div>';
   }
   if(!sbc)return AU.guest?'':'<p class="hint">El acceso con Google no está disponible ahora mismo. La app funciona con normalidad sin cuenta.</p>';
   if(!AU.ready)return '<p class="hint" role="status">Comprobando sesión…</p>';
@@ -601,6 +603,39 @@ async function loadProfile(id){
     if(error){AU.profileErr='No se ha podido cargar tu perfil. Comprueba la conexión e inténtalo de nuevo.';console.warn('[profile] load:',error.code,error.message)}else{AU.profile=data;AU.profileErr=''}
   }catch(error){if(!AU.user||AU.user.id!==id)return;AU.profileLoading=false;AU.profileErr='No se ha podido cargar tu perfil. Comprueba la conexión e inténtalo de nuevo.';console.warn('[profile] load:',error&&error.message)}
   paintAuth();
+}
+async function storeAvatarUrl(url){
+  if(!sbc||!AU.user||!AU.profile)throw new Error('Inicia sesión para cambiar tu foto.');
+  const {data,error}=await sbc.from('profiles').update({avatar_url:url}).eq('id',AU.user.id)
+    .select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility').single();
+  if(error)throw error;AU.profile=data;paintAuth();
+}
+async function uploadAvatar(input){
+  const file=input.files&&input.files[0];if(!file)return;input.value='';
+  if(!['image/jpeg','image/png','image/webp'].includes(file.type)){toast('Elige una imagen JPG, PNG o WebP.');return}
+  if(file.size>2*1024*1024){toast('La imagen no puede superar los 2 MB.');return}
+  if(!sbc||!AU.user||!AU.profile){toast('Inicia sesión para cambiar tu foto.');return}
+  const card=input.closest('.acct'),button=card&&card.querySelector('[data-a="removeAvatar"]');
+  input.disabled=true;if(button)button.disabled=true;toast('Subiendo tu foto…');
+  const ext=file.type==='image/jpeg'?'jpg':file.type==='image/png'?'png':'webp';
+  const id=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
+  const path=AU.user.id+'/'+id+'.'+ext;
+  try{
+    const {error:uploadError}=await sbc.storage.from('avatars').upload(path,file,{contentType:file.type,cacheControl:'3600',upsert:false});
+    if(uploadError)throw uploadError;
+    const {data}=sbc.storage.from('avatars').getPublicUrl(path);
+    try{await storeAvatarUrl(data.publicUrl)}catch(error){await sbc.storage.from('avatars').remove([path]);throw error}
+    toast('Foto de perfil actualizada.');
+  }catch(error){console.warn('[avatar] upload:',error&&error.message);toast('No se ha podido actualizar la foto. Comprueba la conexión e inténtalo de nuevo.')}
+  finally{input.disabled=false;if(button)button.disabled=false}
+}
+async function removeCustomAvatar(){
+  if(!sbc||!AU.user||!AU.profile)return;
+  if(!AU.profile.avatar_url){toast('Ya estás usando tu foto de Google.');return}
+  const b=document.querySelector('[data-a="removeAvatar"]');if(b)b.disabled=true;
+  try{await storeAvatarUrl(null);toast('Ahora se muestra tu foto de Google.')}
+  catch(error){console.warn('[avatar] remove:',error&&error.message);toast('No se ha podido cambiar la foto. Inténtalo de nuevo.')}
+  finally{if(b)b.disabled=false}
 }
 async function saveProfile(form){
   if(!sbc||!AU.user||!AU.profile)return;
