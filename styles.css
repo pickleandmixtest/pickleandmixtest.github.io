@@ -864,3 +864,6 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
   justify-self:stretch!important;
   margin:0!important;
 }
+
+/* La navegación secundaria ocupa las dos columnas de la cabecera */
+.top > .party-subnav{grid-column:1 / -1!important; justify-self:stretch!important; width:100%!important;}
