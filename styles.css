@@ -419,3 +419,18 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .club-join-card p{font-size:13px;color:var(--mut)}
 .club-join-card .btn{margin-bottom:0}
 @media(max-width:420px){.clubs-list-head{align-items:stretch;flex-direction:column}.clubs-list-head input{max-width:none}.clubs-hero-mark{width:46px;height:46px}.club-card-actions{justify-content:space-between}}
+
+
+/* Acceso gratuito a minijuegos por nivel de cuenta */
+.games-section{margin-top:4px}
+.games-section>.lead{margin-bottom:13px}
+.games-open,.games-registered{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.games-registered-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:20px 2px 9px;color:var(--court);font-size:13px;font-weight:900}
+.games-registered-heading small{color:var(--mut);font-size:9px;letter-spacing:.08em}
+.gc-registered{position:relative;isolation:isolate;overflow:hidden;opacity:.78}
+.gc-registered:after{content:"";position:absolute;inset:0;z-index:1;background:rgba(242,246,250,.30);backdrop-filter:blur(1.1px);pointer-events:none}
+.gc-lock{position:absolute;inset:auto 7px 7px;z-index:2;display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 5px;border:1px solid rgba(18,50,94,.12);border-radius:9px;background:rgba(255,255,255,.91);color:#12325e;font-size:10px;line-height:1.1;box-shadow:0 2px 8px rgba(18,50,94,.08)}
+.gc-lock-icon{font-size:12px}
+.gc-registered .tx{padding-bottom:31px}
+.gc-registered:focus-visible{outline:3px solid var(--court);outline-offset:3px}
+@media(max-width:360px){.gc-lock{font-size:9px}.games-registered-heading{align-items:flex-start;flex-direction:column;gap:3px}}
