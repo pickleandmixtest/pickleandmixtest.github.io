@@ -182,9 +182,14 @@ function ranking(){return stats().sort((x,y)=>(x.lv||0)-(y.lv||0)||rate(y)-rate(
 const bar=()=>{const t=S.matches.length,d=S.matches.filter(m=>m.status!=='pending').length;return`<div class="bar"><i style="width:${t?d/t*100:0}%"></i></div><span class="mut">${d} de ${t} partidos resueltos</span>`};
 /* Pie de página: visible en todas las pestañas */
 const foot=()=>`<p class="mut foot">Plataforma para pickleballers creada por <a href="https://kikebarcelodg.github.io/" target="_blank" rel="noopener">KBDG</a></p>`;
+let routeInitialized=false;
 function render(){
   const route=view==='club-detail'&&CL.selectedId?'#clubes/'+encodeURIComponent(CL.selectedId):'#'+(VIEW_TO_ROUTE[view]||'inicio');
-  if(location.hash!==route)history.replaceState(null,'',location.pathname+location.search+route);
+  if(location.hash!==route){
+    const url=location.pathname+location.search+route;
+    if(!routeInitialized){history.replaceState(null,'',url);routeInitialized=true}
+    else history.pushState(null,'',url);
+  }else routeInitialized=true;
   const f={home:vHome,setup:vSetup,game:vGame,more:vMore,final:vFinal,profile:vProfile,friends:vFriends,history:vHistory,sessions:vSessions,'session-detail':vSessionDetail,'user-profile':vUserProfile,clubs:vClubs,'club-detail':vClubDetail,admin:vAdmin}[view];
   $('#app').innerHTML=header()+f()+(err?`<div class="err">${esc(err)}</div>`:'')+foot();err='';nerr='';if(view==='home')initPong('pong',null,true);
   if(msg){toast(msg);msg=''}
@@ -1290,10 +1295,17 @@ if(typeof window!=='undefined'&&typeof document!=='undefined'){
   /* Si la foto de Google no carga, se muestra la inicial */
   document.addEventListener('error',e=>{const t=e.target;if(t&&t.tagName==='IMG'&&t.classList.contains('av')){const s=document.createElement('span');s.className='av';s.setAttribute('aria-hidden','true');s.textContent=t.dataset.i||'?';t.replaceWith(s)}},true);
 }
-if(typeof window!=='undefined')window.addEventListener('hashchange',()=>{
+function syncRouteFromLocation(){
   const route=location.hash.replace(/^#\/?/,'').toLowerCase(),clubId=route.startsWith('clubes/')?decodeURIComponent(route.slice(7)):null,next=clubId?'club-detail':ROUTE_TO_VIEW[route];
-  if(next&&(next!==view||(next==='club-detail'&&clubId!==CL.selectedId))){view=next;ed=null;CL.selectedId=clubId||null;render();if((next==='clubs'||next==='club-detail')&&AU.user){if(!CL.items.length)loadClubs();else if(clubId)loadClubData(clubId)}}
-});
+  if(next&&(next!==view||(next==='club-detail'&&clubId!==CL.selectedId))){
+    view=next;ed=null;CL.selectedId=clubId||null;routeInitialized=true;render();
+    if((next==='clubs'||next==='club-detail')&&AU.user){if(!CL.items.length)loadClubs();else if(clubId)loadClubData(clubId)}
+  }
+}
+if(typeof window!=='undefined'){
+  window.addEventListener('hashchange',syncRouteFromLocation);
+  window.addEventListener('popstate',syncRouteFromLocation);
+}
 if(typeof document!=='undefined'&&document.getElementById('app'))render();
 if(typeof module!=='undefined')module.exports={gen,trial,genQ,rotInfo};
 
