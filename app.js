@@ -310,6 +310,24 @@ async function openUserProfile(id){
   }catch(error){console.warn('[public profile] load:',error&&error.message);PUB.error='No se ha podido cargar este perfil o sus datos públicos.'}
   finally{PUB.loading=false;if(view==='user-profile')render()}
 }
+function friendActivityRow(item){
+  return '<div class="history-row"><div><b>'+esc(item.friendName)+' · '+esc(item.session_title||'Quedada')+'</b><span class="mut">'+new Date(item.played_at).toLocaleDateString('es-ES')+' · '+(item.won?'Victoria':'Derrota')+'</span><small>'+esc((item.teammates||[]).join(' / '))+' vs '+esc((item.opponents||[]).join(' / '))+'</small></div><strong class="'+(item.won?'win':'loss')+'">'+item.own_score+'–'+item.opponent_score+'</strong></div>';
+}
+async function loadFriendActivity(){
+  if(!sbc||!AU.user)return;
+  const friends=FR.items.filter(f=>f.status==='accepted').map(f=>f.requester_id===AU.user.id?f.addressee_id:f.requester_id);
+  FR.activityLoading=true;
+  try{
+    const rows=await Promise.all(friends.slice(0,20).map(async id=>{
+      const person=FR.people.find(p=>p.id===id);if(!person)return[];
+      const {data,error}=await sbc.rpc('get_user_history',{p_user_id:id,p_limit:3});
+      if(error)return[];
+      return (Array.isArray(data)?data:[]).map(h=>({...h,friendName:person.display_name||'Amigo'}));
+    }));
+    FR.activity=rows.flat().sort((a,b)=>new Date(b.played_at)-new Date(a.played_at)).slice(0,10);
+  }catch(error){console.warn('[friends] activity:',error&&error.message);FR.activity=[]}
+  finally{FR.activityLoading=false;if(view==='profile')paintAuth()}
+}
 async function loadFriends(){
   if(!sbc||!AU.user)return;
   FR.loading=true;FR.error='';paintFriends();
@@ -322,7 +340,7 @@ async function loadFriends(){
     if(ids.length){const {data:people,error:pe}=await sbc.from('profiles').select('id,display_name,alias,avatar_url').in('id',ids);if(pe)throw pe;FR.people=people||[]}else FR.people=[];
     FR.loaded=true;
   }catch(error){console.warn('[friends] load:',error&&error.message);FR.error='No se han podido cargar tus amistades. Comprueba la conexión e inténtalo de nuevo.'}
-  finally{FR.loading=false;paintFriends()}
+  finally{FR.loading=false;paintFriends();if(view==='profile'){render();loadFriendActivity()}}
 }
 function paintFriends(){if(view==='friends'){const root=document.querySelector('#app');if(root)root.innerHTML=header()+vFriends()+foot()}}
 async function searchFriends(form){
@@ -348,7 +366,7 @@ async function friendAction(action,id){
     else if(action==='remove'){if(!confirm('¿Eliminar esta amistad?'))return;result=await sbc.rpc('remove_friend',{p_friendship_id:id})}
     if(result&&result.error)throw result.error;
     toast(({send:'Solicitud enviada.',accept:'Solicitud aceptada.',reject:'Solicitud rechazada.',cancel:'Solicitud cancelada.',remove:'Amistad eliminada.'})[action]||'Actualizado.');
-    await loadFriends();
+    await loadFriends();if(view==='user-profile'&&PUB.id)openUserProfile(PUB.id);
   }catch(error){console.warn('[friends] action:',error&&error.message);FR.error=error&&error.message&&/alias/i.test(error.message)?'Elige un alias en Configuración antes de enviar solicitudes.':'No se ha podido completar la acción. Puede que la solicitud ya no esté disponible.';paintFriends()}
 }
 function historyRow(item){
@@ -754,7 +772,7 @@ function authInner(){
     if(!AU.profileSettingsOpen){
       return '<div class="profile-dashboard"><section class="card acct profile-identity"><div class="me">'+avatar+'<div><span class="tag d">Tu perfil</span><b>'+esc(auName(AU.user))+'</b><span class="mut">'+(p.alias?'@'+esc(p.alias):'Aún no has elegido un alias')+'</span></div></div><button class="btn ghost profile-settings-btn" data-a="profileSettings">Configuración</button></section>'+
         '<h3 class="profile-section-title">Tus estadísticas</h3><div class="profile-metrics"><div class="card profile-metric"><b>'+(HIST.loaded?HIST.stats.played:'—')+'</b><span>Partidos jugados</span></div><div class="card profile-metric"><b>'+(HIST.loaded?HIST.stats.wins:'—')+'</b><span>Victorias</span></div><div class="card profile-metric"><b>'+(HIST.loaded?(HIST.stats.played?Math.round(HIST.stats.winRate*100)+'%':'0%'):'—')+'</b><span>% de victorias</span></div></div>'+
-        '<section class="card profile-empty"><h3>Tu actividad</h3>'+(HIST.loading?'<p>Cargando tu historial…</p>':HIST.error?'<p>'+esc(HIST.error)+'</p>':HIST.items.length?HIST.items.slice(0,3).map(historyRow).join(''):'<p>Todavía no has guardado partidos en tu historial. Al terminar una quedada, podrás guardarla y vincular tu jugador con tu cuenta.</p>')+'</section>'+
+        '<section class="card profile-empty"><h3>Tu actividad</h3>'+(HIST.loading?'<p>Cargando tu historial…</p>':HIST.error?'<p>'+esc(HIST.error)+'</p>':HIST.items.length?HIST.items.slice(0,3).map(historyRow).join(''):'<p>Todavía no has guardado partidos en tu historial. Al terminar una quedada, podrás guardarla y vincular tu jugador con tu cuenta.</p>')+'</section>'+'<section class="card profile-empty"><h3>Actividad de tus amigos</h3>'+(FR.activityLoading?'<p>Cargando actividad…</p>':FR.activity.length?FR.activity.slice(0,3).map(friendActivityRow).join(''):'<p>Cuando tengas amigos y compartan su historial, verás aquí sus últimos partidos.</p>')+'</section>'+
         (HIST.items.length?'<button class="btn ghost" data-a="history">Ver historial completo</button>':'')+e+
         '<button class="btn ghost" data-a="logout">Cerrar sesión</button></div>';
     }
@@ -839,7 +857,7 @@ if(typeof window!=='undefined'&&typeof document!=='undefined'){
       if(ch&&!u){AU.profile=null;AU.profileErr='';AU.profileLoading=false;HIST.loaded=false;HIST.items=[];HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0}}
       if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))AU.profileLoading=true;
       if(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED')paintAuth();
-      if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))setTimeout(()=>{loadProfile(u.id);loadMyHistory()},0);
+      if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))setTimeout(()=>{loadProfile(u.id);loadMyHistory();loadFriends()},0);
       if(u&&ch&&AU.oauth&&ev==='SIGNED_IN'){AU.oauth=false;toast('Sesión iniciada como '+auName(u))}});
     setTimeout(()=>{if(!AU.ready){AU.ready=true;paintAuth()}},4000)}
   catch(e){sbc=null;console.warn('[auth] onAuthStateChange:',e&&e.message)}}
