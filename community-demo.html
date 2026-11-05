@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#12325e">
+<title>Pickle&Mix · Demo de comunidad</title>
+<link rel="icon" href="favicon.svg?v=1" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+<style>
+.demo-banner{display:flex;gap:9px;align-items:flex-start;background:#fff6d9;border:1px solid #f0d98b;color:#6d5715;border-radius:13px;padding:11px 13px;font-size:13px;line-height:1.4;margin:0 0 13px}
+.demo-banner b{display:block;color:#57440d}
+.demo-banner .dot{width:9px;height:9px;flex:none;border-radius:50%;background:#d5a928;margin-top:4px}
+.demo-profile{display:flex;align-items:center;gap:10px;min-width:0}
+.demo-profile .friend-person-info{min-width:0}
+.demo-profile .friend-person-info b{display:block}
+.demo-profile .mut{font-size:12px}
+.demo-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.demo-actions .btn{width:auto}
+.demo-count{font:900 27px/1 "Arial Black",sans-serif;color:var(--court)}
+.demo-rank{font-weight:900;color:var(--court);min-width:24px}
+.demo-score{font:900 19px/1 "Arial Black",sans-serif;white-space:nowrap}
+.demo-profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.demo-profile-card{background:#f3f7fb;border-radius:13px;padding:11px;min-width:0}
+.demo-profile-card .friend-person{gap:8px}
+.demo-profile-card .av{width:38px;height:38px;font-size:15px}
+.demo-profile-card .friend-person-info b{font-size:13px;max-width:100%}
+.demo-profile-card .friend-person-info .mut{font-size:11px}
+.demo-profile-card small{display:block;color:var(--mut);font-size:11px;margin-top:7px}
+.demo-note{font-size:12px;color:var(--mut);margin:7px 0 0}
+@media(min-width:560px){main{max-width:760px}.demo-profile-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<main>
+<header class="top">
+  <div class="mark">PICKLE<b>&amp;MIX</b></div>
+  <div class="who"><span class="av">K</span><span class="nm">Kike · demo</span></div>
+  <nav class="tabs" aria-label="Vista de demostración">
+    <button aria-current="page">Mi perfil</button><button>Amigos</button><button>Actividad</button>
+  </nav>
+</header>
+<div class="demo-banner"><span class="dot"></span><div><b>Vista de demostración · datos ficticios</b>Esta pantalla es una simulación visual. Los perfiles, amistades y partidos no existen en Supabase y ningún botón modifica datos.</div></div>
+
+<div class="friends-dashboard">
+<section class="card friends-hero">
+  <div class="friends-hero-copy"><span class="section-kicker">PICKLE &amp; MIX · COMUNIDAD</span><h2>Juega en compañía.</h2><p>Encuentra jugadores, conecta con tus amigos y sigue vuestra evolución.</p></div>
+  <div class="friends-overview"><div><b>3</b><span>Amigos</span></div><div><b>1</b><span>Solicitudes</span></div></div>
+</section>
+
+<section class="card friends-section">
+  <div class="friends-section-head"><h3>Tu red de jugadores</h3><span class="section-kicker">5 PERFILES DE PRUEBA</span></div>
+  <div class="demo-profile-grid">
+    <div class="demo-profile-card"><div class="friend-person"><span class="av">A</span><div class="friend-person-info"><b>Alex Romero</b><span class="mut">@alexr</span></div></div><small>18 partidos · 72% victorias</small></div>
+    <div class="demo-profile-card"><div class="friend-person"><span class="av">M</span><div class="friend-person-info"><b>Martina López</b><span class="mut">@martinal</span></div></div><small>14 partidos · 64% victorias</small></div>
+    <div class="demo-profile-card"><div class="friend-person"><span class="av">D</span><div class="friend-person-info"><b>Dani Ruiz</b><span class="mut">@daniruiz</span></div></div><small>9 partidos · 56% victorias</small></div>
+    <div class="demo-profile-card"><div class="friend-person"><span class="av">L</span><div class="friend-person-info"><b>Lucía Martín</b><span class="mut">@luciam</span></div></div><small>7 partidos · 57% victorias</small></div>
+    <div class="demo-profile-card"><div class="friend-person"><span class="av">P</span><div class="friend-person-info"><b>Pablo Gil</b><span class="mut">@pablog</span></div></div><small>2 partidos · 50% victorias</small></div>
+  </div>
+  <p class="demo-note">Perfiles de ejemplo para probar densidad, nombres, alias y estadísticas.</p>
+</section>
+
+<form class="card friend-search friends-section" onsubmit="return false">
+  <label for="friend-query">Buscar jugadores</label>
+  <div class="row"><input id="friend-query" placeholder="Nombre o @alias" value="" autocomplete="off"><button class="btn sm" type="button">Buscar</button></div>
+  <small>Para aparecer en las búsquedas, cada usuario debe elegir un alias en su configuración de perfil.</small>
+</form>
+
+<section class="card friends-section friends-requests">
+  <div class="friends-section-head"><h3>Solicitudes recibidas <span class="tag">1</span></h3><span class="section-kicker">PENDIENTES</span></div>
+  <div class="friend-row"><div class="friend-person"><span class="av">A</span><div class="friend-person-info"><b>Alex Romero</b><span class="mut">@alexr</span></div></div><div class="demo-actions"><button class="btn sm">Aceptar</button><button class="btn sm ghost">Rechazar</button></div></div>
+</section>
+
+<section class="card friends-section">
+  <div class="friends-section-head"><h3>Solicitudes enviadas</h3><span class="section-kicker">ENVIADAS</span></div>
+  <div class="friend-row"><div class="friend-person"><span class="av">P</span><div class="friend-person-info"><b>Pablo Gil</b><span class="mut">@pablog</span></div></div><span class="tag">Enviada</span></div>
+</section>
+
+<section class="card friends-section">
+  <div class="friends-section-head"><h3>Mis amigos</h3><span class="friends-total">3</span></div>
+  <div class="friend-row"><div class="friend-person"><span class="av">M</span><div class="friend-person-info"><b>Martina López</b><span class="mut">@martinal</span></div></div><span class="tag">Amigos</span></div>
+  <div class="friend-row"><div class="friend-person"><span class="av">D</span><div class="friend-person-info"><b>Dani Ruiz</b><span class="mut">@daniruiz</span></div></div><span class="tag">Amigos</span></div>
+  <div class="friend-row"><div class="friend-person"><span class="av">L</span><div class="friend-person-info"><b>Lucía Martín</b><span class="mut">@luciam</span></div></div><span class="tag">Amigos</span></div>
+</section>
+
+<section class="card friends-section friends-ranking">
+  <div class="friends-section-head"><h3>Clasificación</h3><span class="section-kicker">ENTRE AMIGOS</span></div>
+  <div class="friend-row leaderboard-row"><span class="leader-position">1</span><div class="friend-person"><span class="av">M</span><div class="friend-person-info"><b>Martina López</b><span class="mut">@martinal</span></div></div><span class="leader-stats"><b>64%</b><small>9V · 14 PJ</small></span></div>
+  <div class="friend-row leaderboard-row"><span class="leader-position">2</span><div class="friend-person"><span class="av">K</span><div class="friend-person-info"><b>Kike (tú)</b><span class="mut">@kike-demo</span></div></div><span class="leader-stats"><b>60%</b><small>6V · 10 PJ</small></span></div>
+  <div class="friend-row leaderboard-row"><span class="leader-position">3</span><div class="friend-person"><span class="av">D</span><div class="friend-person-info"><b>Dani Ruiz</b><span class="mut">@daniruiz</span></div></div><span class="leader-stats"><b>56%</b><small>5V · 9 PJ</small></span></div>
+  <div class="friend-row leaderboard-row"><span class="leader-position">4</span><div class="friend-person"><span class="av">L</span><div class="friend-person-info"><b>Lucía Martín</b><span class="mut">@luciam</span></div></div><span class="leader-stats"><b>57%</b><small>4V · 7 PJ</small></span></div>
+</section>
+
+<section class="card friends-section">
+  <div class="friends-section-head"><h3>Actividad reciente</h3><span class="section-kicker">DE TUS AMIGOS</span></div>
+  <div class="history-row"><div><b>Martina López · Quedada del sábado</b><span class="mut">Hoy · Victoria</span><small>Martina / Dani vs Lucía / Pablo</small></div><strong class="win">11–7</strong></div>
+  <div class="history-row"><div><b>Dani Ruiz · Partida en Los Rubios</b><span class="mut">Ayer · Derrota</span><small>Dani / Kike vs Martina / Lucía</small></div><strong class="loss">8–11</strong></div>
+  <div class="history-row"><div><b>Lucía Martín · Partida rápida</b><span class="mut">3 nov · Victoria</span><small>Lucía / Martina vs Alex / Dani</small></div><strong class="win">11–9</strong></div>
+  <p class="demo-note">La actividad real depende de que los amigos compartan su historial contigo.</p>
+</section>
+</div>
+<p class="mut foot">Prototipo visual de Pickle&amp;Mix · <a href="./">Volver a la aplicación</a></p>
+</main>
+</body>
+</html>
