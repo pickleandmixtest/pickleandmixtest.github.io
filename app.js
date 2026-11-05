@@ -397,6 +397,7 @@ async function inviteClubMember(form){
  form.reset();toast('Invitación enviada.');await loadClubData(CL.selectedId)
  }catch(e){toast(e.message||'No se ha podido enviar la invitación.')}}
 async function createClubInviteLink(){try{const {data,error}=await sbc.from('club_invite_links').insert({club_id:CL.selectedId,created_by:AU.user.id}).select('token').single();if(error)throw error;CL.inviteUrl=location.origin+location.pathname+'?club_invite='+data.token;paintClubs();toast('Enlace creado.');await loadClubData(CL.selectedId)}catch(e){toast(e.message||'No se ha podido crear el enlace.')}}
+async function revokeClubInvitation(id){const {error}=await sbc.from('club_invitations').delete().eq('id',id);if(error){toast('No se ha podido revocar la invitación.');return}toast('Invitación revocada.');await loadClubData(CL.selectedId)}
 async function revokeClubInviteLink(id){if(!confirm('¿Revocar este enlace?'))return;const {error}=await sbc.from('club_invite_links').update({revoked_at:new Date().toISOString()}).eq('id',id);if(error){toast('No se ha podido revocar.');return}await loadClubData(CL.selectedId)}
 async function createClubEvent(form){
  const fd=new FormData(form),start=new Date(String(fd.get('starts_at')||'')),endRaw=String(fd.get('ends_at')||''),end=endRaw?new Date(endRaw):null;
@@ -1008,7 +1009,7 @@ document.addEventListener('click',e=>{
   if(d.clubLinkCopy){const u=location.origin+location.pathname+'?club_invite='+d.clubLinkCopy;if(navigator.clipboard)navigator.clipboard.writeText(u).then(()=>toast('Enlace copiado.')).catch(()=>prompt('Copia este enlace:',u));else prompt('Copia este enlace:',u);return}
   if(d.clubCopyCurrent){if(CL.inviteUrl&&navigator.clipboard)navigator.clipboard.writeText(CL.inviteUrl).then(()=>toast('Enlace copiado.')).catch(()=>prompt('Copia este enlace:',CL.inviteUrl));else if(CL.inviteUrl)prompt('Copia este enlace:',CL.inviteUrl);return}
   if(d.clubLinkRevoke){revokeClubInviteLink(d.clubLinkRevoke);return}
-  if(d.clubInviteRevoke){const {error}=await sbc.from('club_invitations').delete().eq('id',d.clubInviteRevoke);if(error)toast('No se ha podido revocar la invitación.');else{toast('Invitación revocada.');await loadClubData(CL.selectedId)}return}
+  if(d.clubInviteRevoke){revokeClubInvitation(d.clubInviteRevoke);return}
   if(d.clubRequest){respondClubRequest(d.id,d.clubRequest==='accept');return}
   if(d.clubInvitation){respondClubInvite(d.id,d.clubInvitation==='accept');return}
   if(d.clubMemberAction){manageClubMember(d.id,d.clubMemberAction);return}
