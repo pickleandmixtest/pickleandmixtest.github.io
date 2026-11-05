@@ -142,3 +142,11 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .avatar-actions input{padding:9px;min-height:44px;font-size:14px}
 .avatar-actions small{font-size:13px;color:var(--mut)}
 .avatar-actions .btn{margin:4px 0 0}
+
+/* Cambiar la foto desde el propio avatar */
+.avatar-picker{position:relative;display:inline-flex;flex:none;align-items:center;justify-content:center;width:56px;height:56px;margin:0!important;padding:0;border:0;border-radius:50%;cursor:pointer}
+.avatar-picker .av{width:56px;height:56px;font-size:23px;box-shadow:0 0 0 2px #e1e8f1}
+.avatar-camera{position:absolute;right:-2px;bottom:-2px;display:grid;place-items:center;width:23px;height:23px;border:2px solid #fff;border-radius:50%;background:var(--court);color:#fff;font-size:15px;line-height:1}
+.avatar-picker:hover .av{filter:brightness(.88)}
+.avatar-picker:focus-visible{outline:3px solid var(--sky);outline-offset:4px}
+.avatar-google{margin:5px 0 0!important;min-height:34px;padding:5px 10px;font-size:12px}
