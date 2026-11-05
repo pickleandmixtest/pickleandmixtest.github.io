@@ -272,7 +272,7 @@ function initPong(cid,hid,pre){
     c.addEventListener('pointerdown',e=>{const[px,py]=ptr(e);if((s.m==='idle'||s.m==='over')&&Math.hypot(px-s.bx,py-s.by)<s.r+24*k){if(s.m==='over')PG.u=PG.c=0;start(-1)}})}
   function start(dir){s.m='play';s.sp=300;const n=Math.random()-.5,v=s.sp*V();s.vx=n*v;s.vy=dir*Math.sqrt(v*v-s.vx*s.vx);s.err=0;say('Mueve tu pala (la de abajo) con el dedo o el ratón')}
   function point(u){u?PG.u++:PG.c++;
-    if(PG.u>=WIN||PG.c>=WIN){s.m='over';idle();s.vx=s.vy=0;say(PG.u>PG.c?`¡Ganaste ${PG.u}-${PG.c}! Toca la pelota para jugar otra vez`:`Gana el ordenador ${PG.c}-${PG.u}. Toca la pelota para la revancha`);return}
+    if(PG.u>=WIN||PG.c>=WIN){s.m='over';idle();s.vx=s.vy=0;saveMiniGameScore('pong',PG.u);say(PG.u>PG.c?`¡Ganaste ${PG.u}-${PG.c}! Toca la pelota para jugar otra vez`:`Gana el ordenador ${PG.c}-${PG.u}. Toca la pelota para la revancha`);return}
     s.m='wait';s.t=.8;s.bx=W/2;s.by=H/2;s.vx=s.vy=0;s.dir=u?-1:1}
   function step(dt){
     s.a+=dt*(s.m==='play'?4:.3);
@@ -983,19 +983,55 @@ function scoreStep(t,c,v,P){
   return{ok:true,val:n}}
 function replan(why){const n=pending().length;rebuild(n);save();msg=why+' Planificación de partidos pendientes actualizada.'}
 /* Minijuegos: cada HTML vive en index.html (<script type="text/plain" id="g-...">) y se abre a pantalla completa dentro de un iframe aislado */
-const GN={kitchen:'Kitchen Rush',dink:'Dink Shot',pairs:'Pickle Pairs'};
-function openGame(id){if((id==='kitchen'||id==='dink')&&!AU.user){view='profile';AU.profileSettingsOpen=false;render();toast('Regístrate gratis para jugar a este minijuego.');return}if($('#ov'))return;const src=document.getElementById('g-'+id);if(!src)return;
-  const o=document.createElement('div');o.id='ov';o.className='ov';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');o.setAttribute('aria-label',GN[id]);
-  o.innerHTML=`<div class="ovh"><span>${GN[id]}</span><button class="btn sm red" data-a="closeg">Cerrar ✕</button></div><iframe title="${GN[id]}" allow="autoplay"></iframe>`;
+const GN={pong:'Pong',kitchen:'Kitchen Rush',dink:'Dink Shot',pairs:'Pickle Pairs'};
+function miniGamePlayerName(){
+  const p=AU.profile||{},alias=String(p.alias||'').trim();
+  return (alias?'@'+alias:String(p.display_name||AU.user?.user_metadata?.full_name||AU.user?.email?.split('@')[0]||'Jugador')).slice(0,40);
+}
+async function saveMiniGameScore(game,rawScore){
+  if(!AU.user||!sbc){toast('Inicia sesión para guardar tu puntuación en el ranking.');return}
+  const score=Math.floor(Number(rawScore));
+  if(!['pong','kitchen','dink'].includes(game)||!Number.isFinite(score)||score<=0)return;
+  try{
+    const {error}=await sbc.rpc('submit_minigame_score',{p_game_key:game,p_score:score,p_player_name:miniGamePlayerName()});
+    if(error)throw error;
+    toast('Resultado comprobado: se conserva tu mejor marca.');
+  }catch(error){console.warn('[minigames] score:',error&&error.message);toast('No se ha podido guardar la puntuación. Inténtalo de nuevo.')}
+}
+function miniGameEscape(value){
+  return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+async function showMiniGameLeaderboard(game){
+  const ov=$('#ov');if(!ov||!['pong','kitchen','dink'].includes(game))return;
+  const previous=ov.querySelector('#miniLb');if(previous)previous.remove();
+  const panel=document.createElement('div');panel.id='miniLb';panel.className='mini-lb';
+  panel.innerHTML=`<section class="mini-lb-card"><header><div><small>PICKLE &amp; MIX</small><h2>Top 10 · ${GN[game]||'Pong'}</h2></div><button type="button" class="btn sm red" data-lb-close>Cerrar ✕</button></header><p class="mini-lb-note">Mejor puntuación personal de cada jugador. Solo se guardan marcas de cuentas registradas.</p><div class="mini-lb-list">Cargando clasificación…</div></section>`;
+  ov.appendChild(panel);
+  panel.querySelector('[data-lb-close]').addEventListener('click',()=>panel.remove());
+  try{
+    if(!sbc)throw new Error('Clasificación no disponible');
+    const {data,error}=await sbc.from('minigame_scores').select('player_name,score,updated_at').eq('game_key',game).order('score',{ascending:false}).order('updated_at',{ascending:true}).limit(10);
+    if(error)throw error;
+    const list=panel.querySelector('.mini-lb-list');
+    if(!data||!data.length){list.innerHTML='<p class="mini-lb-empty">Todavía no hay puntuaciones. ¡Sé el primero!</p>';return}
+    list.innerHTML=data.map((row,i)=>`<div class="mini-lb-row"><span class="mini-lb-pos">${i+1}</span><b>${miniGameEscape(row.player_name)}</b><strong>${Number(row.score).toLocaleString('es-ES')}</strong><time>${row.updated_at?new Date(row.updated_at).toLocaleDateString('es-ES'):''}</time></div>`).join('');
+  }catch(error){panel.querySelector('.mini-lb-list').innerHTML='<p class="mini-lb-empty">No se ha podido cargar el ranking. Inténtalo de nuevo.</p>';console.warn('[minigames] leaderboard:',error&&error.message)}
+}
+function openGame(id){if($('#ov'))return;const src=document.getElementById('g-'+id);if(!src)return;
+  const o=document.createElement('div');o.id='ov';o.dataset.game=id;o.className='ov';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');o.setAttribute('aria-label',GN[id]);
+  o.innerHTML=`<div class="ovh"><span>${GN[id]}</span><div class="ov-actions">${id==='pairs'?'':'<button class=\"btn sm\" data-lb>Top 10</button>'}<button class="btn sm red" data-a="closeg">Cerrar ✕</button></div></div><iframe title="${GN[id]}" allow="autoplay"></iframe>`;
   const f=o.querySelector('iframe');
   f.addEventListener('load',()=>{try{const w=f.contentWindow;w.addEventListener('keydown',e=>{if(e.key==='Escape')A.closeg()});w.focus()}catch(e){}});
+  const onMessage=e=>{if(e.source!==f.contentWindow||!e.data||e.data.type!=='pm-minigame-score'||e.data.game!==id)return;saveMiniGameScore(id,e.data.score)};
+  window.addEventListener('message',onMessage);o._miniMessageHandler=onMessage;
+  const lbButton=o.querySelector('[data-lb]');if(lbButton)lbButton.addEventListener('click',()=>showMiniGameLeaderboard(id));
   f.srcdoc=src.textContent.split('<\\/script>').join('</script>');
   document.body.appendChild(o);document.body.style.overflow='hidden'}
 const A={
-  play(){if($('#ov'))return;const o=document.createElement('div');o.id='ov';o.className='ov';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');
-    o.innerHTML='<div class="ovh"><span>Pong de PICKLE&amp;MIX</span><button class="btn sm red" data-a="closeg">Cerrar ✕</button></div><canvas id="pong2"></canvas><p id="phint2"></p>';
-    document.body.appendChild(o);document.body.style.overflow='hidden';initPong('pong2','phint2')},
-  closeg(){const o=$('#ov');if(o)o.remove();document.body.style.overflow=''},
+  play(){if($('#ov'))return;const o=document.createElement('div');o.id='ov';o.dataset.game='pong';o.className='ov';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');
+    o.innerHTML='<div class="ovh"><span>Pong de PICKLE&amp;MIX</span><div class="ov-actions"><button class="btn sm" data-lb>Top 10</button><button class="btn sm red" data-a="closeg">Cerrar ✕</button></div></div><canvas id="pong2"></canvas><p id="phint2"></p>';
+    document.body.appendChild(o);o.querySelector('[data-lb]').addEventListener('click',()=>showMiniGameLeaderboard('pong'));document.body.style.overflow='hidden';initPong('pong2','phint2')},
+  closeg(){const o=$('#ov');if(o){if(o._miniMessageHandler)window.removeEventListener('message',o._miniMessageHandler);o.remove()}document.body.style.overflow=''},
   kitchen(){openGame('kitchen')},dink(){openGame('dink')},pairs(){openGame('pairs')},
   /* Cuenta (Supabase · Google) */
   login(){if(!sbc||AU.busy)return;AU.busy=true;AU.err='';
