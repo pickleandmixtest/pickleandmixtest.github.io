@@ -574,3 +574,30 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .profile-dashboard .profile-metrics{gap:7px}
 .profile-dashboard .profile-metric{min-height:84px;padding:8px 5px}
 .profile-dashboard .profile-section-title{margin-bottom:0}
+
+/* Clasificación visual de Clubes Oficiales y Clubes de amigos */
+.club-type-section{display:flex;flex-direction:column;gap:10px;margin-top:17px}
+.club-type-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 2px 3px}
+.club-type-heading h3{margin:0;font-size:15px}
+.club-type-heading p{margin:3px 0 0;color:var(--mut);font-size:11px}
+.club-type-heading>span{display:grid;place-items:center;min-width:27px;height:27px;padding:0 7px;border-radius:99px;background:#edf2f8;color:var(--court);font-size:11px;font-weight:900}
+.club-card.official{border-color:#f2c58f;background:#fffaf4;box-shadow:inset 3px 0 #e99032,0 2px 0 #f4e5d3}
+.club-card.friends{border-color:#c9dcf5;background:#f8fbff;box-shadow:inset 3px 0 #3679cf,0 2px 0 #e1ebf7}
+.club-card.official .club-avatar{background:#ffead3;color:#a85c14}
+.club-card.friends .club-avatar{background:#e2efff;color:#245c9e}
+.club-card-type,.club-detail-type{display:inline-flex;align-items:center;gap:4px;width:max-content;max-width:100%;padding:4px 8px;border-radius:99px;font-size:10px;font-weight:900;margin-bottom:5px}
+.club-card-type.official,.club-detail-type.official{background:#ffead3;color:#99510e}
+.club-card-type.friends,.club-detail-type.friends{background:#e2efff;color:#245c9e}
+.club-detail-type{margin-bottom:7px}
+.club-detail-hero.official{border-color:#efbd83}
+.club-detail-hero.friends{border-color:#c5d9f3}
+.club-type-empty{margin:0;padding:13px;border:1px dashed #d9e2ec;border-radius:12px;color:var(--mut);font-size:12px}
+.club-official-fields{display:flex;flex-direction:column;gap:8px;padding:13px;margin:5px 0 8px;border:1px solid #efc28f;border-radius:13px;background:#fffaf4}
+.club-official-fields[hidden]{display:none}
+.club-official-note{padding:9px 10px;border-radius:9px;background:#ffefd9;color:#85501c;font-size:11px;line-height:1.45}
+.club-official-fields small{color:var(--mut);font-size:11px}
+.club-official-contact{padding:15px;border-color:#efc28f;background:#fffaf4}
+.club-official-contact h3{margin:0 0 10px;color:#99510e}
+.club-official-contact p{margin:7px 0;font-size:13px;overflow-wrap:anywhere}
+.club-official-contact a{color:#245c9e;text-decoration:underline}
+.club-type-section[hidden]{display:none}
