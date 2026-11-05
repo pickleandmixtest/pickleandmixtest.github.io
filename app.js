@@ -5,8 +5,8 @@ const fresh=()=>({players:[],settings:{courts:1,points:11,cycles:3,mode:'rot',pa
 function valid(d){return d&&Array.isArray(d.players)&&Array.isArray(d.matches)&&d.settings&&d.players.every(p=>p&&typeof p.id=='number'&&typeof p.name=='string')&&d.matches.every(m=>m&&Array.isArray(m.a)&&Array.isArray(m.b)&&m.a.length==2&&m.b.length==2&&['pending','done','skipped'].includes(m.status))&&(d.settings.mode!=='fixed'||Array.isArray(d.teams))&&['courts','points','cycles'].every(k=>Number.isInteger(d.settings[k])&&d.settings[k]>0)}
 let S=fresh();try{const d=JSON.parse(localStorage.getItem(K));if(valid(d)){S=d;if(!S.started&&S.settings.points===7)S.settings.points=11}}catch(e){}
 const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
-const ROUTE_TO_VIEW={inicio:'home',preparar:'setup',partido:'game',jugadores:'more',resumen:'final',perfil:'profile',amigos:'friends'};
-const VIEW_TO_ROUTE={home:'inicio',setup:'preparar',game:'partido',more:'jugadores',final:'resumen',profile:'perfil',friends:'amigos'};
+const ROUTE_TO_VIEW={inicio:'home',preparar:'setup',partido:'game',jugadores:'more',resumen:'final',perfil:'profile',amigos:'friends',historial:'history'};
+const VIEW_TO_ROUTE={home:'inicio',setup:'preparar',game:'partido',more:'jugadores',final:'resumen',profile:'perfil',friends:'amigos',history:'historial'};
 const initialRoute=location.hash.replace(/^#\/?/,'').toLowerCase();
 let view=ROUTE_TO_VIEW[initialRoute]||(S.started?'game':'home'),tmp=null,msg='',err='',nerr='',ed=null,ct=1,SC={};
 const nameErrBox=()=>nerr?`<div class="err">${esc(nerr)}</div>`:'';
@@ -184,7 +184,7 @@ const foot=()=>`<p class="mut foot">Plataforma para pickleballers creada por <a 
 function render(){
   const route='#'+(VIEW_TO_ROUTE[view]||'inicio');
   if(location.hash!==route)history.replaceState(null,'',location.pathname+location.search+route);
-  const f={home:vHome,setup:vSetup,game:vGame,more:vMore,final:vFinal,profile:vProfile,friends:vFriends}[view];
+  const f={home:vHome,setup:vSetup,game:vGame,more:vMore,final:vFinal,profile:vProfile,friends:vFriends,history:vHistory}[view];
   $('#app').innerHTML=header()+f()+(err?`<div class="err">${esc(err)}</div>`:'')+foot();err='';nerr='';if(view==='home')initPong('pong',null,true);
   if(msg){toast(msg);msg=''}
 }
@@ -240,7 +240,7 @@ function initPong(cid,hid,pre){
 }
 function header(){
   const t=S.started?[['home','Inicio'],['go','Partido'],['more','Jugadores'],['final','Resumen'],['friends','Amigos'],['profile','Mi perfil']]:[['home','Inicio'],['setup','Preparar'],['final','Resumen'],['friends','Amigos'],['profile','Mi perfil']];
-  const cur={home:'home',game:'go',more:'more',final:'final',setup:'setup',profile:'profile',friends:'friends'}[view];
+  const cur={home:'home',game:'go',more:'more',final:'final',setup:'setup',profile:'profile',friends:'friends',history:'profile'}[view];
   return`<header class="top"><div class="mark">PICKLE<b>&amp;MIX</b></div><div class="who" id="authchip">${authChipIn()}</div><nav class="tabs" aria-label="Acceso rápido">${t.map(x=>`<button data-a="${x[0]}"${x[0]===cur?' aria-current="page"':''}>${x[1]}</button>`).join('')}</nav></header>`}
 const GT={
 pong:`<svg viewBox="0 0 160 96" aria-hidden="true"><rect width="160" height="96" fill="#2f6fbd"/><rect x="6" y="6" width="148" height="84" rx="4" fill="none" stroke="#fff" stroke-width="2" opacity=".8"/><path d="M6 48H154" stroke="#fff" stroke-width="2" stroke-dasharray="6 5" opacity=".8"/><rect x="56" y="12" width="46" height="8" rx="4" fill="#ff6a4d"/><rect x="66" y="76" width="46" height="8" rx="4" fill="#fff"/><circle cx="84" cy="62" r="4" fill="#d4f53c" opacity=".35"/><circle cx="92" cy="54" r="7" fill="#d4f53c" stroke="#0e1c33" stroke-width="2"/></svg>`,
@@ -318,6 +318,74 @@ async function friendAction(action,id){
     toast(({send:'Solicitud enviada.',accept:'Solicitud aceptada.',reject:'Solicitud rechazada.',cancel:'Solicitud cancelada.',remove:'Amistad eliminada.'})[action]||'Actualizado.');
     await loadFriends();
   }catch(error){console.warn('[friends] action:',error&&error.message);FR.error=error&&error.message&&/alias/i.test(error.message)?'Elige un alias en Configuración antes de enviar solicitudes.':'No se ha podido completar la acción. Puede que la solicitud ya no esté disponible.';paintFriends()}
+}
+function historyRow(item){
+  return '<div class="history-row"><div><b>'+esc(item.sessionTitle)+'</b><span class="mut">'+new Date(item.playedAt).toLocaleDateString('es-ES')+' · Partido '+item.matchNumber+'</span><small>'+esc(item.teammates.join(' / '))+' vs '+esc(item.opponents.join(' / '))+'</small></div><strong class="'+(item.won?'win':'loss')+'">'+item.scoreA+'–'+item.scoreB+'</strong></div>';
+}
+function vHistory(){
+  return '<h2>Mi historial</h2><p class="lead">Tus partidos guardados en PICKLE &amp; MIX.</p>'+
+    (HIST.loading?'<div class="card"><p class="hint">Cargando historial…</p></div>':HIST.error?'<div class="card err">'+esc(HIST.error)+'</div>':HIST.items.length?'<div class="card"><div class="profile-metrics"><div class="profile-metric"><b>'+HIST.stats.played+'</b><span>Partidos</span></div><div class="profile-metric"><b>'+HIST.stats.wins+'</b><span>Victorias</span></div><div class="profile-metric"><b>'+Math.round(HIST.stats.winRate*100)+'%</b><span>Victorias</span></div></div>'+HIST.items.map(historyRow).join('')+'</div>':'<div class="card"><p>Aún no tienes partidos guardados. Cuando termines una quedada, podrás guardarla en tu historial.</p></div>')+
+    '<button class="btn ghost" data-a="profile">Volver a Mi perfil</button>';
+}
+function sessionSavePanel(){
+  const done=S.matches.filter(m=>m.status==='done');
+  if(!S.started||pending().length||!done.length)return '';
+  if(S.savedSessionId)return '<div class="card session-saved"><b>Quedada guardada en tu historial</b><span class="mut">Ya has guardado estos resultados en tu perfil.</span></div>';
+  if(!AU.user)return '<div class="card"><h3>Guardar en tu historial</h3><p>Inicia sesión con Google para guardar esta quedada y consultar tus estadísticas desde cualquier dispositivo.</p><button class="btn" data-a="profile">Iniciar sesión / Mi perfil</button></div>';
+  const players=S.players.filter(p=>done.some(m=>[...m.a,...m.b].includes(p.id)));
+  const title='Quedada · '+new Date().toLocaleDateString('es-ES');
+  return '<form class="card session-save" data-f="save-session"><h3>Guardar en mi historial</h3><p class="mut">Elige qué jugador eres tú. Solo vincularemos tu propia cuenta; el resto aparecerá con los nombres de la quedada.</p><label for="session-title">Nombre de la quedada</label><input id="session-title" name="title" maxlength="80" required value="'+esc(title)+'"><label for="session-self">¿Cuál de estos jugadores eres tú?</label><select id="session-self" name="self_player_id" required><option value="">Selecciona tu jugador</option>'+players.map(p=>'<option value="'+p.id+'">'+esc(p.name)+'</option>').join('')+'</select><button class="btn ball" type="submit">Guardar quedada</button></form>';
+}
+async function savePlaySession(form){
+  if(!sbc||!AU.user)return;
+  if(S.savedSessionId){toast('Esta quedada ya está guardada.');return}
+  const selfId=Number(form.querySelector('[name="self_player_id"]').value),title=String(form.querySelector('[name="title"]').value||'').trim();
+  const done=S.matches.filter(m=>m.status==='done');
+  if(!selfId||!S.players.some(p=>p.id===selfId)||!done.length){toast('Selecciona tu jugador y comprueba que haya resultados.');return}
+  const players=S.players.map(p=>{const team=(S.teams||[]).find(t=>t.p.includes(p.id));return{local_id:p.id,player_name:p.name,team_id:team?team.id:null}});
+  const matches=done.map(m=>({match_number:S.matches.indexOf(m)+1,cycle:m.cycle||null,court:m.court||null,phase:m.ph==='g'?'group':m.ph==='ko'?'knockout':'rot',side_a_score:m.sa,side_b_score:m.sb,side_a_player_ids:m.a,side_b_player_ids:m.b}));
+  const btn=form.querySelector('button[type="submit"]');if(btn){btn.disabled=true;btn.textContent='Guardando…'}
+  try{
+    const {data,error}=await sbc.rpc('save_play_session',{p_title:title,p_mode:FX()?'fixed':'rot',p_points:S.settings.points,p_courts:S.settings.courts,p_self_player_id:selfId,p_players:players,p_matches:matches});
+    if(error)throw error;
+    S.savedSessionId=data;save();toast('Quedada guardada en tu historial.');render();loadMyHistory();
+  }catch(error){console.warn('[history] save:',error&&error.message);if(btn){btn.disabled=false;btn.textContent='Guardar quedada'}toast('No se ha podido guardar la quedada. Comprueba la conexión e inténtalo de nuevo.')}
+}
+async function loadMyHistory(){
+  if(!sbc||!AU.user)return;
+  const uid=AU.user.id;HIST.loading=true;HIST.error='';HIST.loaded=false;
+  if(view==='history')render();else paintAuth();
+  try{
+    const {data:mine,error:e1}=await sbc.from('play_session_players').select('id,session_id,player_name').eq('user_id',uid);
+    if(e1)throw e1;
+    if(!mine||!mine.length){HIST.items=[];HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0};HIST.loaded=true;return}
+    const playerIds=mine.map(x=>x.id),sessionIds=[...new Set(mine.map(x=>x.session_id))];
+    const {data:mineLinks,error:e2}=await sbc.from('play_match_players').select('match_id,session_player_id,side').in('session_player_id',playerIds);
+    if(e2)throw e2;
+    const matchIds=[...new Set((mineLinks||[]).map(x=>x.match_id))];
+    if(!matchIds.length){HIST.items=[];HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:sessionIds.length};HIST.loaded=true;return}
+    const [mr,lr,pr,sr]=await Promise.all([
+      sbc.from('play_session_matches').select('id,session_id,match_number,cycle,court,phase,side_a_score,side_b_score,played_at').in('id',matchIds).order('played_at',{ascending:false}),
+      sbc.from('play_match_players').select('match_id,session_player_id,side').in('match_id',matchIds),
+      sbc.from('play_session_players').select('id,player_name,user_id').in('id',[...new Set((mineLinks||[]).map(x=>x.session_player_id))]),
+      sbc.from('play_sessions').select('id,title,mode,created_at').in('id',sessionIds)
+    ]);
+    for(const x of [mr,lr,pr,sr])if(x.error)throw x.error;
+    const allLinks=lr.data||[],playerMap=new Map((pr.data||[]).map(x=>[x.id,x])),sessionMap=new Map((sr.data||[]).map(x=>[x.id,x]));
+    const myMap=new Map(mine.map(x=>[x.id,x])),items=(mr.data||[]).map(m=>{
+      const mineLink=(mineLinks||[]).find(x=>x.match_id===m.id);if(!mineLink)return null;
+      const ownSide=mineLink.side,won=ownSide==='a'?m.side_a_score>m.side_b_score:m.side_b_score>m.side_a_score;
+      const peers=allLinks.filter(x=>x.match_id===m.id&&x.session_player_id!==mineLink.session_player_id);
+      const names=peers.map(x=>playerMap.get(x.session_player_id)?.player_name||'Jugador');
+      const teammates=peers.filter(x=>x.side===ownSide).map(x=>playerMap.get(x.session_player_id)?.player_name||'Jugador');
+      const opponents=peers.filter(x=>x.side!==ownSide).map(x=>playerMap.get(x.session_player_id)?.player_name||'Jugador');
+      const ses=sessionMap.get(m.session_id);
+      return{matchId:m.id,sessionId:m.session_id,sessionTitle:ses?.title||'Quedada',matchNumber:m.match_number,playedAt:m.played_at,scoreA:m.side_a_score,scoreB:m.side_b_score,ownSide,won,teammates,opponents};
+    }).filter(Boolean);
+    const wins=items.filter(x=>x.won).length,losses=items.length-wins;
+    HIST.items=items;HIST.stats={played:items.length,wins,losses,winRate:items.length?wins/items.length:0,pointsFor:items.reduce((n,x)=>n+(x.ownSide==='a'?x.scoreA:x.scoreB),0),pointsAgainst:items.reduce((n,x)=>n+(x.ownSide==='a'?x.scoreB:x.scoreA),0),sessions:sessionIds.length};HIST.loaded=true;
+  }catch(error){console.warn('[history] load:',error&&error.message);HIST.error='No se ha podido cargar tu historial guardado.';HIST.loaded=true}
+  finally{HIST.loading=false;if(view==='history')render();else paintAuth()}
 }
 function vProfile(){
   const body=AU.user||AU.guest?authInner():'<div id="authbox">'+authInner()+'</div>';
@@ -568,8 +636,8 @@ const A={
       .catch(e=>{AU.err='No se pudo cerrar la sesión. Inténtalo de nuevo.';console.warn('[auth] logout:',e&&e.message);paintAuth()})},
   guest(){AU.guest=true;try{localStorage.setItem(GUEST_K,'1')}catch(e){}},
   reloadProfile(){if(AU.user)loadProfile(AU.user.id)},
-  setup(){view='setup'},home(){view='home'},profile(){view='profile';AU.profileSettingsOpen=false},friends(){view='friends';FR.error='';loadFriends()},profileSettings(){AU.profileSettingsOpen=true;paintAuth()},profileOverview(){AU.profileSettingsOpen=false;paintAuth()},go(){view='game';ed=null},more(){view='more'},final(){view='final'},
-  start(){const c=S.settings;if(S.players.length<4){err='Necesitas al menos 4 jugadores.';return}
+  setup(){view='setup'},home(){view='home'},profile(){view='profile';AU.profileSettingsOpen=false},friends(){view='friends';FR.error='';loadFriends()},history(){view='history';loadMyHistory()},profileSettings(){AU.profileSettingsOpen=true;paintAuth()},profileOverview(){AU.profileSettingsOpen=false;paintAuth()},go(){view='game';ed=null},more(){view='more'},final(){view='final'},
+  start(){S.savedSessionId=null;const c=S.settings;if(S.players.length<4){err='Necesitas al menos 4 jugadores.';return}
     if(S.players.length<4*c.courts){err=`Con ${c.courts} pistas necesitas al menos ${4*c.courts} jugadores.`;return}
     if(FX()&&S.players.length%2){err='Con parejas fijas necesitas un número par de jugadores.';return}
     if(FX()&&c.pairing==='manual'){ensureDraft();if(S.draft.some(r=>!r[0]||!r[1])){err='Completa todas las parejas.';return}}
@@ -597,7 +665,7 @@ const A={
   cancel(){if(tmp)delete SC[tmp.id];ed=null;tmp=null},
   story(){storyBlob().then(b=>{if(!b){toast('No se pudo crear la imagen.');return}const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='pickle-and-mix-resumen-stories.jpg';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast('Imagen descargada.')})},
   storyshare(){storyBlob().then(b=>{const f=new File([b],'pickle-and-mix-resumen-stories.jpg',{type:'image/jpeg'});navigator.share({files:[f],title:'PICKLE & MIX'}).catch(()=>{})})},
-  repeat(){if(!confirm('Se borrarán partidos y resultados, pero se mantienen los jugadores. ¿Continuar?'))return;S.matches=[];S.teams=[];S.draft=[];S.started=false;S.nid=1;S.players.forEach(p=>p.status='active');SC={};ed=null;ct=1;tmp=null;view='setup'},
+  repeat(){if(!confirm('Se borrarán partidos y resultados, pero se mantienen los jugadores. ¿Continuar?'))return;S.savedSessionId=null;S.matches=[];S.teams=[];S.draft=[];S.started=false;S.nid=1;S.players.forEach(p=>p.status='active');SC={};ed=null;ct=1;tmp=null;view='setup'},
   reset(){if(confirm('Se borrarán jugadores, partidos y resultados. ¿Seguro?')&&confirm('Última comprobación: ¿empezar una quedada nueva?')){S=fresh();SC={};ed=null;ct=1;tmp=null;view='home'}}
 };
 document.addEventListener('click',e=>{
@@ -615,7 +683,7 @@ document.addEventListener('click',e=>{
   save();render();
 });
 document.addEventListener('change',e=>{if(e.target.matches('[data-avatar-file]'))uploadAvatar(e.target)});
-document.addEventListener('submit',e=>{e.preventDefault();if(e.target.dataset.f==='profile'){saveProfile(e.target);return}if(e.target.dataset.f==='friend-search'){searchFriends(e.target);return}const f=e.target.dataset.f,v=e.target.n.value;if(!v.trim())return;
+document.addEventListener('submit',e=>{e.preventDefault();if(e.target.dataset.f==='profile'){saveProfile(e.target);return}if(e.target.dataset.f==='friend-search'){searchFriends(e.target);return}if(e.target.dataset.f==='save-session'){savePlaySession(e.target);return}const f=e.target.dataset.f,v=e.target.n.value;if(!v.trim())return;
   const r=addNames(v);if(r.added&&f==='addlive')replan('Jugador añadido.');
   if(r.dups.length)nerr=dupMsg(r.dups,r.added);
   save();render();
@@ -651,8 +719,9 @@ function authInner(){
     const avatar='<label class="avatar-picker" for="profile-avatar" title="Cambiar foto de perfil" aria-label="Cambiar foto de perfil">'+auAvatar(AU.user)+'<span class="avatar-camera" aria-hidden="true">✎</span></label><input id="profile-avatar" class="sr" type="file" accept="image/jpeg,image/png,image/webp" data-avatar-file>';
     if(!AU.profileSettingsOpen){
       return '<div class="profile-dashboard"><section class="card acct profile-identity"><div class="me">'+avatar+'<div><span class="tag d">Tu perfil</span><b>'+esc(auName(AU.user))+'</b><span class="mut">'+(p.alias?'@'+esc(p.alias):'Aún no has elegido un alias')+'</span></div></div><button class="btn ghost profile-settings-btn" data-a="profileSettings">Configuración</button></section>'+
-        '<h3 class="profile-section-title">Tus estadísticas</h3><div class="profile-metrics"><div class="card profile-metric"><b>—</b><span>Partidos jugados</span></div><div class="card profile-metric"><b>—</b><span>Victorias</span></div><div class="card profile-metric"><b>—</b><span>% de victorias</span></div></div>'+
-        '<section class="card profile-empty"><h3>Tu actividad</h3><p>Cuando tus partidos estén vinculados a tu cuenta, aquí podrás consultar tu historial, resultados y evolución.</p><span class="tag">Próximamente</span></section>'+e+
+        '<h3 class="profile-section-title">Tus estadísticas</h3><div class="profile-metrics"><div class="card profile-metric"><b>'+(HIST.loaded?HIST.stats.played:'—')+'</b><span>Partidos jugados</span></div><div class="card profile-metric"><b>'+(HIST.loaded?HIST.stats.wins:'—')+'</b><span>Victorias</span></div><div class="card profile-metric"><b>'+(HIST.loaded?(HIST.stats.played?Math.round(HIST.stats.winRate*100)+'%':'0%'):'—')+'</b><span>% de victorias</span></div></div>'+
+        '<section class="card profile-empty"><h3>Tu actividad</h3>'+(HIST.loading?'<p>Cargando tu historial…</p>':HIST.error?'<p>'+esc(HIST.error)+'</p>':HIST.items.length?HIST.items.slice(0,3).map(historyRow).join(''):'<p>Todavía no has guardado partidos en tu historial. Al terminar una quedada, podrás guardarla y vincular tu jugador con tu cuenta.</p>')+'</section>'+
+        (HIST.items.length?'<button class="btn ghost" data-a="history">Ver historial completo</button>':'')+e+
         '<button class="btn ghost" data-a="logout">Cerrar sesión</button></div>';
     }
     const opt=(k,v,t)=>'<option value="'+v+'"'+(p[k]===v?' selected':'')+'>'+t+'</option>';
@@ -733,10 +802,10 @@ if(typeof window!=='undefined'&&typeof document!=='undefined'){
     /* Solo se repinta la tarjeta y la cabecera (no toda la app) y solo si cambia la persona: así un refresco de token no interrumpe lo que se esté escribiendo */
     sbc.auth.onAuthStateChange((ev,ses)=>{const u=(ses&&ses.user)||null,was=AU.user&&AU.user.id,ch=(u&&u.id)!==was;
       AU.user=u;AU.ready=true;AU.busy=false;if(u)AU.err='';
-      if(ch&&!u){AU.profile=null;AU.profileErr='';AU.profileLoading=false}
+      if(ch&&!u){AU.profile=null;AU.profileErr='';AU.profileLoading=false;HIST.loaded=false;HIST.items=[];HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0}}
       if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))AU.profileLoading=true;
       if(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED')paintAuth();
-      if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))setTimeout(()=>loadProfile(u.id),0);
+      if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))setTimeout(()=>{loadProfile(u.id);loadMyHistory()},0);
       if(u&&ch&&AU.oauth&&ev==='SIGNED_IN'){AU.oauth=false;toast('Sesión iniciada como '+auName(u))}});
     setTimeout(()=>{if(!AU.ready){AU.ready=true;paintAuth()}},4000)}
   catch(e){sbc=null;console.warn('[auth] onAuthStateChange:',e&&e.message)}}
