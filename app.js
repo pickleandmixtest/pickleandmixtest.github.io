@@ -9,7 +9,8 @@ const ROUTE_TO_VIEW={inicio:'home',preparar:'setup',partido:'game',jugadores:'mo
 const VIEW_TO_ROUTE={home:'inicio',setup:'preparar',game:'partido',more:'jugadores',final:'resumen',profile:'perfil',friends:'amigos',history:'historial',sessions:'quedadas','session-detail':'quedadas','user-profile':'amigos',clubs:'clubes','club-detail':'clubes',admin:'admin'};
 const initialRoute=location.hash.replace(/^#\/?/,'').toLowerCase();
 const initialClubId=initialRoute.startsWith('clubes/')?decodeURIComponent(initialRoute.slice(7)):null;
-const initialProfileId=initialRoute.startsWith('jugadores/')?decodeURIComponent(initialRoute.slice(10)):null;
+const profileRouteId=initialRoute.startsWith('jugadores/')?decodeURIComponent(initialRoute.slice(10)):null;
+let initialProfileId=profileRouteId;try{if(!initialProfileId)initialProfileId=sessionStorage.getItem('pickleMix.publicProfileRoute')}catch(e){}
 let view=initialClubId?'club-detail':initialProfileId?'user-profile':(ROUTE_TO_VIEW[initialRoute]||(S.started?'game':'home')),tmp=null,msg='',err='',nerr='',ed=null,ct=1,SC={};
 const nameErrBox=()=>nerr?`<div class="err">${esc(nerr)}</div>`:'';
 
@@ -185,6 +186,8 @@ const bar=()=>{const t=S.matches.length,d=S.matches.filter(m=>m.status!=='pendin
 const foot=()=>`<p class="mut foot">Plataforma para pickleballers creada por <a href="https://kikebarcelodg.github.io/" target="_blank" rel="noopener">KBDG</a></p>`;
 let routeInitialized=false;
 function render(){
+  if(view==='user-profile'&&PUB.id){try{sessionStorage.setItem('pickleMix.publicProfileRoute',PUB.id)}catch(e){}}
+  else{try{sessionStorage.removeItem('pickleMix.publicProfileRoute')}catch(e){}}
   const route=view==='club-detail'&&CL.selectedId?'#clubes/'+encodeURIComponent(CL.selectedId):view==='user-profile'&&PUB.id?'#jugadores/'+encodeURIComponent(PUB.id):'#'+(VIEW_TO_ROUTE[view]||'inicio');
   if(location.hash!==route){
     const url=location.pathname+location.search+route;
@@ -608,7 +611,7 @@ function vUserProfile(){
 }
 async function openUserProfile(id){
   if(!sbc||!AU.user)return;
-  PUB.id=id;PUB.profile=null;PUB.stats=null;PUB.history=[];PUB.achievements=null;PUB.clubs=[];PUB.clubsLoading=true;PUB.error='';PUB.loading=true;PUB.statsHidden=false;PUB.historyHidden=false;view='user-profile';render();
+  PUB.id=id;try{sessionStorage.setItem('pickleMix.publicProfileRoute',id)}catch(e){}PUB.profile=null;PUB.stats=null;PUB.history=[];PUB.achievements=null;PUB.clubs=[];PUB.clubsLoading=true;PUB.error='';PUB.loading=true;PUB.statsHidden=false;PUB.historyHidden=false;view='user-profile';render();
   try{
     const {data,error}=await sbc.from('profiles').select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility,country,city').eq('id',id).single();
     if(error)throw error;PUB.profile=data;
