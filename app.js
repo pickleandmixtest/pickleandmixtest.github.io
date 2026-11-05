@@ -179,7 +179,7 @@ const bar=()=>{const t=S.matches.length,d=S.matches.filter(m=>m.status!=='pendin
 /* Pie de página: visible en todas las pestañas */
 const foot=()=>`<p class="mut foot">Plataforma para pickleballers creada por <a href="https://kikebarcelodg.github.io/" target="_blank" rel="noopener">Kike Barceló</a></p>`;
 function render(){
-  const f={home:vHome,setup:vSetup,game:vGame,more:vMore,final:vFinal}[view];
+  const f={home:vHome,setup:vSetup,game:vGame,more:vMore,final:vFinal,profile:vProfile}[view];
   $('#app').innerHTML=header()+f()+(err?`<div class="err">${esc(err)}</div>`:'')+foot();err='';nerr='';if(view==='home')initPong('pong',null,true);
   if(msg){toast(msg);msg=''}
 }
@@ -233,8 +233,8 @@ function initPong(cid,hid,pre){
   (function f(now){if(!document.body.contains(c))return;fit();if(W){const dt=Math.min(.033,(now-last)/1000);step(dt);draw()}last=now;requestAnimationFrame(f)})(last);
 }
 function header(){
-  const t=S.started?[['home','Inicio'],['go','Partido'],['more','Jugadores'],['final','Resumen']]:[['home','Inicio'],['setup','Preparar'],['final','Resumen']];
-  const cur={home:'home',game:'go',more:'more',final:'final',setup:'setup'}[view];
+  const t=S.started?[['home','Inicio'],['go','Partido'],['more','Jugadores'],['final','Resumen'],['profile','Mi perfil']]:[['home','Inicio'],['setup','Preparar'],['final','Resumen'],['profile','Mi perfil']];
+  const cur={home:'home',game:'go',more:'more',final:'final',setup:'setup',profile:'profile'}[view];
   return`<header class="top"><div class="mark">PICKLE<b>&amp;MIX</b></div><div class="who" id="authchip">${authChipIn()}</div><nav class="tabs" aria-label="Acceso rápido">${t.map(x=>`<button data-a="${x[0]}"${x[0]===cur?' aria-current="page"':''}>${x[1]}</button>`).join('')}</nav></header>`}
 const GT={
 pong:`<svg viewBox="0 0 160 96" aria-hidden="true"><rect width="160" height="96" fill="#2f6fbd"/><rect x="6" y="6" width="148" height="84" rx="4" fill="none" stroke="#fff" stroke-width="2" opacity=".8"/><path d="M6 48H154" stroke="#fff" stroke-width="2" stroke-dasharray="6 5" opacity=".8"/><rect x="56" y="12" width="46" height="8" rx="4" fill="#ff6a4d"/><rect x="66" y="76" width="46" height="8" rx="4" fill="#fff"/><circle cx="84" cy="62" r="4" fill="#d4f53c" opacity=".35"/><circle cx="92" cy="54" r="7" fill="#d4f53c" stroke="#0e1c33" stroke-width="2"/></svg>`,
@@ -245,11 +245,14 @@ const GM=[['pong','Pong','Duelo contra el ordenador a 7 puntos','play'],['kitche
 const gamesGrid=()=>`<h2 class="gt">Minijuegos</h2><p class="lead">Para pasar el rato mientras te toca descansar.</p><div class="games">${GM.map(g=>`<button class="gc" data-a="${g[3]}" aria-label="Jugar a ${g[1]}"><span class="th">${GT[g[0]]}</span><span class="tx"><b>${g[1]}</b><span>${g[2]}</span></span></button>`).join('')}</div>`;
 function vHome(){const n=S.players.length,c=S.settings;
   return`<p class="sub tagline">Elige tu modo de juego, disfruta con tus amigos y consigue <b>tu ranking</b> automáticamente</p>
-  <div id="authbox">${authInner()}</div>
   <div class="card"><div class="big">${n}</div><div>jugadores inscritos</div><div class="chips" style="margin-top:12px"><span class="chip">${c.courts} pista${c.courts>1?'s':''}</span><span class="chip">a ${c.points} puntos</span>${FX()?'':`<span class="chip">${c.cycles} ciclos</span>`}<span class="chip">${FX()?'grupos + eliminatorias':'parejas rotatorias'}</span></div></div>
   ${S.started?'<button class="btn ball" data-a="go">Continuar la quedada</button>':''}
   <button class="btn ghost" data-a="${S.started?'more':'setup'}">Gestionar participantes</button>
   ${gamesGrid()}`}
+function vProfile(){
+  const body=AU.user?authInner():AU.guest?'<div class="card acct"><span class="mut">Modo invitado · sin cuenta</span><p class="hint">Puedes seguir usando PICKLE &amp; MIX sin registrarte. Si quieres crear tu perfil, inicia sesión con Google.</p><button class="btn gg" data-a="login">Iniciar sesión con Google</button></div>':authInner();
+  return '<h2>Mi perfil</h2><p class="lead">Gestiona tu nombre público, tu alias y tus opciones de privacidad.</p><div id="authbox">'+body+'</div>';
+}
 /* Resumen del modo rotatorio: reparto por jugador y duración estimada (valores medios orientativos) */
 const CMAX=20; /* máximo de ciclos (partidos por jugador) que admite el campo «Ciclos» */
 const DUR={7:11,9:14,11:18,15:25};
@@ -495,7 +498,7 @@ const A={
       .catch(e=>{AU.err='No se pudo cerrar la sesión. Inténtalo de nuevo.';console.warn('[auth] logout:',e&&e.message);paintAuth()})},
   guest(){AU.guest=true;try{localStorage.setItem(GUEST_K,'1')}catch(e){}},
   reloadProfile(){if(AU.user)loadProfile(AU.user.id)},
-  setup(){view='setup'},home(){view='home'},go(){view='game';ed=null},more(){view='more'},final(){view='final'},
+  setup(){view='setup'},home(){view='home'},profile(){view='profile'},go(){view='game';ed=null},more(){view='more'},final(){view='final'},
   start(){const c=S.settings;if(S.players.length<4){err='Necesitas al menos 4 jugadores.';return}
     if(S.players.length<4*c.courts){err=`Con ${c.courts} pistas necesitas al menos ${4*c.courts} jugadores.`;return}
     if(FX()&&S.players.length%2){err='Con parejas fijas necesitas un número par de jugadores.';return}
