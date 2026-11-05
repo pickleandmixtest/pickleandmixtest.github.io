@@ -407,7 +407,7 @@ function vSessions(){
 }
 function vSessionDetail(){
   const s=HIST.sessions.find(x=>x.id===HIST.selectedSessionId);if(!s)return vSessions();
-  return '<div class="sessions-page"><button class="btn sm ghost sessions-back" data-a="sessions">← Todas las quedadas</button><section class="card session-detail-hero"><span class="section-kicker">DETALLE DE LA QUEDADA</span><h2>'+esc(s.title)+'</h2><p class="lead">'+(s.createdAt?new Date(s.createdAt).toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}):'Fecha no disponible')+' · '+(s.mode==='fixed'?'Parejas fijas':'Parejas rotatorias')+'</p><div class="session-detail-stats"><div><b>'+s.played+'</b><span>Partidos</span></div><div><b>'+s.wins+'</b><span>Victorias</span></div><div><b>'+s.losses+'</b><span>Derrotas</span></div></div></section><section class="card session-detail-matches"><div class="profile-card-heading"><h3>Resultados</h3><span class="section-kicker">'+s.matches.length+' PARTIDOS</span></div>'+(s.matches.length?s.matches.map(historyRow).join(''):'<p class="empty">Esta quedada no tiene partidos registrados.</p>')+'</section><button class="btn ghost" data-a="sessions">Volver al registro</button></div>';
+  return '<div class="sessions-page"><button class="btn sm ghost sessions-back" data-a="sessions">← Todas las quedadas</button><section class="card session-detail-hero"><span class="section-kicker">DETALLE DE LA QUEDADA</span><h2>'+esc(s.title)+'</h2><p class="lead">'+(s.createdAt?new Date(s.createdAt).toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}):'Fecha no disponible')+' · '+(s.mode==='fixed'?'Parejas fijas':'Parejas rotatorias')+'</p><div class="session-detail-stats"><div><b>'+s.played+'</b><span>Partidos</span></div><div><b>'+s.wins+'</b><span>Victorias</span></div><div><b>'+s.losses+'</b><span>Derrotas</span></div></div></section><section class="card session-detail-matches"><div class="profile-card-heading"><h3>Resultados</h3><span class="section-kicker">'+s.matches.length+' PARTIDOS</span></div>'+(s.matches.length?s.matches.map(m=>'<article class="session-match-row"><div class="session-match-info"><b>Partido '+m.matchNumber+'</b><small>'+m.sideA.map(esc).join(' / ')+' <span>vs</span> '+m.sideB.map(esc).join(' / ')+'</small></div><strong>'+(m.scoreA??'—')+'–'+(m.scoreB??'—')+'</strong></article>').join(''):'<p class="empty">Esta quedada no tiene partidos registrados.</p>')+'</section><button class="btn ghost" data-a="sessions">Volver al registro</button></div>';
 }
 function vHistory(){
   if(!AU.user)return '<h2>Mi historial</h2><p class="lead">Inicia sesión para consultar tus partidos guardados.</p><div class="card acct">'+authInner()+'</div>';
@@ -483,10 +483,10 @@ async function loadMyHistory(){
     if(linksResult.error)throw linksResult.error;if(sessionsResult.error)throw sessionsResult.error;
     const mineLinks=linksResult.data||[],sessionRows=sessionsResult.data||[],matchIds=[...new Set(mineLinks.map(x=>x.match_id))];
     if(!matchIds.length){HIST.items=[];HIST.sessions=sessionRows.map(s=>({id:s.id,title:s.title||'Quedada',mode:s.mode,createdAt:s.created_at,matches:[],played:0,wins:0,losses:0}));HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:sessionIds.length};HIST.loaded=true;return}
-    const [mr,lr]=await Promise.all([sbc.from('play_session_matches').select('id,session_id,match_number,cycle,court,phase,side_a_score,side_b_score,played_at').in('id',matchIds).order('played_at',{ascending:false}),sbc.from('play_match_players').select('match_id,session_player_id,side').in('match_id',matchIds)]);
+    const [mr,lr]=await Promise.all([sbc.from('play_session_matches').select('id,session_id,match_number,cycle,court,phase,side_a_score,side_b_score,played_at').in('session_id',sessionIds).order('played_at',{ascending:false}),sbc.from('play_match_players').select('match_id,session_player_id,side').in('match_id',matchIds)]);
     for(const x of [mr,lr])if(x.error)throw x.error;
-    const allLinks=lr.data||[],{data:playerRows,error:playerError}=await sbc.from('play_session_players').select('id,player_name,user_id').in('id',[...new Set(allLinks.map(x=>x.session_player_id))]);
-    if(playerError)throw playerError;
+    const allMatchIds=(mr.data||[]).map(x=>x.id),{data:allMatchLinks,error:allLinksError}=await sbc.from('play_match_players').select('match_id,session_player_id,side').in('match_id',allMatchIds),allLinks=allMatchLinks||[],{data:playerRows,error:playerError}=await sbc.from('play_session_players').select('id,player_name,user_id').in('id',[...new Set(allLinks.map(x=>x.session_player_id))]);
+    if(allLinksError)throw allLinksError;if(playerError)throw playerError;
     const playerMap=new Map((playerRows||[]).map(x=>[x.id,x]));
     const items=(mr.data||[]).map(m=>{
       const mineLink=mineLinks.find(x=>x.match_id===m.id);if(!mineLink)return null;
@@ -496,7 +496,7 @@ async function loadMyHistory(){
       return{matchId:m.id,sessionId:m.session_id,sessionTitle:sessionRows.find(s=>s.id===m.session_id)?.title||'Quedada',matchNumber:m.match_number,playedAt:m.played_at,scoreA:m.side_a_score,scoreB:m.side_b_score,ownSide,ownScore:ownSide==='a'?m.side_a_score:m.side_b_score,oppScore:ownSide==='a'?m.side_b_score:m.side_a_score,won,teammates,opponents};
     }).filter(Boolean);
     const wins=items.filter(x=>x.won).length,losses=items.length-wins;HIST.items=items;
-    HIST.sessions=sessionRows.map(s=>{const matches=items.filter(x=>x.sessionId===s.id),w=matches.filter(x=>x.won).length;return{id:s.id,title:s.title||'Quedada',mode:s.mode,createdAt:s.created_at,matches,played:matches.length,wins:w,losses:matches.length-w}}).sort((x,y)=>new Date(y.createdAt||0)-new Date(x.createdAt||0));
+    HIST.sessions=sessionRows.map(s=>{const matches=(mr.data||[]).filter(m=>m.session_id===s.id).map(m=>{const links=allLinks.filter(x=>x.match_id===m.id),sideA=links.filter(x=>x.side==='a').map(x=>playerMap.get(x.session_player_id)?.player_name||'Jugador'),sideB=links.filter(x=>x.side==='b').map(x=>playerMap.get(x.session_player_id)?.player_name||'Jugador');return{matchNumber:m.match_number,playedAt:m.played_at,sideA,sideB,scoreA:m.side_a_score,scoreB:m.side_b_score}}),mine=items.filter(x=>x.sessionId===s.id),w=mine.filter(x=>x.won).length;return{id:s.id,title:s.title||'Quedada',mode:s.mode,createdAt:s.created_at,matches,played:mine.length,wins:w,losses:mine.length-w}}).sort((x,y)=>new Date(y.createdAt||0)-new Date(x.createdAt||0));
     HIST.stats={played:items.length,wins,losses,winRate:items.length?wins/items.length:0,pointsFor:items.reduce((n,x)=>n+x.ownScore,0),pointsAgainst:items.reduce((n,x)=>n+x.oppScore,0),sessions:sessionIds.length};HIST.loaded=true;
   }catch(error){console.warn('[history] load:',error&&error.message);HIST.error='No se ha podido cargar tu historial guardado.';HIST.loaded=true}
   finally{HIST.loading=false;if(['history','sessions','session-detail'].includes(view))render();else paintAuth()}
@@ -800,7 +800,7 @@ const A={
   reset(){if(confirm('Se borrarán jugadores, partidos y resultados. ¿Seguro?')&&confirm('Última comprobación: ¿empezar una quedada nueva?')){S=fresh();SC={};ed=null;ct=1;tmp=null;view='home'}}
 };
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-a],[data-fa],[data-up],[data-linkplayer],[data-addself],[data-session-response],[data-sc],[data-ct],[data-del],[data-st],[data-pd],[data-edit],[data-mode],[data-pm]');if(!t)return;const d=t.dataset;
+  const t=e.target.closest('[data-a],[data-fa],[data-up],[data-linkplayer],[data-addself],[data-session-response],[data-session-open],[data-sc],[data-ct],[data-del],[data-st],[data-pd],[data-edit],[data-mode],[data-pm]');if(!t)return;const d=t.dataset;
   // Navegación explícita: no depende de las acciones genéricas del resto de la app.
   if(d.a==='friends'){view='friends';FR.error='';render();loadFriends();return}
   if(d.a==='profile'){view='profile';AU.profileSettingsOpen=false;render();if(AU.user){loadMyHistory();loadFriends()}return}
