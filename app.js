@@ -442,7 +442,7 @@ async function redeemClubInviteFromUrl(){
  try{const {data,error}=await sbc.rpc('redeem_club_invite_link',{p_token:token});if(error)throw error;params.delete('club_invite');history.replaceState(null,'',location.pathname+(params.toString()?'?'+params.toString():'')+location.hash);await loadClubs();CL.selectedId=data;view='club-detail';render();await loadClubData(data);toast('Te has unido al club mediante invitación.');loadMyAchievements()}
  catch(e){toast(e.message||'El enlace de invitación no es válido.')}finally{CL.inviteRedeemBusy=false}}
 function vClubs(){
-  if(!AU.user)return '<h2>Clubes</h2><p class="lead">Crea un punto de encuentro para tu comunidad de pickleball.</p><div class="card acct">'+authInner()+'</div>';
+  if(!AU.user)return '<div class="card acct">'+authInner()+'</div>';
   const cards=CL.items.map(c=>{
     const mine=clubMember(c.id,AU.user.id),count=CL.members.filter(m=>m.club_id===c.id).length,mode=c.access_mode||'open';
     const searchText=esc([c.name,c.description,c.city].filter(Boolean).join(' ').toLocaleLowerCase('es'));
