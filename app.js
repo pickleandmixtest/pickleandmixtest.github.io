@@ -5,8 +5,8 @@ const fresh=()=>({players:[],settings:{courts:1,points:11,cycles:3,mode:'rot',pa
 function valid(d){return d&&Array.isArray(d.players)&&Array.isArray(d.matches)&&d.settings&&d.players.every(p=>p&&typeof p.id=='number'&&typeof p.name=='string')&&d.matches.every(m=>m&&Array.isArray(m.a)&&Array.isArray(m.b)&&m.a.length==2&&m.b.length==2&&['pending','done','skipped'].includes(m.status))&&(d.settings.mode!=='fixed'||Array.isArray(d.teams))&&['courts','points','cycles'].every(k=>Number.isInteger(d.settings[k])&&d.settings[k]>0)}
 let S=fresh();try{const d=JSON.parse(localStorage.getItem(K));if(valid(d)){S=d;if(!S.started&&S.settings.points===7)S.settings.points=11}}catch(e){}
 const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
-const ROUTE_TO_VIEW={inicio:'home',preparar:'setup',partido:'game',jugadores:'more',resumen:'final',perfil:'profile',amigos:'friends',historial:'history',quedadas:'sessions'};
-const VIEW_TO_ROUTE={home:'inicio',setup:'preparar',game:'partido',more:'jugadores',final:'resumen',profile:'perfil',friends:'amigos',history:'historial',sessions:'quedadas','session-detail':'quedadas','user-profile':'amigos'};
+const ROUTE_TO_VIEW={inicio:'home',preparar:'setup',partido:'game',jugadores:'more',resumen:'final',perfil:'profile',amigos:'friends',historial:'history',quedadas:'sessions',clubes:'clubs'};
+const VIEW_TO_ROUTE={home:'inicio',setup:'preparar',game:'partido',more:'jugadores',final:'resumen',profile:'perfil',friends:'amigos',history:'historial',sessions:'quedadas','session-detail':'quedadas','user-profile':'amigos',clubs:'clubes','club-detail':'clubes'};
 const initialRoute=location.hash.replace(/^#\/?/,'').toLowerCase();
 let view=ROUTE_TO_VIEW[initialRoute]||(S.started?'game':'home'),tmp=null,msg='',err='',nerr='',ed=null,ct=1,SC={};
 const nameErrBox=()=>nerr?`<div class="err">${esc(nerr)}</div>`:'';
@@ -184,7 +184,7 @@ const foot=()=>`<p class="mut foot">Plataforma para pickleballers creada por <a 
 function render(){
   const route='#'+(VIEW_TO_ROUTE[view]||'inicio');
   if(location.hash!==route)history.replaceState(null,'',location.pathname+location.search+route);
-  const f={home:vHome,setup:vSetup,game:vGame,more:vMore,final:vFinal,profile:vProfile,friends:vFriends,history:vHistory,sessions:vSessions,'session-detail':vSessionDetail,'user-profile':vUserProfile}[view];
+  const f={home:vHome,setup:vSetup,game:vGame,more:vMore,final:vFinal,profile:vProfile,friends:vFriends,history:vHistory,sessions:vSessions,'session-detail':vSessionDetail,'user-profile':vUserProfile,clubs:vClubs,'club-detail':vClubDetail}[view];
   $('#app').innerHTML=header()+f()+(err?`<div class="err">${esc(err)}</div>`:'')+foot();err='';nerr='';if(view==='home')initPong('pong',null,true);
   if(msg){toast(msg);msg=''}
 }
@@ -192,6 +192,7 @@ let PG={u:0,c:0};
 const HIST={items:[],sessions:[],selectedSessionId:null,invites:[],inviteBusy:'',stats:{played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0},loading:false,error:'',loaded:false};
 const PUB={id:null,profile:null,stats:null,history:[],error:'',loading:false,statsHidden:false,historyHidden:false};
 const FR={items:[],people:[],query:'',results:[],loading:false,searching:false,error:'',loaded:false,ranking:[],rankingLoading:false,activity:[],activityLoading:false,busy:''};
+const CL={items:[],members:[],people:[],selectedId:null,loading:false,error:'',busy:''};
 function initPong(cid,hid,pre){
   const c=document.getElementById(cid);if(!c)return;const x=c.getContext('2d'),d=window.devicePixelRatio||1,hint=hid&&document.getElementById(hid);
   let W=0,H=0,k=1,PW,PH,UY,CY,NY,RI,RP;if(!pre)PG.u=PG.c=0;const WIN=7,HIT=()=>PW/2+s.r*.7,s={m:'idle',bx:0,by:0,vx:0,vy:0,r:0,a:0,sp:300,ux:0,cx:0,t:0,dir:-1,err:0};
@@ -241,8 +242,8 @@ function initPong(cid,hid,pre){
   (function f(now){if(!document.body.contains(c))return;fit();if(W){const dt=Math.min(.033,(now-last)/1000);step(dt);draw()}last=now;requestAnimationFrame(f)})(last);
 }
 function header(){
-  const t=S.started?[['home','Inicio'],['go','Partido'],['more','Jugadores'],['final','Resumen'],['profile','Mi perfil']]:[['home','Inicio'],['setup','Preparar'],['final','Resumen'],['profile','Mi perfil']];
-  const cur={home:'home',game:'go',more:'more',final:'final',setup:'setup',profile:'profile',friends:'profile',history:'profile','user-profile':'profile'}[view];
+  const t=S.started?[['home','Inicio'],['go','Partido'],['more','Jugadores'],['final','Resumen'],['profile','Mi perfil'],['clubs','Clubes']]:[['home','Inicio'],['setup','Preparar'],['final','Resumen'],['profile','Mi perfil'],['clubs','Clubes']];
+  const cur={home:'home',game:'go',more:'more',final:'final',setup:'setup',profile:'profile',friends:'profile',history:'profile','user-profile':'profile',clubs:'clubs','club-detail':'clubs'}[view];
   return`<header class="top"><div class="mark">PICKLE<b>&amp;MIX</b></div><div class="who" id="authchip">${authChipIn()}</div><nav class="tabs" aria-label="Acceso rápido">${t.map(x=>`<button data-a="${x[0]}"${x[0]===cur?' aria-current="page"':''}>${x[1]}</button>`).join('')}</nav></header>`}
 const GT={
 pong:`<svg viewBox="0 0 160 96" aria-hidden="true"><rect width="160" height="96" fill="#2f6fbd"/><rect x="6" y="6" width="148" height="84" rx="4" fill="none" stroke="#fff" stroke-width="2" opacity=".8"/><path d="M6 48H154" stroke="#fff" stroke-width="2" stroke-dasharray="6 5" opacity=".8"/><rect x="56" y="12" width="46" height="8" rx="4" fill="#ff6a4d"/><rect x="66" y="76" width="46" height="8" rx="4" fill="#fff"/><circle cx="84" cy="62" r="4" fill="#d4f53c" opacity=".35"/><circle cx="92" cy="54" r="7" fill="#d4f53c" stroke="#0e1c33" stroke-width="2"/></svg>`,
@@ -292,12 +293,76 @@ function vFriends(){
     '<form class="card friend-search friends-section" data-f="friend-search"><label for="friend-query">Buscar jugadores</label><div class="row"><input id="friend-query" name="q" maxlength="40" placeholder="Nombre o @alias" value="'+esc(FR.query)+'" autocomplete="off"><button class="btn sm" type="submit" '+(FR.searching?'disabled':'')+'>'+(FR.searching?'Buscando…':'Buscar')+'</button></div><small>Para aparecer en las búsquedas, cada usuario debe elegir un alias en su configuración de perfil.</small></form>'+
     (FR.error?'<div class="err" role="alert">'+esc(FR.error)+'</div>':'')+
     (FR.query?'<section class="card friends-section"><div class="friends-section-head"><h3>Resultados</h3><span class="section-kicker">BÚSQUEDA</span></div>'+(FR.searching?'<p class="hint">Buscando jugadores…</p>':results||'<p class="empty">No hemos encontrado usuarios con ese nombre o alias.</p>')+'</section>':'')+
+    '<section class="card friends-section"><div class="friends-section-head"><h3>Mis amigos</h3><span class="friends-total">'+accepted.length+'</span></div>'+(friends||'<p class="mut">Todavía no tienes amigos añadidos.</p>')+'</section>'+
     '<section class="card friends-section friends-requests"><div class="friends-section-head"><h3>Solicitudes recibidas '+(incoming.length?'<span class="tag">'+incoming.length+'</span>':'')+'</h3><span class="section-kicker">PENDIENTES</span></div>'+(FR.loading?'<p class="hint">Cargando…</p>':requests||'<p class="mut">No tienes solicitudes pendientes.</p>')+'</section>'+
     '<section class="card friends-section"><div class="friends-section-head"><h3>Solicitudes enviadas</h3><span class="section-kicker">ENVIADAS</span></div>'+(sent||'<p class="mut">No tienes solicitudes enviadas.</p>')+'</section>'+
-    '<section class="card friends-section"><div class="friends-section-head"><h3>Mis amigos</h3><span class="friends-total">'+accepted.length+'</span></div>'+(friends||'<p class="mut">Todavía no tienes amigos añadidos.</p>')+'</section>'+
     '<section class="card friends-section friends-ranking"><div class="friends-section-head"><h3>Clasificación</h3><span class="section-kicker">ENTRE AMIGOS</span></div>'+ranking+'</section>'+
     '<button class="btn ghost friends-back" data-a="profile">← Volver a Mi perfil</button></div>';
 }
+
+/* ---------- Clubes ---------- */
+function paintClubs(){if(view==='clubs'||view==='club-detail'){const root=document.querySelector('#app');if(root)root.innerHTML=header()+(view==='club-detail'?vClubDetail():vClubs())+foot()}}
+async function loadClubs(){
+  if(!sbc||!AU.user)return;
+  CL.loading=true;CL.error='';paintClubs();
+  try{
+    const [clubs,members]=await Promise.all([
+      sbc.from('clubs').select('id,name,description,city,created_by,created_at').order('created_at',{ascending:false}),
+      sbc.from('club_members').select('club_id,user_id,role,joined_at').order('joined_at',{ascending:true})
+    ]);
+    if(clubs.error)throw clubs.error;if(members.error)throw members.error;
+    CL.items=clubs.data||[];CL.members=members.data||[];
+    const ids=[...new Set(CL.members.map(m=>m.user_id))];
+    if(ids.length){const p=await sbc.from('profiles').select('id,display_name,alias,avatar_url').in('id',ids);if(p.error)throw p.error;CL.people=p.data||[]}else CL.people=[];
+  }catch(error){console.warn('[clubs] load:',error&&error.message);CL.error='No se han podido cargar los clubes. Inténtalo de nuevo.'}
+  finally{CL.loading=false;paintClubs()}
+}
+function clubPerson(id){return CL.people.find(p=>p.id===id)||{id,display_name:'Jugador',alias:''}}
+function clubMember(clubId,userId){return CL.members.find(m=>m.club_id===clubId&&m.user_id===userId)}
+function vClubs(){
+  if(!AU.user)return '<h2>Clubes</h2><p class="lead">Crea un punto de encuentro para tu comunidad de pickleball.</p><div class="card acct">'+authInner()+'</div>';
+  const cards=CL.items.map(c=>{const mine=clubMember(c.id,AU.user.id),count=CL.members.filter(m=>m.club_id===c.id).length;return '<article class="club-card" data-club-search-text="'+esc((c.name+' '+c.description+' '+c.city).toLocaleLowerCase('es'))+'"><div class="club-card-main"><div class="club-avatar">⌂</div><div class="club-card-copy"><b>'+esc(c.name)+'</b><span>'+esc(c.city||'Club de pickleball')+' · '+count+' '+(count===1?'miembro':'miembros')+'</span><p>'+esc(c.description||'Sin descripción.')+'</p></div></div><div class="club-card-actions">'+(mine?'<span class="tag">'+(mine.role==='admin'?'Administrador':'Miembro')+'</span><button class="btn sm" data-club-open="'+c.id+'">Ver club</button>':'<button class="btn sm" data-club-join="'+c.id+'" '+(CL.busy==='join:'+c.id?'disabled':'')+'>'+(CL.busy==='join:'+c.id?'Uniéndote…':'Unirme')+'</button>')+'</div></article>'}).join('');
+  return '<div class="clubs-page"><div class="clubs-hero"><div><span class="section-kicker">PICKLE &amp; MIX · COMUNIDAD</span><h2>Clubes</h2><p>Encuentra tu comunidad, organiza jugadores y comparte tu pasión por el pickleball.</p></div><span class="clubs-hero-mark">⌂</span></div><section class="card club-create-card"><div class="friends-section-head"><h3>Crear un club</h3><span class="section-kicker">NUEVA COMUNIDAD</span></div><form data-f="club-create"><label>Nombre del club</label><input name="name" maxlength="50" minlength="3" required placeholder="Ej. Pickleball Axarquía"><label>Descripción</label><textarea name="description" maxlength="500" rows="3" placeholder="¿Qué caracteriza a vuestro club?"></textarea><label>Ciudad o zona</label><input name="city" maxlength="80" placeholder="Ej. Rincón de la Victoria"><button class="btn" type="submit" '+(CL.busy==='create'?'disabled':'')+'>'+(CL.busy==='create'?'Creando…':'Crear club')+'</button></form></section><section class="clubs-list"><div class="clubs-list-head"><h3>Explorar clubes</h3><input aria-label="Buscar clubes" data-club-search placeholder="Buscar por nombre o ciudad"></div>'+(CL.loading?'<div class="card"><p class="hint">Cargando clubes…</p></div>':CL.error?'<div class="card err">'+esc(CL.error)+'</div>':cards||'<div class="card empty">No hay clubes todavía. ¡Puedes crear el primero!</div>')+'</section></div>';
+}
+function vClubDetail(){
+  const c=CL.items.find(x=>x.id===CL.selectedId);if(!c)return vClubs();
+  const mine=clubMember(c.id,AU.user&&AU.user.id),members=CL.members.filter(m=>m.club_id===c.id),people=members.map(m=>{const p=clubPerson(m.user_id);return '<div class="club-member-row">'+(p.avatar_url?'<img class="av" src="'+esc(p.avatar_url)+'" alt="">':'<span class="av">'+esc((p.display_name||'?').slice(0,1).toUpperCase())+'</span>')+'<div><b>'+esc(p.display_name||'Jugador')+'</b><small>'+(p.alias?'@'+esc(p.alias):'')+'</small></div><span class="tag">'+(m.role==='admin'?'Administrador':'Miembro')+'</span></div>'}).join('');
+  return '<div class="clubs-page"><button class="btn sm ghost sessions-back" data-a="clubs">← Todos los clubes</button><section class="clubs-hero club-detail-hero"><div><span class="section-kicker">CLUB DE PICKLEBALL</span><h2>'+esc(c.name)+'</h2><p>'+esc(c.city||'Comunidad abierta')+'</p></div><span class="clubs-hero-mark">⌂</span></section><section class="card club-description"><p>'+esc(c.description||'Este club todavía no tiene descripción.')+'</p><div class="club-detail-meta"><span>'+members.length+' '+(members.length===1?'miembro':'miembros')+'</span><span>Creado el '+new Date(c.created_at).toLocaleDateString('es-ES')+'</span></div></section>'+(mine?'<section class="card club-members"><div class="friends-section-head"><h3>Miembros</h3><span class="friends-total">'+members.length+'</span></div>'+(people||'<p class="mut">Aún no hay miembros.</p>')+'</section>'+(mine.role==='admin'?'<button class="btn red" data-club-delete="'+c.id+'">Eliminar club</button>':'<button class="btn ghost" data-club-leave="'+c.id+'">Salir del club</button>'):'<section class="card club-join-card"><h3>Únete a este club</h3><p>Forma parte de esta comunidad y aparece en su lista de miembros.</p><button class="btn" data-club-join="'+c.id+'">Unirme al club</button></section>')+'</div>';
+}
+async function createClub(form){
+  if(!sbc||!AU.user||CL.busy)return;
+  const fd=new FormData(form),name=String(fd.get('name')||'').trim(),description=String(fd.get('description')||'').trim(),city=String(fd.get('city')||'').trim();
+  if(name.length<3){toast('El nombre debe tener al menos 3 caracteres.');return}
+  CL.busy='create';paintClubs();
+  try{
+    const {data,error}=await sbc.rpc('create_club',{p_name:name,p_description:description,p_city:city});
+    if(error)throw error;
+    await loadClubs();CL.selectedId=data;view='club-detail';render();toast('Club creado. ¡Ya eres su administrador!');
+  }catch(error){console.warn('[clubs] create:',error&&error.message);toast(error&&error.message&&error.message.includes('nombre')?error.message:'No se ha podido crear el club. Inténtalo de nuevo.')}
+  finally{CL.busy='';paintClubs()}
+}
+async function joinClub(id){
+  if(!sbc||!AU.user||CL.busy)return;
+  CL.busy='join:'+id;paintClubs();
+  try{const {error}=await sbc.from('club_members').insert({club_id:id,user_id:AU.user.id,role:'member'});if(error)throw error;await loadClubs();CL.selectedId=id;view='club-detail';paintClubs();toast('Te has unido al club.')}
+  catch(error){console.warn('[clubs] join:',error&&error.message);toast('No se ha podido completar la inscripción. Puede que ya formes parte del club.')}
+  finally{CL.busy='';paintClubs()}
+}
+async function leaveClub(id){
+  if(!sbc||!AU.user||CL.busy||!confirm('¿Quieres salir de este club?'))return;
+  CL.busy='leave:'+id;
+  try{const {error}=await sbc.from('club_members').delete().eq('club_id',id).eq('user_id',AU.user.id);if(error)throw error;await loadClubs();view='clubs';CL.selectedId=null;render();toast('Has salido del club.')}
+  catch(error){console.warn('[clubs] leave:',error&&error.message);toast('No se ha podido salir del club.')}
+  finally{CL.busy='';paintClubs()}
+}
+async function deleteClub(id){
+  if(!sbc||!AU.user||CL.busy||!confirm('¿Eliminar este club? Se eliminará también su lista de miembros. Esta acción no se puede deshacer.'))return;
+  CL.busy='delete:'+id;
+  try{const {error}=await sbc.from('clubs').delete().eq('id',id);if(error)throw error;await loadClubs();view='clubs';CL.selectedId=null;render();toast('Club eliminado.')}
+  catch(error){console.warn('[clubs] delete:',error&&error.message);toast('No se ha podido eliminar el club.')}
+  finally{CL.busy='';paintClubs()}
+}
+
 function vUserProfile(){
   if(!AU.user)return '<h2>Perfil</h2><div class="card acct">'+authInner()+'</div>';
   if(PUB.loading)return '<h2>Perfil</h2><div class="card"><p class="hint">Cargando perfil…</p></div>';
@@ -305,11 +370,9 @@ function vUserProfile(){
   const p=PUB.profile,rel=friendState(p.id),request=FR.items.find(f=>(f.requester_id===p.id&&f.addressee_id===AU.user.id)||(f.addressee_id===p.id&&f.requester_id===AU.user.id));
   const action=rel==='friend'?'<span class="tag">Amigos</span>':rel==='sent'?'<span class="tag">Solicitud enviada</span>':rel==='received'?'<button class="btn sm" data-fa="accept" data-id="'+request.id+'">Aceptar solicitud</button>':'<button class="btn sm" data-fa="send" data-id="'+p.id+'">Añadir amigo</button>';
   const stat=PUB.stats?'<div class="profile-metrics"><div class="card profile-metric"><b>'+PUB.stats.played+'</b><span>Partidos</span></div><div class="card profile-metric"><b>'+PUB.stats.wins+'</b><span>Victorias</span></div><div class="card profile-metric"><b>'+Math.round(PUB.stats.win_rate*100)+'%</b><span>Victorias</span></div></div><p class="mut">Diferencia de puntos: '+(PUB.stats.points_for-PUB.stats.points_against>0?'+':'')+(PUB.stats.points_for-PUB.stats.points_against)+'</p>':PUB.statsHidden?'<p class="mut">Este usuario no comparte sus estadísticas contigo.</p>':'<p class="mut">Todavía no hay estadísticas registradas.</p>';
-  const hist=PUB.history.length?PUB.history.map(h=>'<div class="history-row"><div><b>'+esc(h.session_title||'Quedada')+'</b><span class="mut">'+new Date(h.played_at).toLocaleDateString('es-ES')+' · '+(h.won?'Victoria':'Derrota')+'</span><small>'+esc((h.teammates||[]).join(' / '))+' vs '+esc((h.opponents||[]).join(' / '))+'</small></div><strong class="'+(h.won?'win':'loss')+'">'+h.own_score+'–'+h.opponent_score+'</strong></div>').join(''):PUB.historyHidden?'<p class="mut">Este usuario no comparte su historial contigo.</p>':'<p class="mut">Todavía no hay partidos guardados.</p>';
-  return '<h2>Perfil de jugador</h2><section class="card acct"><div class="me">'+(p.avatar_url?'<img class="av" src="'+esc(p.avatar_url)+'" alt="">':'<span class="av">'+esc((p.display_name||'?').slice(0,1).toUpperCase())+'</span>')+'<div><span class="tag d">Jugador de PICKLE &amp; MIX</span><b>'+esc(p.display_name)+'</b><span class="mut">@'+esc(p.alias)+'</span></div></div><div class="profile-public-actions">'+action+'</div></section>'+
+    return '<h2>Perfil de jugador</h2><section class="card acct"><div class="me">'+(p.avatar_url?'<img class="av" src="'+esc(p.avatar_url)+'" alt="">':'<span class="av">'+esc((p.display_name||'?').slice(0,1).toUpperCase())+'</span>')+'<div><span class="tag d">Jugador de PICKLE &amp; MIX</span><b>'+esc(p.display_name)+'</b><span class="mut">@'+esc(p.alias)+'</span></div></div><div class="profile-public-actions">'+action+'</div></section>'+
     '<p class="mut">'+(!PUB.locationHidden&&(p.city||p.country)?esc([p.city,p.country].filter(Boolean).join(', ')):'')+'</p>'+'<h3 class="profile-section-title">Estadísticas</h3>'+stat+
-    '<section class="card profile-empty"><h3>Historial de partidos</h3>'+hist+'</section>'+
-    '<button class="btn ghost" data-a="friends">Volver a Amigos</button>';
+        '<button class="btn ghost" data-a="friends">Volver a Amigos</button>';
 }
 async function openUserProfile(id){
   if(!sbc||!AU.user)return;
@@ -319,14 +382,11 @@ async function openUserProfile(id){
     if(error)throw error;PUB.profile=data;
     const isSelf=id===AU.user.id,isFriend=friendState(id)==='friend';
     const canStats=isSelf||data.stats_visibility==='everyone'||(data.stats_visibility==='friends'&&isFriend);
-    const canHistory=isSelf||data.history_visibility==='everyone'||(data.history_visibility==='friends'&&isFriend);
-    const canLocation=isSelf||data.location_visibility==='everyone'||(data.location_visibility==='friends'&&isFriend);
+        const canLocation=isSelf||data.location_visibility==='everyone'||(data.location_visibility==='friends'&&isFriend);
     PUB.locationHidden=!canLocation;
     if(canStats){const r=await sbc.rpc('get_user_stats',{p_user_id:id});if(r.error)throw r.error;PUB.stats=r.data}
     else PUB.statsHidden=true;
-    if(canHistory){const r=await sbc.rpc('get_user_history',{p_user_id:id,p_limit:20});if(r.error)throw r.error;PUB.history=Array.isArray(r.data)?r.data:[]}
-    else PUB.historyHidden=true;
-  }catch(error){console.warn('[public profile] load:',error&&error.message);PUB.error='No se ha podido cargar este perfil o sus datos públicos.'}
+      }catch(error){console.warn('[public profile] load:',error&&error.message);PUB.error='No se ha podido cargar este perfil o sus datos públicos.'}
   finally{PUB.loading=false;if(view==='user-profile')render()}
 }
 function friendActivityRow(item){
@@ -767,7 +827,7 @@ const A={
       .catch(e=>{AU.err='No se pudo cerrar la sesión. Inténtalo de nuevo.';console.warn('[auth] logout:',e&&e.message);paintAuth()})},
   guest(){AU.guest=true;try{localStorage.setItem(GUEST_K,'1')}catch(e){}},
   reloadProfile(){if(AU.user)loadProfile(AU.user.id)},
-  setup(){view='setup'},home(){view='home'},profile(){view='profile';AU.profileSettingsOpen=false;loadFriendActivity()},sessions(){view='sessions';HIST.selectedSessionId=null;if(!HIST.loaded)loadMyHistory()},friends(){view='friends';FR.error='';loadFriends()},history(){view='history';loadMyHistory()},profileSettings(){AU.profileSettingsOpen=true;paintAuth()},profileOverview(){AU.profileSettingsOpen=false;paintAuth()},go(){view='game';ed=null},more(){view='more'},final(){view='final'},
+  setup(){view='setup'},home(){view='home'},profile(){view='profile';AU.profileSettingsOpen=false;loadFriendActivity()},sessions(){view='sessions';HIST.selectedSessionId=null;if(!HIST.loaded)loadMyHistory()},friends(){view='friends';FR.error='';loadFriends()},clubs(){view='clubs';CL.error='';CL.selectedId=null;loadClubs()},history(){view='history';loadMyHistory()},profileSettings(){AU.profileSettingsOpen=true;paintAuth()},profileOverview(){AU.profileSettingsOpen=false;paintAuth()},go(){view='game';ed=null},more(){view='more'},final(){view='final'},
   start(){S.savedSessionId=null;const c=S.settings;if(S.players.length<4){err='Necesitas al menos 4 jugadores.';return}
     if(S.players.length<4*c.courts){err=`Con ${c.courts} pistas necesitas al menos ${4*c.courts} jugadores.`;return}
     if(FX()&&S.players.length%2){err='Con parejas fijas necesitas un número par de jugadores.';return}
@@ -800,10 +860,15 @@ const A={
   reset(){if(confirm('Se borrarán jugadores, partidos y resultados. ¿Seguro?')&&confirm('Última comprobación: ¿empezar una quedada nueva?')){S=fresh();SC={};ed=null;ct=1;tmp=null;view='home'}}
 };
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-a],[data-fa],[data-up],[data-linkplayer],[data-addself],[data-session-response],[data-session-open],[data-sc],[data-ct],[data-del],[data-st],[data-pd],[data-edit],[data-mode],[data-pm]');if(!t)return;const d=t.dataset;
+  const t=e.target.closest('[data-a],[data-fa],[data-up],[data-linkplayer],[data-addself],[data-session-response],[data-session-open],[data-club-open],[data-club-join],[data-club-leave],[data-club-delete],[data-sc],[data-ct],[data-del],[data-st],[data-pd],[data-edit],[data-mode],[data-pm]');if(!t)return;const d=t.dataset;
   // Navegación explícita: no depende de las acciones genéricas del resto de la app.
   if(d.a==='friends'){view='friends';FR.error='';render();loadFriends();return}
   if(d.a==='profile'){view='profile';AU.profileSettingsOpen=false;render();if(AU.user){loadMyHistory();loadFriends()}return}
+  if(d.a==='clubs'){view='clubs';CL.error='';CL.selectedId=null;render();loadClubs();return}
+  if(d.clubOpen){CL.selectedId=d.clubOpen;view='club-detail';render();return}
+  if(d.clubJoin){joinClub(d.clubJoin);return}
+  if(d.clubLeave){leaveClub(d.clubLeave);return}
+  if(d.clubDelete){deleteClub(d.clubDelete);return}
   if(d.sessionResponse){respondSessionInvitation(d.sessionResponse,d.id);return};if(d.sessionOpen){HIST.selectedSessionId=d.sessionOpen;view='session-detail';render();return}
   if(d.fa){friendAction(d.fa,d.id);return}
   if(d.addself!==undefined){addSelfPlayer();return}
@@ -822,7 +887,7 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('input',e=>{const t=e.target;if(t.matches('form[data-f="add"] input[name="n"]')){const box=t.closest('form').querySelector('#player-suggestions'),raw=t.value.trim(),isMention=raw.startsWith('@'),q=raw.replace(/^@/,'').toLocaleLowerCase('es');if(!box)return;if(!isMention){box.hidden=true;box.innerHTML='';return}const ownAlias=String((AU.profile&&AU.profile.alias)||'').toLocaleLowerCase('es'),ownName=String((AU.profile&&AU.profile.display_name)||'').toLocaleLowerCase('es'),hasSelf=AU.user&&!S.players.some(x=>x.userId===AU.user.id)&&(q==='yo'||(q&&((ownAlias&&ownAlias.includes(q))||ownName.includes(q))));const self=hasSelf?'<button type="button" class="player-suggestion" data-addself><b>@'+esc(ownAlias||'yo')+'</b><small>'+esc((AU.profile&&AU.profile.display_name)||auName(AU.user))+'</small><span>Este eres tú</span></button>':'';const found=AU.user&&q?linkedFriends().filter(p=>!S.players.some(x=>x.userId===p.id)&&((p.alias||'').toLocaleLowerCase('es').includes(q)||(p.display_name||'').toLocaleLowerCase('es').includes(q))).slice(0,6):[];box.innerHTML=self+found.map(p=>'<button type="button" class="player-suggestion" data-linkplayer="'+p.id+'"><b>@'+esc(p.alias||p.display_name)+'</b><small>'+esc(p.display_name||'')+'</small><span>Vincular</span></button>').join('');box.hidden=!box.innerHTML}});
 document.addEventListener('change',e=>{if(e.target.matches('[data-avatar-file]'))uploadAvatar(e.target)});
-document.addEventListener('submit',e=>{e.preventDefault();if(e.target.dataset.f==='profile'){saveProfile(e.target);return}if(e.target.dataset.f==='friend-search'){searchFriends(e.target);return}if(e.target.dataset.f==='save-session'){savePlaySession(e.target);return}const f=e.target.dataset.f,v=e.target.n.value;if(!v.trim())return;if(f==='add'&&v.trim().startsWith('@')){const mention=v.trim().slice(1).toLocaleLowerCase('es'),ownAlias=String((AU.profile&&AU.profile.alias)||'').toLocaleLowerCase('es');if(AU.user&&(mention==='yo'||(ownAlias&&mention===ownAlias))){addSelfPlayer();return}toast('Selecciona una sugerencia para vincular a tu amigo.');return}
+document.addEventListener('submit',e=>{e.preventDefault();if(e.target.dataset.f==='profile'){saveProfile(e.target);return}if(e.target.dataset.f==='friend-search'){searchFriends(e.target);return}if(e.target.dataset.f==='save-session'){savePlaySession(e.target);return}if(e.target.dataset.f==='club-create'){createClub(e.target);return}const f=e.target.dataset.f,v=e.target.n.value;if(!v.trim())return;if(f==='add'&&v.trim().startsWith('@')){const mention=v.trim().slice(1).toLocaleLowerCase('es'),ownAlias=String((AU.profile&&AU.profile.alias)||'').toLocaleLowerCase('es');if(AU.user&&(mention==='yo'||(ownAlias&&mention===ownAlias))){addSelfPlayer();return}toast('Selecciona una sugerencia para vincular a tu amigo.');return}
   const r=addNames(v);if(r.added&&f==='addlive')replan('Jugador añadido.');
   if(r.dups.length)nerr=dupMsg(r.dups,r.added);
   save();render();
