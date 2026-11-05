@@ -353,7 +353,7 @@ async function loadClubs(){
   CL.loading=true;CL.error='';paintClubs();
   try{
     const [clubs,members]=await Promise.all([
-      sbc.from('clubs').select('id,name,description,city,created_by,created_at').order('created_at',{ascending:false}),
+      sbc.from('clubs').select('id,name,description,city,created_by,created_at,avatar_url,banner_url,access_mode').order('created_at',{ascending:false}),
       sbc.from('club_members').select('club_id,user_id,role,joined_at').order('joined_at',{ascending:true})
     ]);
     if(clubs.error)throw clubs.error;if(members.error)throw members.error;
@@ -465,7 +465,7 @@ async function createClub(form){
     CL.selectedId=typeof data==='string'?data:data.id;
     if(access_mode!=='open'){const modeUpdate=await sbc.from('clubs').update({access_mode}).eq('id',CL.selectedId);if(modeUpdate.error)throw modeUpdate.error}
     if(!CL.selectedId)throw new Error('No se recibió el identificador del club creado.');
-    CL.createOpen=false;view='club-detail';render();toast('Club creado. ¡Ya eres su administrador!');
+    CL.createOpen=false;view='club-detail';render();await loadClubData(CL.selectedId);toast('Club creado. ¡Ya eres su administrador!');
     loadMyAchievements();
   }catch(error){
     console.warn('[clubs] create:',error&&error.code,error&&error.message,error&&error.details);
