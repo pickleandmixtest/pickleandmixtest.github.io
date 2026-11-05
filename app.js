@@ -1156,8 +1156,8 @@ document.addEventListener('click',e=>{
   if(d.clubRequest){respondClubRequest(d.id,d.clubRequest==='accept');return}
   if(t.hasAttribute('data-club-request-cancel')){cancelClubJoinRequest();return}
   if(d.clubInvitation){respondClubInvite(d.id,d.clubInvitation==='accept');return}
-  if(t.hasAttribute('data-club-member-menu')){const row=t.closest('.club-member-row'),open=!row.classList.contains('menu-open');document.querySelectorAll('.club-member-row.menu-open').forEach(x=>{x.classList.remove('menu-open');const b=x.querySelector('[data-club-member-menu]');if(b)b.setAttribute('aria-expanded','false')});if(open){row.classList.add('menu-open');t.setAttribute('aria-expanded','true')}return}
-  if(d.clubMemberAction){const row=t.closest('.club-member-row');if(row){row.classList.remove('menu-open');const b=row.querySelector('[data-club-member-menu]');if(b)b.setAttribute('aria-expanded','false')}manageClubMember(d.id,d.clubMemberAction);return}
+  if(t.hasAttribute('data-club-member-menu')){const row=t.closest('.club-member-item'),open=!row.classList.contains('menu-open');document.querySelectorAll('.club-member-item.menu-open').forEach(x=>{x.classList.remove('menu-open');const b=x.querySelector('[data-club-member-menu]');if(b)b.setAttribute('aria-expanded','false')});if(open){row.classList.add('menu-open');t.setAttribute('aria-expanded','true')}return}
+  if(d.clubMemberAction){const row=t.closest('.club-member-item');if(row){row.classList.remove('menu-open');const b=row.querySelector('[data-club-member-menu]');if(b)b.setAttribute('aria-expanded','false')}manageClubMember(d.id,d.clubMemberAction);return}
   if(t.hasAttribute('data-club-post-toggle')){CL.postOpen=!CL.postOpen;CL.eventOpen=false;paintClubs();return}
   if(d.clubPostDelete){deleteClubPost(d.clubPostDelete);return}
   if(d.clubPostComments){toggleClubPostComments(d.clubPostComments,d.enabled==='true');return}
