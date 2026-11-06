@@ -276,10 +276,18 @@ function achievementCatalog(summary,publicMode){
 }
 function notificationsPanel(){
   const items=ACH.notifications||[],unread=items.filter(n=>!n.read_at).length;
-  return '<section class="notification-popover" role="dialog" aria-label="Notificaciones"><header class="notification-popover-head"><div><b>Notificaciones</b><small>'+(unread?unread+' sin leer':'Estás al día')+'</small></div><button type="button" data-a="notificationsToggle" aria-label="Cerrar notificaciones">×</button></header><div class="notification-popover-list">'+(items.length?items.slice(0,10).map(n=>{const clubNotice=n.notification_type==='club_post_created'||n.notification_type==='club_event_created',symbol=n.notification_type==='achievement_unlocked'?'✦':n.notification_type==='club_post_created'?'▤':n.notification_type==='club_event_created'?'◷':'•',inner='<span class="notification-symbol">'+symbol+'</span><div><b>'+esc(n.title)+'</b><p>'+esc(n.body)+'</p><small>'+new Date(n.created_at).toLocaleDateString(APP_LANG==='en'?'en-US':'es-ES',{day:'numeric',month:'short',year:'numeric'})+'</small></div>';return clubNotice?'<button type="button" class="notification-item notification-link '+(n.read_at?'is-read':'is-unread')+'" data-notification-open="'+n.notification_type+'" data-id="'+esc(n.reference_id)+'">'+inner+'<span class="notification-open-arrow">›</span></button>':'<article class="notification-item '+(n.read_at?'is-read':'is-unread')+'">'+inner+'</article>'}).join(''):'<p class="notification-empty">Todavía no tienes notificaciones. Cuando haya novedades, aparecerán aquí.</p>')+'</div>'+(unread?'<footer class="notification-popover-foot"><button type="button" data-a="notificationsReadAll">Marcar todas como leídas</button></footer>':'')+'</section>';
+  return '<section class="notification-popover" role="dialog" aria-label="Notificaciones"><header class="notification-popover-head"><div><b>Notificaciones</b><small>'+(unread?unread+' sin leer':'Estás al día')+'</small></div><button type="button" data-a="notificationsToggle" aria-label="Cerrar notificaciones">×</button></header><div class="notification-popover-list">'+(items.length?items.slice(0,10).map(n=>{const clubNotice=n.notification_type==='club_post_created'||n.notification_type==='club_event_created',friendNotice=n.notification_type==='friend_request_received',actionable=clubNotice||friendNotice,symbol=n.notification_type==='achievement_unlocked'?'✦':n.notification_type==='club_post_created'?'▤':n.notification_type==='club_event_created'?'◷':friendNotice?'♧':'•',inner='<span class="notification-symbol">'+symbol+'</span><div><b>'+esc(n.title)+'</b><p>'+esc(n.body)+'</p><small>'+new Date(n.created_at).toLocaleDateString(APP_LANG==='en'?'en-US':'es-ES',{day:'numeric',month:'short',year:'numeric'})+'</small></div>';return actionable?'<button type="button" class="notification-item notification-link '+(n.read_at?'is-read':'is-unread')+'" data-notification-open="'+n.notification_type+'" data-id="'+esc(n.reference_id)+'">'+inner+'<span class="notification-open-arrow">›</span></button>':'<article class="notification-item '+(n.read_at?'is-read':'is-unread')+'">'+inner+'</article>'}).join(''):'<p class="notification-empty">Todavía no tienes notificaciones. Cuando haya novedades, aparecerán aquí.</p>')+'</div>'+(unread?'<footer class="notification-popover-foot"><button type="button" data-a="notificationsReadAll">Marcar todas como leídas</button></footer>':'')+'</section>';
 }
 let profileNotificationChannel=null;
-function watchProfileNotifications(userId){if(profileNotificationChannel){sbc.removeChannel(profileNotificationChannel);profileNotificationChannel=null}if(!sbc||!userId)return;profileNotificationChannel=sbc.channel('profile-notifications-'+userId).on('postgres_changes',{event:'INSERT',schema:'public',table:'profile_notifications',filter:'user_id=eq.'+userId},payload=>{const n=payload&&payload.new;if(!n)return;ACH.notifications=[n,...(ACH.notifications||[]).filter(x=>x.id!==n.id)].slice(0,20);paintAuth();if(n.notification_type==='club_post_created'||n.notification_type==='club_event_created')toast(n.title)}).subscribe()}
+function watchProfileNotifications(userId){if(profileNotificationChannel){sbc.removeChannel(profileNotificationChannel);profileNotificationChannel=null}if(!sbc||!userId)return;profileNotificationChannel=sbc.channel('profile-notifications-'+userId).on('postgres_changes',{event:'INSERT',schema:'public',table:'profile_notifications',filter:'user_id=eq.'+userId},payload=>{const n=payload&&payload.new;if(!n)return;ACH.notifications=[n,...(ACH.notifications||[]).filter(x=>x.id!==n.id)].slice(0,20);paintAuth();if(n.notification_type==='club_post_created'||n.notification_type==='club_event_created'||n.notification_type==='friend_request_received')toast(n.title)}).subscribe()}
+async function openFriendRequestNotification(id){
+  if(!sbc||!AU.user)return;
+  try{
+    if(id)await sbc.from('profile_notifications').update({read_at:new Date().toISOString()}).eq('user_id',AU.user.id).eq('notification_type','friend_request_received').eq('reference_id',id).is('read_at',null);
+    ACH.notifications=(ACH.notifications||[]).map(n=>n.notification_type==='friend_request_received'&&n.reference_id===id?{...n,read_at:n.read_at||new Date().toISOString()}:n);
+    ACH.notificationsOpen=false;view='friends';await loadFriends();toast('Aquí tienes tus solicitudes de amistad.');
+  }catch(error){console.warn('[notifications] open friend request:',error&&error.message);view='friends';await loadFriends()}
+}
 async function openClubNotification(type,id){if(!sbc||!AU.user||!id)return;const table=type==='club_post_created'?'club_posts':type==='club_event_created'?'club_events':null;if(!table)return;try{const {data,error}=await sbc.from(table).select('club_id').eq('id',id).maybeSingle();if(error)throw error;if(!data){toast('Esta novedad ya no está disponible.');return}await sbc.from('profile_notifications').update({read_at:new Date().toISOString()}).eq('user_id',AU.user.id).eq('notification_type',type).eq('reference_id',id).is('read_at',null);ACH.notifications=(ACH.notifications||[]).map(n=>n.notification_type===type&&n.reference_id===id?{...n,read_at:n.read_at||new Date().toISOString()}:n);ACH.notificationsOpen=false;CL.selectedId=data.club_id;CL.tab='info';CL.openPostId=null;CL.openEventId=null;view='club-detail';render();await loadClubs()}catch(e){console.warn('[notifications] open club item:',e&&e.message);toast('No se ha podido abrir esta novedad.')}}
 async function markNotificationsRead(){
   if(!sbc||!AU.user)return;
@@ -784,6 +792,7 @@ async function friendAction(action,id){
   if(!sbc||!AU.user||!id||FR.busy)return;
   if(action==='remove'&&!confirm('¿Eliminar esta amistad?'))return;
   FR.busy=action+':'+id;paintFriends();if(view==='user-profile')render();
+  let completed=false;
   try{
     let result;
     if(action==='send')result=await sbc.rpc('send_friend_request',{p_addressee_id:id});
@@ -791,13 +800,25 @@ async function friendAction(action,id){
     else if(action==='reject')result=await sbc.rpc('respond_friend_request',{p_request_id:id,p_accept:false});
     else if(action==='cancel')result=await sbc.rpc('cancel_friend_request',{p_request_id:id});
     else if(action==='remove')result=await sbc.rpc('remove_friend',{p_friendship_id:id});
-    if(result&&result.error)throw result.error;
+    if(result&&result.error){
+      // Si el servidor confirmó el cambio en la base de datos pero la respuesta
+      // se perdió, comprobamos el estado real antes de mostrar un error.
+      if(action==='accept'){
+        const check=await sbc.from('friendships').select('status').eq('id',id).eq('addressee_id',AU.user.id).maybeSingle();
+        if(!check.error&&check.data&&check.data.status==='accepted')completed=true;
+        else throw result.error;
+      }else throw result.error;
+    }else completed=true;
+    if(!completed)throw new Error('No se pudo confirmar el estado de la solicitud.');
     toast(({send:'Solicitud enviada.',accept:'Solicitud aceptada.',reject:'Solicitud rechazada.',cancel:'Solicitud cancelada.',remove:'Amistad eliminada.'})[action]||'Actualizado.');
-    await loadFriends();loadMyAchievements();
-    if(view==='user-profile'&&PUB.id)await openUserProfile(PUB.id);
+    // Los refrescos son secundarios: un fallo al actualizar la interfaz no debe
+    // convertir una operación ya completada en un falso error de acción.
+    try{await loadFriends()}catch(error){console.warn('[friends] refresh after action:',error&&error.message)}
+    loadMyAchievements();
+    if(view==='user-profile'&&PUB.id){try{await openUserProfile(PUB.id)}catch(error){console.warn('[friends] profile refresh:',error&&error.message)}}
   }catch(error){
     const msg=String(error&&error.message||'');console.warn('[friends] action:',error);
-    if(/ya existe una solicitud|already exists/i.test(msg)){toast('Ya existe una solicitud o amistad con este jugador.');await loadFriends()}
+    if(/ya existe una solicitud|already exists/i.test(msg)){toast('Ya existe una solicitud o amistad con este jugador.');try{await loadFriends()}catch(_){}}
     else{FR.error=/alias/i.test(msg)?'Elige un alias en Configuración antes de enviar solicitudes.':/solicitud inexistente|ya respondida|sin permisos|no puedes/i.test(msg)?'Esta solicitud ya no está disponible. Actualiza la lista para ver su estado.':'No se ha podido completar la acción. Revisa tu conexión e inténtalo de nuevo.';paintFriends()}
   }finally{FR.busy='';paintFriends();if(view==='user-profile')render()}
 }
@@ -1324,7 +1345,7 @@ document.addEventListener('click',e=>{
   if(t.hasAttribute('data-club-request-cancel')){cancelClubJoinRequest();return}
   if(d.clubInvitation){respondClubInvite(d.id,d.clubInvitation==='accept');return}
   if(t.hasAttribute('data-club-member-menu')){const row=t.closest('.club-member-item'),open=!row.classList.contains('menu-open');document.querySelectorAll('.club-member-item.menu-open').forEach(x=>{x.classList.remove('menu-open');const b=x.querySelector('[data-club-member-menu]'),m=x.querySelector('.club-member-menu-popover');if(b)b.setAttribute('aria-expanded','false');if(m)m.setAttribute('aria-hidden','true')});if(open){row.classList.add('menu-open');t.setAttribute('aria-expanded','true');const m=row.querySelector('.club-member-menu-popover');if(m)m.setAttribute('aria-hidden','false')}return}
-  if(d.notificationOpen){openClubNotification(d.notificationOpen,d.id);return}
+  if(d.notificationOpen){if(d.notificationOpen==='friend_request_received')openFriendRequestNotification(d.id);else openClubNotification(d.notificationOpen,d.id);return}
   if(d.clubMemberAction){const row=t.closest('.club-member-item');if(row){row.classList.remove('menu-open');const b=row.querySelector('[data-club-member-menu]'),m=row.querySelector('.club-member-menu-popover');if(b)b.setAttribute('aria-expanded','false');if(m)m.setAttribute('aria-hidden','true')}manageClubMember(d.id,d.clubMemberAction);return}
   if(t.hasAttribute('data-club-post-toggle')){CL.postOpen=!CL.postOpen;CL.eventOpen=false;paintClubs();return}
   if(t.hasAttribute('data-club-post-menu')){const box=t.closest('.club-post-actions'),open=!box.classList.contains('menu-open');document.querySelectorAll('.club-post-actions.menu-open').forEach(x=>{x.classList.remove('menu-open');const b=x.querySelector('[data-club-post-menu]'),m=x.querySelector('.club-post-menu-popover');if(b)b.setAttribute('aria-expanded','false');if(m)m.setAttribute('aria-hidden','true')});if(open){box.classList.add('menu-open');t.setAttribute('aria-expanded','true');const m=box.querySelector('.club-post-menu-popover');if(m)m.setAttribute('aria-hidden','false')}return}
