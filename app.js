@@ -531,7 +531,7 @@ async function redeemClubInviteFromUrl(){
  try{const {data,error}=await sbc.rpc('redeem_club_invite_link',{p_token:token});if(error)throw error;params.delete('club_invite');history.replaceState(null,'',location.pathname+(params.toString()?'?'+params.toString():'')+location.hash);await loadClubs();CL.selectedId=data;view='club-detail';render();await loadClubData(data);toast('Te has unido al club mediante invitación.');loadMyAchievements()}
  catch(e){toast(e.message||'El enlace de invitación no es válido.')}finally{CL.inviteRedeemBusy=false}}
 function vClubs(){
- if(!AU.user)return '<div class="card acct">'+authInner()+'</div>';
+ if(!AU.user)return vAuthLanding();
  const card=c=>{const mine=clubMember(c.id,AU.user.id),count=CL.members.filter(m=>m.club_id===c.id).length,mode=c.access_mode||'open',type=c.club_type||'friends',status=c.official_status||'none',typeLabel=type==='official'?'Club Oficial':'Club de amigos',verify=type==='official'?(status==='verified'?' · Verificado':status==='pending'?' · Pendiente de verificación':status==='rejected'?' · Verificación rechazada':''):'',searchText=esc([c.name,c.description,c.city,c.official_province,c.official_address,c.official_email,c.official_phone].filter(Boolean).join(' ').toLocaleLowerCase('es'));
  return '<article class="club-card '+(type==='official'?'official':'friends')+'" data-club-search-text="'+searchText+'"><div class="club-card-main"><div class="club-avatar">'+(c.avatar_url?'<img src="'+esc(c.avatar_url)+'" alt="">':'⌂')+'</div><div class="club-card-copy"><div class="club-card-labels"><div class="club-card-type '+(type==='official'?'official':'friends')+'">'+typeLabel+verify+'</div><span class="club-card-access '+(mode==='open'?'open':mode==='approval'?'approval':'private')+'">'+(mode==='open'?'Abierto':mode==='approval'?'Con aprobación':'Privado')+'</span></div><b>'+esc(c.name)+'</b><span>'+(c.city?esc(c.city)+' · ':'')+count+' '+(count===1?'miembro':'miembros')+'</span><p>'+esc(c.description||'Sin descripción.')+'</p></div></div><div class="club-card-actions">'+(mine?'<span class="tag">'+(mine.role==='admin'?'Administrador':'Miembro')+'</span>':'<span class="tag">'+(mode==='open'?'Acceso libre':mode==='approval'?'Solicitud':'Por invitación')+'</span>')+'<button class="btn sm" data-club-open="'+c.id+'">Ver club</button></div></article>'};
  const group=(type,label,desc,list,empty)=>'<section class="club-type-section" data-club-group="'+type+'"><div class="club-type-heading"><div><h3>'+label+'</h3>'+(desc?'<p>'+desc+'</p>':'')+'</div><span>'+list.length+'</span></div>'+(list.length?list.map(card).join(''):'<div class="club-empty-state"><span class="club-empty-mark">⌂</span><b>'+empty+'</b></div>')+'</section>';
@@ -883,9 +883,9 @@ async function loadMyHistory(){
   }catch(error){console.warn('[history] load:',error&&error.message);HIST.error='No se ha podido cargar tu historial guardado.';HIST.loaded=true}
   finally{HIST.loading=false;if(['history','sessions','session-detail'].includes(view))render();else paintAuth()}
 }
+function vAuthLanding(){return '<div id="authbox" class="auth-landing">'+authInner()+'</div>'}
 function vProfile(){
-  const body=AU.user||AU.guest?authInner():'<div id="authbox">'+authInner()+'</div>';
-  return '<div id="authbox">'+(AU.user||AU.guest?body:authInner())+'</div>';
+  return vAuthLanding();
 }
 /* Resumen del modo rotatorio: reparto por jugador y duración estimada (valores medios orientativos) */
 const CMAX=20; /* máximo de ciclos (partidos por jugador) que admite el campo «Ciclos» */
