@@ -214,7 +214,7 @@ function render(){
     else history.pushState(null,'',url);
   }else routeInitialized=true;
   const f={home:vHome,setup:vSetup,game:vGame,more:vMore,final:vFinal,profile:vProfile,friends:vFriends,history:vHistory,sessions:vSessions,'session-detail':vSessionDetail,'user-profile':vUserProfile,clubs:vClubs,'club-detail':vClubDetail,admin:vAdmin}[view];
-  $('#app').innerHTML=header()+f()+(err?`<div class="err">${esc(err)}</div>`:'')+foot()+bottomNavigation();err='';nerr='';if(view==='home')initPong('pong',null,true);
+  $('#app').innerHTML=header()+f()+(err?`<div class="err">${esc(err)}</div>`:'')+foot()+bottomNavigation();translateDOM();err='';nerr='';if(view==='home')initPong('pong',null,true);
   if(msg){toast(msg);msg=''}
 }
 let PG={u:0,c:0};
@@ -406,7 +406,7 @@ function vFriends(){
 }
 
 /* ---------- Clubes ---------- */
-function paintClubs(){if(view==='clubs'||view==='club-detail'){const root=document.querySelector('#app');if(root)root.innerHTML=header()+(view==='club-detail'?vClubDetail():vClubs())+foot()+bottomNavigation()}}
+function paintClubs(){if(view==='clubs'||view==='club-detail'){const root=document.querySelector('#app');if(root){root.innerHTML=header()+(view==='club-detail'?vClubDetail():vClubs())+foot()+bottomNavigation();translateDOM(root)}}}
 async function loadClubs(){
   if(!sbc||!AU.user)return;
   CL.loading=true;CL.error='';paintClubs();
@@ -686,7 +686,7 @@ async function loadFriends(){
   }catch(error){console.warn('[friends] load:',error&&error.message);FR.error='No se han podido cargar tus amistades. Comprueba la conexión e inténtalo de nuevo.'}
   finally{FR.loading=false;paintFriends();paintFriendBadge();loadFriendLeaderboard();if(view==='profile'){render();loadFriendActivity()}}
 }
-function paintFriends(){if(view==='friends'){const root=document.querySelector('#app');if(root)root.innerHTML=header()+vFriends()+foot()}}
+function paintFriends(){if(view==='friends'){const root=document.querySelector('#app');if(root){root.innerHTML=header()+vFriends()+foot();translateDOM(root)}}}
 async function searchFriends(form){
   const q=String(form.querySelector('[name="q"]').value||'').trim().replace(/^@/,'').slice(0,40);FR.query=q;FR.results=[];FR.error='';
   if(!q){paintFriends();return}
@@ -1253,7 +1253,7 @@ document.addEventListener('click',e=>{
   if(d.linkplayer){const friend=linkedFriends().find(p=>p.id===d.linkplayer);if(friend&&!S.players.some(p=>p.userId===friend.id)){let name=(friend.display_name||friend.alias||'Jugador').slice(0,24);if(nameTaken(name))name=('@'+(friend.alias||friend.display_name||'amigo')).slice(0,24);S.players.push({id:S.nid++,name,userId:friend.id,status:'active'});save()}else if(friend)toast('Ese amigo ya está en la quedada.');render();return}
   if(d.up){openUserProfile(d.up);return}
   if(d.a){A[d.a]();}
-  else if(d.sc){const c=d.sc[0],v=+d.sc.slice(1),r=scoreStep(tmp,c,v,S.settings.points);if(r.ok)tmp[c]=r.val;else toast(r.msg);$('#app').innerHTML=header()+vGame()+foot();return}
+  else if(d.sc){const c=d.sc[0],v=+d.sc.slice(1),r=scoreStep(tmp,c,v,S.settings.points);if(r.ok)tmp[c]=r.val;else toast(r.msg);$('#app').innerHTML=header()+vGame()+foot();translateDOM();return}
   else if(d.ct){ct=+d.ct;ed=null}
   else if(d.mode)S.settings.mode=d.mode;
   else if(d.pm)S.settings.pairing=d.pm;
@@ -1455,7 +1455,7 @@ function vAdmin(){
 async function adminAction(a,id,extra){if(a==='dashboard-refresh'||a==='users-refresh'||a==='clubs-refresh'||a==='admins-refresh'||a==='audit-refresh'||a==='activity-refresh'){if(a==='dashboard-refresh')ADMIN.analytics=null;if(a==='users-refresh'){ADMIN.users=[];ADMIN.page=1;}if(a==='clubs-refresh')ADMIN.clubs=[];if(a==='admins-refresh')ADMIN.admins=[];if(a==='audit-refresh')ADMIN.audit=[];if(a==='activity-refresh')ADMIN.activity=[];return adminLoad(a.replace('-refresh',''))}if(a==='users-next'){ADMIN.page++;return adminLoad('users')}try{if(['suspend_user','reactivate_user','delete_user'].includes(a)){if(!confirm(a==='delete_user'?'Eliminar definitivamente esta cuenta?':a==='suspend_user'?'Suspender esta cuenta?':'Reactivar esta cuenta?'))return;await adminCall(a,{user_id:id});await adminLoad('users');return}if(a==='club-rename'){const x=ADMIN.clubs.find(c=>c.id===id),name=prompt('Nuevo nombre del club',x?.name||'');if(name===null)return;await adminCall('update_club',{club_id:id,name});await adminLoad('clubs');return}if(a==='club-verify'){const x=ADMIN.clubs.find(c=>c.id===id);await adminCall('update_club',{club_id:id,name:x.name,official_status:extra});await adminLoad('clubs');return}if(a==='delete_club'){if(!confirm('Eliminar este club definitivamente?'))return;await adminCall('delete_club',{club_id:id});await adminLoad('clubs');return}if(a==='remove_admin'){if(!confirm('Retirar permisos administrativos?'))return;await adminCall('remove_admin',{user_id:id});await adminLoad('admins')}}catch(e){toast(e.message||'No se pudo completar la acción')}}
 async function adminAdd(form){const fd=new FormData(form),alias=String(fd.get('alias')||'').trim().replace(/^@/,'').toLowerCase(),role=fd.get('role');try{const {data,error}=await sbc.from('profiles').select('id').eq('alias',alias).maybeSingle();if(error)throw error;if(!data)throw new Error('No existe ese alias');if(!confirm('¿Conceder permisos a @'+alias+'?'))return;await adminCall('add_admin',{user_id:data.id,role});await adminLoad('admins')}catch(e){toast(e.message||'No se pudo asignar el rol')}}
 
-function paintAuth(){const b=$('#authbox'),c=$('#authchip');if(b)b.innerHTML=authInner();if(c)c.innerHTML=authChipIn()}
+function paintAuth(){const b=$('#authbox'),c=$('#authchip');if(b)b.innerHTML=authInner();if(c)c.innerHTML=authChipIn();translateDOM()}
 if(typeof window!=='undefined'&&typeof document!=='undefined'){
   try{AU.guest=localStorage.getItem(GUEST_K)==='1'}catch(e){}
   AU.oauth=/[?&#]code=|access_token=/.test(location.search+location.hash);
