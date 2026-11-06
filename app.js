@@ -195,7 +195,7 @@ function render(){
     else history.pushState(null,'',url);
   }else routeInitialized=true;
   const f={home:vHome,setup:vSetup,game:vGame,more:vMore,final:vFinal,profile:vProfile,friends:vFriends,history:vHistory,sessions:vSessions,'session-detail':vSessionDetail,'user-profile':vUserProfile,clubs:vClubs,'club-detail':vClubDetail,admin:vAdmin}[view];
-  $('#app').innerHTML=header()+f()+(err?`<div class="err">${esc(err)}</div>`:'')+foot();err='';nerr='';if(view==='home')initPong('pong',null,true);
+  $('#app').innerHTML=header()+adminContextBar()+f()+(err?`<div class="err">${esc(err)}</div>`:'')+foot();err='';nerr='';if(view==='home')initPong('pong',null,true);
   if(msg){toast(msg);msg=''}
 }
 let PG={u:0,c:0};
@@ -321,6 +321,20 @@ function partySubnav(){
   const current={setup:'setup',game:'go',more:'more',final:'final'}[view];
   return `<nav class="party-subnav party-subnav-${items.length}" aria-label="Secciones de Partido">${items.map(x=>`<button data-a="${x[0]}"${x[0]===current?' aria-current="page"':''}>${x[1]}</button>`).join('')}</nav>`;
 }
+function adminContextBar(){
+  if(!ADMIN.isAdmin||ADMIN.role!=='superadmin')return '';
+  const target=view==='user-profile'?'users':view==='clubs'||view==='club-detail'?'clubs':view==='admin'?(ADMIN.tab||'dashboard'):'dashboard';
+  const label={users:'Gestionar usuarios',clubs:'Gestionar clubes',dashboard:'Centro de control',activity:'Ver actividad',admins:'Administradores',audit:'Registro administrativo'}[target]||'Centro de control';
+  return '<aside class="admin-context-bar '+(ADMIN.contextMode?'is-open':'')+'" aria-label="Herramientas de superadministrador"><div class="admin-context-main"><span class="admin-context-mark" aria-hidden="true">盾</span><span class="admin-context-copy"><b>Superadministrador</b><small>'+(ADMIN.contextMode?'Herramientas disponibles en esta página':'Modo contextual desactivado')+'</small></span><button type="button" class="admin-context-toggle" data-admin-mode aria-expanded="'+(ADMIN.contextMode?'true':'false')+'">'+(ADMIN.contextMode?'Desactivar':'Activar modo')+'</button></div>'+(ADMIN.contextMode?'<div class="admin-context-actions"><button type="button" data-admin-jump="'+target+'" class="admin-context-primary">'+label+'</button><button type="button" data-admin-jump="dashboard">Panel general</button><button type="button" data-admin-jump="users">Usuarios</button><button type="button" data-admin-jump="clubs">Clubes</button><button type="button" data-admin-jump="activity">Actividad</button></div>':'')+'</aside>';
+}
+function jumpAdminContext(tab){
+  if(!ADMIN.isAdmin)return toast('Sin permisos.');
+  ADMIN.tab=tab||'dashboard';
+  if(ADMIN.tab==='users'){ADMIN.page=1;ADMIN.users=[]}
+  if(ADMIN.tab==='clubs')ADMIN.clubs=[];
+  if(ADMIN.tab==='activity')ADMIN.activity=[];
+  view='admin';render();adminLoad(ADMIN.tab);
+}
 function header(){
   const t=[['home','Inicio'],['party','Partido'],['clubs','Clubes']];
   const cur={home:'home',setup:'party',game:'party',more:'party',final:'party',clubs:'clubs','club-detail':'clubs'}[view];
@@ -382,7 +396,7 @@ function vFriends(){
 }
 
 /* ---------- Clubes ---------- */
-function paintClubs(){if(view==='clubs'||view==='club-detail'){const root=document.querySelector('#app');if(root)root.innerHTML=header()+(view==='club-detail'?vClubDetail():vClubs())+foot()}}
+function paintClubs(){if(view==='clubs'||view==='club-detail'){const root=document.querySelector('#app');if(root)root.innerHTML=header()+adminContextBar()+(view==='club-detail'?vClubDetail():vClubs())+foot()}}
 async function loadClubs(){
   if(!sbc||!AU.user)return;
   CL.loading=true;CL.error='';paintClubs();
@@ -1184,7 +1198,7 @@ const A={
   reset(){if(confirm('Se borrarán jugadores, partidos y resultados. ¿Seguro?')&&confirm('Última comprobación: ¿empezar una quedada nueva?')){S=fresh();SC={};ed=null;ct=1;tmp=null;view='home'}}
 };
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-a],[data-atab],[data-admin],[data-admin-range],[data-activity-filter],[data-match-club-toggle],[data-match-club-import],[data-community-panel],[data-fa],[data-up],[data-linkplayer],[data-addself],[data-session-response],[data-session-open],[data-club-section],[data-club-open],[data-club-join],[data-club-leave],[data-club-delete],[data-club-create-toggle],[data-club-settings-toggle],[data-club-link-create],[data-club-link-copy],[data-club-copy-current],[data-club-link-revoke],[data-club-invite-revoke],[data-club-request],[data-club-request-cancel],[data-club-invitation],[data-club-member-menu],[data-club-member-action],[data-club-event-toggle],[data-club-post-toggle],[data-club-post-delete],[data-club-post-comments],[data-club-comment-delete],[data-club-event-register],[data-club-image-open],[data-image-editor-action],[data-club-event-cancel],[data-club-event-delete],[data-sc],[data-ct],[data-del],[data-st],[data-pd],[data-edit],[data-mode],[data-pm]');if(!e.target.closest('.club-member-item'))document.querySelectorAll('.club-member-item.menu-open').forEach(x=>{x.classList.remove('menu-open');const b=x.querySelector('[data-club-member-menu]'),m=x.querySelector('.club-member-menu-popover');if(b)b.setAttribute('aria-expanded','false');if(m)m.setAttribute('aria-hidden','true')});if(!t)return;const d=t.dataset;if(d.a==='achievementsClose'&&e.target.closest('[data-achievement-modal]')&&!e.target.closest('.achievement-modal-close'))return;
+  const t=e.target.closest('[data-a],[data-atab],[data-admin],[data-admin-range],[data-admin-mode],[data-admin-jump],[data-activity-filter],[data-match-club-toggle],[data-match-club-import],[data-community-panel],[data-fa],[data-up],[data-linkplayer],[data-addself],[data-session-response],[data-session-open],[data-club-section],[data-club-open],[data-club-join],[data-club-leave],[data-club-delete],[data-club-create-toggle],[data-club-settings-toggle],[data-club-link-create],[data-club-link-copy],[data-club-copy-current],[data-club-link-revoke],[data-club-invite-revoke],[data-club-request],[data-club-request-cancel],[data-club-invitation],[data-club-member-menu],[data-club-member-action],[data-club-event-toggle],[data-club-post-toggle],[data-club-post-delete],[data-club-post-comments],[data-club-comment-delete],[data-club-event-register],[data-club-image-open],[data-image-editor-action],[data-club-event-cancel],[data-club-event-delete],[data-sc],[data-ct],[data-del],[data-st],[data-pd],[data-edit],[data-mode],[data-pm]');if(!e.target.closest('.club-member-item'))document.querySelectorAll('.club-member-item.menu-open').forEach(x=>{x.classList.remove('menu-open');const b=x.querySelector('[data-club-member-menu]'),m=x.querySelector('.club-member-menu-popover');if(b)b.setAttribute('aria-expanded','false');if(m)m.setAttribute('aria-hidden','true')});if(!t)return;const d=t.dataset;if(t.hasAttribute('data-admin-mode')){ADMIN.contextMode=!ADMIN.contextMode;render();return}if(t.hasAttribute('data-admin-jump')){jumpAdminContext(d.adminJump);return}if(d.a==='achievementsClose'&&e.target.closest('[data-achievement-modal]')&&!e.target.closest('.achievement-modal-close'))return;
   // Navegación explícita: no depende de las acciones genéricas del resto de la app.
   if(t.hasAttribute('data-image-editor-action')){if(d.imageEditorAction==='apply')applyImageEditor();else closeImageEditor();return}
   if(t.hasAttribute('data-club-image-open')){const input=document.querySelector('[data-club-image-file]');if(input){input.dataset.clubImage=d.clubImageOpen;input.click()}return}
