@@ -1157,7 +1157,7 @@ function openGame(id){if((id==='kitchen'||id==='dink')&&!AU.user){toast('Este mi
   const onMessage=e=>{if(e.source!==f.contentWindow||!e.data||e.data.type!=='pm-minigame-score'||e.data.game!==id)return;saveMiniGameScore(id,e.data.score)};
   window.addEventListener('message',onMessage);o._miniMessageHandler=onMessage;
   const lbButton=o.querySelector('[data-lb]');if(lbButton)lbButton.addEventListener('click',()=>showMiniGameLeaderboard(id));
-  f.srcdoc=src.textContent.split('<\\/script>').join('</script>');
+  let gameSource=src.textContent.split('<\\/script>').join('</script>');if(APP_LANG==='en'&&window.translateTextValue){const bridge='<script>(function(){const tr=window.parent.translateTextValue;const p=CanvasRenderingContext2D.prototype,original=p.fillText;p.fillText=function(value){const args=Array.prototype.slice.call(arguments);args[0]=typeof value===\'string\'?tr(value):value;return original.apply(this,args)}})();<\\/script>';gameSource=gameSource.replace(/<script\\b/i,bridge+'<script')}f.srcdoc=gameSource;
   document.body.appendChild(o);document.body.style.overflow='hidden'}
 const A={
   play(){if($('#ov'))return;const o=document.createElement('div');o.id='ov';o.dataset.game='pong';o.className='ov';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');
