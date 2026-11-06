@@ -85,6 +85,13 @@ function trDom(value){
  if((m=s.match(/^2\) Pasan las (\d+) mejores a eliminatorias directas \(el que pierde, fuera\)\.$/)))return raw.replace(s,'2) The top '+m[1]+' advance to single-elimination playoffs (the losing team is out).');
  if((m=s.match(/^¡Ganaste (\d+-\d+)! Toca la pelota para jugar otra vez$/)))return raw.replace(s,'You won '+m[1]+'! Tap the ball to play again');
  if((m=s.match(/^Gana el ordenador (\d+-\d+)\. Toca la pelota para la revancha$/)))return raw.replace(s,'The computer wins '+m[1]+'. Tap the ball for a rematch');
+ if((m=s.match(/^Nivel (\d+) · (.+)$/)))return raw.replace(s,'Level '+m[1]+' · '+m[2]);
+ if((m=s.match(/^NIVEL (\d+)$/)))return raw.replace(s,'LEVEL '+m[1]);
+ if((m=s.match(/^(\d+) XP acumulados$/)))return raw.replace(s,m[1]+' XP earned');
+ if((m=s.match(/^(\d+) logros$/)))return raw.replace(s,m[1]+' achievements');
+ if((m=s.match(/^Conseguida · (.+)$/)))return raw.replace(s,'Earned · '+m[1]);
+ if((m=s.match(/^Grupo ([A-Z])$/)))return raw.replace(s,'Group '+m[1]);
+ if((m=s.match(/^(\d+) parejas · todas contra todas$/)))return raw.replace(s,m[1]+' teams · round robin');
  return value;
 }
 window.PM_TRANSLATIONS=ES_EN;window.translateTextValue=trDom;
