@@ -347,7 +347,7 @@ function partySubnav(){
 }
 function header(){
   const inParty=['setup','game','more','final'].includes(view);
-  const t=[['home',tr('home')],['party',tr('party')],['clubs',tr('clubs')]],cur={home:'home',setup:'party',game:'party',more:'party',final:'party',clubs:'clubs','club-detail':'clubs'}[view];
+  const t=[['home',tr('home')],['party',tr('party')],['clubs',tr('clubs')],['activity',tr('activity')]],cur={home:'home',setup:'party',game:'party',more:'party',final:'party',clubs:'clubs','club-detail':'clubs',activity:'activity'}[view];
   return`<header class="top"><div class="top-main"><div class="mark">PICKLE<b>&amp;MIX</b></div><div class="who" id="authchip">${authChipIn()}</div></div><nav class="tabs" aria-label="Navegación principal">${t.map(x=>`<button data-a="${x[0]}"${x[0]===cur?' aria-current="page"':''}>${x[1]}</button>`).join('')}${ADMIN.isAdmin?`<button data-a="admin"${view==='admin'?' aria-current="page"':''}>${tr('admin')}</button>`:''}</nav>${inParty?partySubnav():''}</header>`}
 function bottomNavigation(){
   const current={home:'home',activity:'activity',setup:'party',game:'party',more:'party',final:'party',clubs:'clubs','club-detail':'clubs',profile:'profile',friends:'profile',history:'profile',sessions:'profile','session-detail':'profile','user-profile':'profile',admin:'admin'}[view]||'home';
@@ -1264,7 +1264,7 @@ document.addEventListener('click',e=>{
   // Navegación explícita: no depende de las acciones genéricas del resto de la app.
   if(t.hasAttribute('data-image-editor-action')){if(d.imageEditorAction==='apply')applyImageEditor();else closeImageEditor();return}
   if(t.hasAttribute('data-club-image-open')){const input=document.querySelector('[data-club-image-file]');if(input){input.dataset.clubImage=d.clubImageOpen;input.click()}return}
-  if(t.hasAttribute('data-feed-filter')){const next=t.dataset.feedFilter;if(['all','friends','clubs'].includes(next)&&next!==ACT.filter){ACT.filter=next;loadActivity(true)}return}
+  if(t.hasAttribute('data-feed-filter')){if(ACT.loading)return;const next=t.dataset.feedFilter;if(['all','friends','clubs'].includes(next)&&next!==ACT.filter){ACT.filter=next;loadActivity(true)}return}
   if(t.hasAttribute('data-feed-more')){loadActivity(false);return}
   if(t.hasAttribute('data-feed-refresh')){loadActivity(true);return}
   if(d.a==='friends'){view='friends';FR.error='';render();loadFriends();return}
