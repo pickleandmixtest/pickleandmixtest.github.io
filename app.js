@@ -1343,7 +1343,7 @@ function authInner(){
 async function loadProfile(id){
   if(!sbc||!id)return;
   AU.profile=null;AU.profileErr='';AU.profileLoading=true;paintAuth();
-  try{const {data,error}=await sbc.from('profiles').select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility,country,city').eq('id',id).single();
+  try{const {data,error}=await sbc.from('profiles').select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility,country,city,preferred_language').eq('id',id).single();
     if(!AU.user||AU.user.id!==id)return;AU.profileLoading=false;
     if(error){AU.profileErr='No se ha podido cargar tu perfil. Comprueba la conexión e inténtalo de nuevo.';console.warn('[profile] load:',error.code,error.message)}else{AU.profile=data;AU.profileErr='';if(data.preferred_language==='es'||data.preferred_language==='en'){APP_LANG=data.preferred_language;try{localStorage.setItem(LANG_KEY,APP_LANG)}catch(e){}document.documentElement.lang=APP_LANG}}
   }catch(error){if(!AU.user||AU.user.id!==id)return;AU.profileLoading=false;AU.profileErr='No se ha podido cargar tu perfil. Comprueba la conexión e inténtalo de nuevo.';console.warn('[profile] load:',error&&error.message)}
@@ -1381,7 +1381,7 @@ async function saveProfile(form){
   const country=String(form.querySelector('[name="country"]').value||'').trim().slice(0,80),city=String(form.querySelector('[name="city"]').value||'').trim().slice(0,80);
   const payload={display_name:name,alias:raw||null,country:country||null,city:city||null,stats_visibility:form.querySelector('[name="stats_visibility"]').value,history_visibility:form.querySelector('[name="history_visibility"]').value,location_visibility:form.querySelector('[name="location_visibility"]').value,preferred_language:APP_LANG};
   const btn=form.querySelector('button[type="submit"]');if(btn){btn.disabled=true;btn.textContent='Guardando…'}
-  try{const {data,error}=await sbc.from('profiles').update(payload).eq('id',AU.user.id).select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility,country,city').single();
+  try{const {data,error}=await sbc.from('profiles').update(payload).eq('id',AU.user.id).select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility,country,city,preferred_language').single();
     if(error){if(btn){btn.disabled=false;btn.textContent='Guardar perfil'}const message=error.code==='23505'?'Ese alias ya está en uso. Prueba con otro.':error.code==='23514'?'El alias o alguno de los datos no cumple el formato permitido.':'No se ha podido guardar el perfil. Inténtalo de nuevo.';toast(message);console.warn('[profile] save:',error.code,error.message);return}
     AU.profile=data;AU.profileErr='';AU.err='';paintAuth();toast('Perfil guardado.');
   }catch(error){if(btn){btn.disabled=false;btn.textContent='Guardar perfil'}toast('No se ha podido guardar el perfil. Comprueba tu conexión.');console.warn('[profile] save:',error&&error.message)}
