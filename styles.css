@@ -1745,7 +1745,7 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .club-post-modal-kicker{color:#7890a7;font-size:9px;font-weight:900;letter-spacing:.12em}
 .club-post-modal-subtitle{color:#8191a2;font-size:10px}
 .club-post-modal-close{display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;border:1px solid #e0e8ef;border-radius:50%;background:#fff;color:#45617c;font:400 25px/1 Arial,sans-serif;cursor:pointer}
-.club-post-modal-content{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:8px 24px 25px}
+.club-post-modal-content{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:8px 24px 25px}.club-post-modal-content{display:block;flex:1 1 auto;width:100%;box-sizing:border-box}.club-post-modal-content>.club-post-modal-article{display:block!important;visibility:visible!important;opacity:1!important;position:relative!important;width:100%;min-height:1px}.club-post-modal-content>.club-post-modal-article .club-post-title,.club-post-modal-content>.club-post-modal-article .club-post-body,.club-post-modal-content>.club-post-modal-article .club-post-head,.club-post-modal-content>.club-post-modal-article .club-post-footer,.club-post-modal-content>.club-post-modal-article .club-post-comments{visibility:visible!important;opacity:1!important}
 .club-post-modal-content>.club-post-card{padding:14px 0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;cursor:default}
 .club-post-modal-content .club-post-title{margin-top:16px;font-size:23px;line-height:1.25}
 .club-post-modal-content .club-post-body{display:block!important;margin:12px 0 18px;font-size:14px;line-height:1.75;white-space:pre-wrap;overflow:visible}
