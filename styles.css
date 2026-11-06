@@ -1605,3 +1605,24 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .club-detail-page[data-club-tab="events"] .club-event-card:not([data-club-event-expanded="true"])>p,.club-detail-page[data-club-tab="events"] .club-event-card:not([data-club-event-expanded="true"]) .club-event-attendees{display:none}
 .club-detail-page[data-club-tab="events"] .club-event-card[data-club-event-expanded="true"]>p,.club-detail-page[data-club-tab="events"] .club-event-card[data-club-event-expanded="true"] .club-event-attendees{display:block}
 @media(max-width:560px){.club-detail-tabs{margin:10px -2px 14px;padding:5px}.club-detail-tabs button{padding:9px 12px;font-size:12px}}
+
+/* Compact spacing in club profile and explicit event detail control */
+.club-detail-page{gap:9px}
+.club-detail-page .club-description,.club-detail-page .club-official-contact,.club-detail-page .club-members,.club-detail-page .club-admin-section{padding:12px}
+.club-detail-page .club-section-heading{gap:3px;margin-bottom:8px}
+.club-detail-page .club-section-heading-row{gap:8px}
+.club-detail-page .club-events-section{gap:8px}
+.club-detail-page .club-event-card{padding:10px 0}
+.club-detail-page .club-members .club-member-row{padding:7px 0}
+.club-detail-page .club-join-card{padding:14px}
+.club-detail-page .club-join-card h3{margin:4px 0 5px}
+.club-detail-page .club-join-card p{margin-bottom:9px}
+.club-detail-page .club-admin-zone{gap:8px;padding-top:2px}
+.club-event-expand{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;margin-top:8px;padding:8px 0;border:0;border-top:1px solid #edf1f6;border-radius:0;background:transparent;color:#37658e;font:700 11px/1.3 inherit;text-align:left;cursor:pointer}
+.club-event-expand span{font-size:17px;line-height:1}
+.club-event-expand:focus-visible{outline:2px solid var(--sky);outline-offset:3px;border-radius:5px}
+.club-event-detail{margin-top:7px;padding:10px 11px;border:1px solid #e8eef4;border-radius:11px;background:#f8fafc}
+.club-event-detail[hidden]{display:none!important}
+.club-event-detail>p{margin:0 0 7px;color:#50657b;font-size:12px;line-height:1.5}
+.club-event-detail .club-event-attendees{display:block;color:#728197;font-size:10px;line-height:1.45}
+.club-detail-page[data-club-tab="events"] .club-event-card:not([data-club-event-expanded="true"])>p,.club-detail-page[data-club-tab="events"] .club-event-card:not([data-club-event-expanded="true"]) .club-event-attendees{display:none}
