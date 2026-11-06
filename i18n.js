@@ -42,6 +42,9 @@ Object.assign(ES_EN,{
 Object.assign(ES_EN,{
  'Cuadro del torneo':'Tournament bracket','Cómo se juega el torneo':'How the tournament works','Fase de grupos':'Group stage','Pasan las':'The top','mejores a eliminatorias directas (el que pierde, fuera).':'advance to single-elimination playoffs (losers are out).','Grupos':'Groups','Semifinales':'Semi-finals','Cuartos':'Quarter-finals','Final':'Final','todas contra todas':'round robin','parejas':'teams','Pareja':'Team','Ranking por pareja':'Team leaderboard','Ranking individual':'Individual leaderboard','Nombre':'Name','Cuenta vinculada':'Linked account','Invitado':'Guest','Añade al menos 4 para empezar.':'Add at least 4 to get started.','Puntos':'Points','Ciclos':'Cycles','jugadores':'players','partidos previstos':'scheduled matches','partidos que juega cada persona.':'matches played by each player.','Aún no hay jugadores':'No players yet','Todos los jugadores jugarán':'All players will play','partidos disputados':'matches played','diferencia de puntos':'point difference','compañeros':'teammates','Pista':'Court','en juego':'in play','En cola:':'Up next:','Después:':'Next:','Jugadores':'Players','Jugadores inscritos':'Registered players','Gestionar participantes':'Manage players','Descansa':'Rest','Se marcha':'Leaves','Vuelve':'Returns','Ha vuelto / llega':'Returned / arrived','Quitar':'Remove','Añadir':'Add','Nueva persona':'New person','Cualquier cambio':'Any change','recalcula solo los partidos pendientes.':'recalculates pending matches only.','Parejas fijas:':'Fixed teams:','aquí puedes corregir nombres y resultados.':'here you can edit names and results.','No quedan partidos pendientes.':'No matches are pending.','Mira el resumen final o empieza una nueva quedada.':'View the final summary or start a new session.','PICKLE & MIX · PARTIDO':'PICKLE & MIX · MATCH','Tipo de juego':'Game type','Formación de parejas':'Team selection','Aleatorias':'Random','Manuales':'Manual','las eliges tú':'you choose','sorteo':'random draw'
 });
+Object.assign(ES_EN,{
+ '¡Kitchen! +10':'Kitchen! +10','¡Bien!':'Nice!','¡Falta en la Kitchen!':'Kitchen fault!','¡Fallaste!':'Missed!','Pulsa Golpear para devolver':'Press Hit to return the ball','Toca para jugar':'Tap to play','Récord ':'Record ','Botón de pausa: seguir':'Pause button: resume','Botón de inicio: menú':'Start button: menu','¡Arrastra más lejos!':'Drag further back!','PUNTOS':'SCORE','RÉCORD':'RECORD','Fácil':'Easy','Difícil':'Hard','Turno de Jugador':'Player turn','Jugador':'Player','¡Empate!':'It’s a tie!','¡Has ganado!':'You win!','Gana Jugador':'Player wins','Kitchen':'Kitchen'
+});
 function trDom(value){
  const raw=String(value||''),s=raw.trim();if(!s)return value;
  if(Object.prototype.hasOwnProperty.call(ES_EN,s))return raw.replace(s,ES_EN[s]);
@@ -67,6 +70,7 @@ function trDom(value){
  if((m=s.match(/^Carta (\\d+)$/)))return raw.replace(s,'Card '+m[1]);
  if((m=s.match(/^(\\d+) parejas · (\\d+) mov\\.$/)))return raw.replace(s,m[1]+' pairs · '+m[2]+' moves');
  if((m=s.match(/^Jugador (\\d+)$/)))return raw.replace(s,'Player '+m[1]);
+ if((m=s.match(/^Turno de Jugador (\\d+)$/)))return raw.replace(s,'Player '+m[1]+' turn');
  if((m=s.match(/^Ver perfil de (.+)$/)))return raw.replace(s,'View profile of '+m[1]);
  if((m=s.match(/^Más opciones para (.+)$/)))return raw.replace(s,'More options for '+m[1]);
  if((m=s.match(/^Abrir el club (.+)$/)))return raw.replace(s,'Open club '+m[1]);
