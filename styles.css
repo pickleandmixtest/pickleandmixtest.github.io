@@ -1590,3 +1590,6 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .profile-hero-actions .profile-friend-count{flex:0 1 auto;min-width:0;white-space:nowrap}
 .profile-hero-actions .profile-settings-btn{flex:0 0 auto;white-space:nowrap;min-width:0;width:auto;align-self:center}
 @media(max-width:380px){.profile-hero-actions{gap:7px}.profile-hero-actions .profile-friend-count{gap:5px;padding:6px 8px 6px 6px}.profile-hero-actions .profile-friend-count-icon{flex-basis:26px;width:26px;height:26px}.profile-hero-actions .profile-settings-btn{padding:7px 9px;font-size:12px}}
+
+/* La acción de actualizar queda alineada a la derecha sin encabezado introductorio */
+.activity-heading--actions{justify-content:flex-end}
