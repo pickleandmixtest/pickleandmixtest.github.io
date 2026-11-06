@@ -1479,3 +1479,17 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
   .admin-page .admin-row-actions .btn{min-height:35px;padding:8px 10px}
   .admin-page .admin-filter-btn{min-height:33px;padding:7px 10px}
 }
+
+/* ---------- Modo contextual de superadministración ---------- */
+.admin-context-bar{position:fixed;z-index:30;right:14px;bottom:14px;width:min(390px,calc(100vw - 28px));border:1px solid rgba(255,255,255,.16);border-radius:16px;background:#102b4c;color:#fff;box-shadow:0 12px 34px rgba(8,24,43,.28);overflow:hidden;font-family:inherit}
+.admin-context-main{display:flex;align-items:center;gap:10px;padding:11px 12px}
+.admin-context-mark{display:grid;place-items:center;flex:0 0 34px;height:34px;border-radius:10px;background:#24466c;color:#d4f53c;font-size:18px;font-weight:900}
+.admin-context-copy{display:grid;gap:2px;min-width:0;flex:1}
+.admin-context-copy b{font-size:12px;line-height:1.2}.admin-context-copy small{font-size:10px;color:#c2d0df;line-height:1.25}
+.admin-context-toggle,.admin-context-actions button{display:inline-flex;align-items:center;justify-content:center;width:auto;min-height:34px;margin:0;padding:7px 11px;border:1px solid rgba(255,255,255,.24);border-radius:10px;background:#fff;color:#12325e;font-family:inherit;font-size:11px;font-weight:800;line-height:1.2;cursor:pointer;white-space:nowrap}
+.admin-context-toggle{background:#d4f53c;border-color:#d4f53c;color:#12325e}
+.admin-context-actions{display:flex;flex-wrap:wrap;gap:7px;padding:0 12px 12px}
+.admin-context-actions button{background:#1b3b60;color:#fff;border-color:#426080}
+.admin-context-actions .admin-context-primary{background:#d4f53c;color:#12325e;border-color:#d4f53c}
+.admin-context-bar button:hover{filter:brightness(1.08)}.admin-context-bar button:focus-visible{outline:3px solid #d4f53c;outline-offset:2px}
+@media(max-width:480px){.admin-context-bar{right:10px;bottom:10px;width:calc(100vw - 20px)}.admin-context-main{padding:9px 10px}.admin-context-actions{gap:6px;padding:0 10px 10px}.admin-context-actions button{min-height:32px;padding:6px 9px;font-size:10px}}
