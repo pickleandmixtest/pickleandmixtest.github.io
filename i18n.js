@@ -58,6 +58,7 @@ function trDom(value){
  if((m=s.match(/^\\+?\\s*(\\d+) miembros?$/)))return raw.replace(s,m[1]+' members');
  return value;
 }
+window.PM_TRANSLATIONS=ES_EN;window.translateTextValue=trDom;
 window.translateDOM=function(root){
  if(typeof APP_LANG==='undefined'||APP_LANG!=='en')return;
  root=root||document.body;if(!root)return;
