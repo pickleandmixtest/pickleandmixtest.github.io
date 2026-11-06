@@ -1570,3 +1570,12 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 @keyframes activity-spin{to{transform:rotate(360deg)}}
 .activity-more{display:block;width:100%;margin:14px 0 0}
 @media(max-width:520px){.activity-page,.activity-intro{padding-top:4px}.activity-card{padding:13px;border-radius:14px}.activity-card-top time{font-size:9px}.activity-heading{margin-top:4px}}
+
+
+/* Acciones del perfil en una misma fila para reducir la altura del banner */
+.profile-dashboard>.profile-hero{flex-direction:column;align-items:stretch;gap:12px}
+.profile-dashboard>.profile-hero .profile-hero-main{width:100%}
+.profile-hero-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-width:0}
+.profile-hero-actions .profile-friend-count{flex:0 1 auto;margin:0;min-width:0}
+.profile-hero-actions .profile-settings-btn{flex:0 0 auto;align-self:center;width:auto;min-width:124px;min-height:42px;margin:0}
+@media(max-width:380px){.profile-dashboard>.profile-hero .profile-settings-btn{width:auto}.profile-hero-actions{gap:8px}.profile-hero-actions .profile-settings-btn{min-width:108px;padding:7px 9px;font-size:12px}.profile-hero-actions .profile-friend-count{gap:6px;padding-right:9px}}
