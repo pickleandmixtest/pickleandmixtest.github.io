@@ -1670,7 +1670,7 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .club-event-card-main{flex:1;min-width:0}
 .club-event-card h4{margin:6px 0!important;font-size:15px!important}
 .club-event-card .club-event-meta{display:flex;flex-wrap:wrap;gap:7px 12px;color:var(--muted,#718096);font-size:11px;line-height:1.45}
-.club-event-open{display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:0 0 auto;min-height:38px;padding:9px 12px;border:1px solid #dbe6f0;border-radius:11px;background:#f5f8fc;color:#315d84;font:800 11px/1 inherit;cursor:pointer;white-space:nowrap}
+.club-event-open{display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:0 0 auto;min-height:38px;padding:9px 12px;border:1px solid #dbe6f0;border-radius:11px;background:#f5f8fc;color:#315d84;font:800 11px/1 "Trebuchet MS",system-ui,sans-serif;cursor:pointer;white-space:nowrap}
 .club-event-open span{font-size:16px;line-height:1;transition:transform .16s ease}
 .club-event-open:hover{background:#eaf2fa;border-color:#c8d9e9}
 .club-event-open:hover span{transform:translateX(3px)}
