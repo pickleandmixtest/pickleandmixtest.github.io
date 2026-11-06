@@ -1342,12 +1342,12 @@ function authInner(){
 }
 async function loadProfile(id){
   if(!sbc||!id)return;
-  AU.profile=null;AU.profileErr='';AU.profileLoading=true;paintAuth();
+  const languageBeforeLoad=APP_LANG;AU.profile=null;AU.profileErr='';AU.profileLoading=true;paintAuth();
   try{const {data,error}=await sbc.from('profiles').select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility,country,city,preferred_language').eq('id',id).single();
     if(!AU.user||AU.user.id!==id)return;AU.profileLoading=false;
     if(error){AU.profileErr='No se ha podido cargar tu perfil. Comprueba la conexión e inténtalo de nuevo.';console.warn('[profile] load:',error.code,error.message)}else{AU.profile=data;AU.profileErr='';if(data.preferred_language==='es'||data.preferred_language==='en'){APP_LANG=data.preferred_language;try{localStorage.setItem(LANG_KEY,APP_LANG)}catch(e){}document.documentElement.lang=APP_LANG}}
   }catch(error){if(!AU.user||AU.user.id!==id)return;AU.profileLoading=false;AU.profileErr='No se ha podido cargar tu perfil. Comprueba la conexión e inténtalo de nuevo.';console.warn('[profile] load:',error&&error.message)}
-  paintAuth();if(view==='friends')loadFriends();
+  if(APP_LANG!==languageBeforeLoad)render();else paintAuth();if(view==='friends')loadFriends();
 }
 async function storeAvatarUrl(url){
   if(!sbc||!AU.user||!AU.profile)throw new Error('Inicia sesión para cambiar tu foto.');
