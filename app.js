@@ -411,7 +411,7 @@ function vFriends(){
 }
 
 /* ---------- Clubes ---------- */
-function paintClubs(){if(view==='clubs'||view==='club-detail'){const root=document.querySelector('#app');if(root){root.innerHTML=header()+(view==='club-detail'?vClubDetail():vClubs())+foot()+bottomNavigation();translateDOM(root)}}}
+function paintClubs(){if(view!=='clubs'&&view!=='club-detail')return;const root=document.querySelector('#app');if(!root)return;try{root.innerHTML=header()+(view==='club-detail'?vClubDetail():vClubs())+foot()+bottomNavigation();translateDOM(root)}catch(error){console.error('[clubs] render error:',error);if(view==='club-detail'&&CL.openPostId){CL.openPostId=null;try{root.innerHTML=header()+vClubDetail()+foot()+bottomNavigation();translateDOM(root);toast('No se ha podido abrir la publicación. El club sigue disponible.');return}catch(fallbackError){console.error('[clubs] fallback render error:',fallbackError)}}root.innerHTML=header()+'<section class="card" style="margin:20px;padding:20px"><h3>No se ha podido mostrar esta sección</h3><p>Se ha producido un error al cargar el contenido. Vuelve a intentarlo.</p><button class="btn" type="button" data-a="clubs">Volver a clubes</button></section>'+foot()+bottomNavigation()}}
 async function loadClubs(){
   if(!sbc||!AU.user)return;
   CL.loading=true;CL.error='';paintClubs();
