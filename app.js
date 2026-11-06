@@ -387,7 +387,7 @@ function vFriends(){
 }
 
 /* ---------- Clubes ---------- */
-function paintClubs(){if(view==='clubs'||view==='club-detail'){const root=document.querySelector('#app');if(root)root.innerHTML=header()+(view==='club-detail'?vClubDetail():vClubs())+foot()}}
+function paintClubs(){if(view==='clubs'||view==='club-detail'){const root=document.querySelector('#app');if(root)root.innerHTML=header()+(view==='club-detail'?vClubDetail():vClubs())+foot()+bottomNavigation()}}
 async function loadClubs(){
   if(!sbc||!AU.user)return;
   CL.loading=true;CL.error='';paintClubs();
