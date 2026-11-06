@@ -1523,8 +1523,6 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .activity-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:8px 0 18px}
 .activity-heading h2,.activity-intro h2{margin:4px 0 5px;font:900 clamp(27px,7vw,34px)/1.05 "Arial Black",Impact,sans-serif;color:var(--court)}
 .activity-heading p,.activity-intro p{margin:0;color:var(--mut);font-size:14px;line-height:1.5}
-.activity-refresh{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border:1px solid #dce5ef;border-radius:13px;background:#fff;color:var(--court);font-size:25px;cursor:pointer;box-shadow:0 2px 6px rgba(20,45,75,.05)}
-.activity-refresh:hover{background:#f5f9fd}
 .activity-filters{display:flex;gap:7px;padding:5px;margin:0 0 15px;border:1px solid #e2e9f1;border-radius:14px;background:#e8eef5}
 .activity-filters button{flex:1;min-height:39px;padding:8px 12px;border:0;border-radius:10px;background:transparent;color:#60748b;font:800 12px "Trebuchet MS",system-ui,sans-serif;cursor:pointer}
 .activity-filters button[aria-selected="true"]{background:#fff;color:var(--court);box-shadow:0 2px 7px rgba(22,48,77,.11)}
