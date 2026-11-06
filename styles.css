@@ -1595,7 +1595,7 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 /* Club detail navigation and compact previews */
 .club-detail-tabs{display:flex;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;padding:6px;margin:14px 0 16px;border:1px solid var(--edge,rgba(120,140,160,.2));border-radius:16px;background:var(--card,rgba(128,140,160,.06));scrollbar-width:none}
 .club-detail-tabs::-webkit-scrollbar{display:none}
-.club-detail-tabs button{flex:1 0 auto;min-height:40px;padding:9px 13px;border:0;border-radius:11px;background:transparent;color:var(--muted,currentColor);font:600 13px inherit;white-space:nowrap;cursor:pointer}
+.club-detail-tabs button{flex:1 0 auto;min-height:40px;padding:9px 13px;border:0;border-radius:11px;background:transparent;color:var(--muted,currentColor);font-family:inherit;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer}
 .club-detail-tabs button[aria-selected="true"]{background:var(--surface,rgba(120,140,160,.14));color:var(--text,inherit);box-shadow:0 1px 5px rgba(0,0,0,.08)}
 .club-detail-page[data-club-tab="info"] [data-club-panel]:not([data-club-panel="info"]),.club-detail-page[data-club-tab="events"] [data-club-panel]:not([data-club-panel="events"]),.club-detail-page[data-club-tab="posts"] [data-club-panel]:not([data-club-panel="posts"]),.club-detail-page[data-club-tab="members"] [data-club-panel]:not([data-club-panel="members"]),.club-detail-page[data-club-tab="manage"] [data-club-panel]:not([data-club-panel="manage"]){display:none!important}
 .club-post-card[data-club-post-open],.club-event-card[data-club-event-open]{cursor:pointer;transition:border-color .16s,box-shadow .16s}
