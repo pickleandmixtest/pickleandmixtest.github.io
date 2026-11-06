@@ -323,7 +323,8 @@ function partySubnav(){
 }
 function header(){
   const inParty=['setup','game','more','final'].includes(view);
-  return`<header class="top"><div class="top-main"><div class="mark">PICKLE<b>&amp;MIX</b></div><div class="who" id="authchip">${authChipIn()}</div></div>${inParty?partySubnav():''}</header>`}
+  const t=[['home','Inicio'],['party','Partido'],['clubs','Clubes']],cur={home:'home',setup:'party',game:'party',more:'party',final:'party',clubs:'clubs','club-detail':'clubs'}[view];
+  return`<header class="top"><div class="top-main"><div class="mark">PICKLE<b>&amp;MIX</b></div><div class="who" id="authchip">${authChipIn()}</div></div><nav class="tabs" aria-label="Navegación principal">${t.map(x=>`<button data-a="${x[0]}"${x[0]===cur?' aria-current="page"':''}>${x[1]}</button>`).join('')}${ADMIN.isAdmin?`<button data-a="admin"${view==='admin'?' aria-current="page"':''}>Administración</button>`:''}</nav>${inParty?partySubnav():''}</header>`}
 function bottomNavigation(){
   const current={home:'home',setup:'party',game:'party',more:'party',final:'party',clubs:'clubs','club-detail':'clubs',profile:'profile',friends:'profile',history:'profile',sessions:'profile','session-detail':'profile','user-profile':'profile',admin:'admin'}[view]||'home';
   const items=[['home','Inicio','<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>'],['party','Partido','<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3 4 7l3 4 3-4-3-4Zm10 10-3 4 3 4 3-4-3-4ZM8 9l8 6M5 19l4-4m6-6 4-4"/></svg>'],['clubs','Clubes','<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m7-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm13 10v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>'],['profile','Perfil','<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>']];
