@@ -13,14 +13,9 @@ const APP_SHELL = [
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
-    await Promise.all(APP_SHELL.map(async path => {
-      try {
-        const response = await fetch(path, { cache: 'reload' });
-        if (response.ok) await cache.put(path, response);
-      } catch (_) {
-        // A partial shell is still useful; the next visit can fill missing assets.
-      }
-    }));
+    // Install only when the complete shell is available; an incomplete update
+    // must not replace a previously working offline cache.
+    await cache.addAll(APP_SHELL);
     await self.skipWaiting();
   })());
 });
