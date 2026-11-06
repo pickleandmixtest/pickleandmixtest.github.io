@@ -65,6 +65,9 @@ begin
     join accepted_friends af on af.user_id = sp.user_id
     left join public.profiles pr on pr.id = sp.user_id
     where sp.approval_status = 'accepted'
+      and m.played_at is not null
+      and m.side_a_score is not null
+      and m.side_b_score is not null
       and private.can_view_user_history(sp.user_id)
     order by m.id, sp.user_id
   ),

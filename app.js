@@ -347,7 +347,7 @@ function partySubnav(){
 }
 function header(){
   const inParty=['setup','game','more','final'].includes(view);
-  const t=[['home',tr('home')],['party',tr('party')],['clubs',tr('clubs')],['activity',tr('activity')]],cur={home:'home',setup:'party',game:'party',more:'party',final:'party',clubs:'clubs','club-detail':'clubs',activity:'activity'}[view];
+  const t=[['home',tr('home')],['party',tr('party')],['clubs',tr('clubs')]],cur={home:'home',setup:'party',game:'party',more:'party',final:'party',clubs:'clubs','club-detail':'clubs'}[view];
   return`<header class="top"><div class="top-main"><div class="mark">PICKLE<b>&amp;MIX</b></div><div class="who" id="authchip">${authChipIn()}</div></div><nav class="tabs" aria-label="Navegación principal">${t.map(x=>`<button data-a="${x[0]}"${x[0]===cur?' aria-current="page"':''}>${x[1]}</button>`).join('')}${ADMIN.isAdmin?`<button data-a="admin"${view==='admin'?' aria-current="page"':''}>${tr('admin')}</button>`:''}</nav>${inParty?partySubnav():''}</header>`}
 function bottomNavigation(){
   const current={home:'home',activity:'activity',setup:'party',game:'party',more:'party',final:'party',clubs:'clubs','club-detail':'clubs',profile:'profile',friends:'profile',history:'profile',sessions:'profile','session-detail':'profile','user-profile':'profile',admin:'admin'}[view]||'home';
