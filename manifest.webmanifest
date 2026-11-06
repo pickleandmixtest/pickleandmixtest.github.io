@@ -1,0 +1,21 @@
+{
+  "id": "./",
+  "name": "Pickle&Mix",
+  "short_name": "Pickle&Mix",
+  "description": "Organiza quedadas de pickleball, juega con amigos y descubre clubes.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#eef3f8",
+  "theme_color": "#12325e",
+  "icons": [
+    {
+      "src": "./favicon.svg?v=2",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
