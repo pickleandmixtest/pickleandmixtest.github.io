@@ -12,9 +12,9 @@ async function setAppLanguage(value){
  const previous=APP_LANG;APP_LANG=value;try{localStorage.setItem(LANG_KEY,value)}catch(e){}
  document.documentElement.lang=value;
  if(AU.user&&sbc){
-  const {data,error}=await sbc.from('profiles').update({preferred_language:value}).eq('id',AU.user.id).select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility,country,city,preferred_language').single();
+  const {data,error}=await sbc.from('profiles').update({preferred_language:value}).eq('id',AU.user.id).select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility,preferred_language').single();
   if(error){APP_LANG=previous;try{localStorage.setItem(LANG_KEY,previous)}catch(e){}document.documentElement.lang=previous;toast(previous==='en'?'Could not save your language preference.':'No se ha podido guardar el idioma.');console.warn('[language] save:',error.message);return}
-  AU.profile=data;
+  AU.profile={...AU.profile,...data};
  }
  render();
 }
@@ -640,20 +640,23 @@ async function openUserProfile(id){
   if(!sbc||!AU.user)return;
   PUB.id=id;try{sessionStorage.setItem('pickleMix.publicProfileRoute',id)}catch(e){}PUB.profile=null;PUB.stats=null;PUB.history=[];PUB.achievements=null;PUB.clubs=[];PUB.clubsLoading=true;PUB.error='';PUB.loading=true;PUB.statsHidden=false;PUB.historyHidden=false;view='user-profile';render();
   try{
-    const {data,error}=await sbc.from('profiles').select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility,country,city,preferred_language').eq('id',id).single();
-    if(error)throw error;PUB.profile=data;
+    const {data,error}=await sbc.from('profiles').select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility,preferred_language').eq('id',id).single();
+    if(error)throw error;
+    const location=await sbc.rpc('get_profile_location',{p_user_id:id});
+    if(location.error)throw location.error;
+    PUB.profile={...data,...(location.data||{})};PUB.locationHidden=!location.data;
     const memberships=await sbc.from('club_members').select('club_id,role').eq('user_id',id);
     if(memberships.error)throw memberships.error;
     const clubIds=(memberships.data||[]).map(m=>m.club_id);
     if(clubIds.length){const clubsResult=await sbc.from('clubs').select('id,name,city,club_type,avatar_url').in('id',clubIds);if(clubsResult.error)throw clubsResult.error;PUB.clubs=(clubsResult.data||[]).map(c=>({...c,role:memberships.data.find(m=>m.club_id===c.id)?.role||'member'})).sort((a,b)=>a.name.localeCompare(b.name,'es'))}else PUB.clubs=[];
     PUB.clubsLoading=false;
-    const ach=await sbc.rpc('get_profile_achievement_summary',{p_user_id:id});if(!ach.error)PUB.achievements=ach.data;
     const isSelf=id===AU.user.id,isFriend=friendState(id)==='friend';
     const canStats=isSelf||data.stats_visibility==='everyone'||(data.stats_visibility==='friends'&&isFriend);
-        const canLocation=isSelf||data.location_visibility==='everyone'||(data.location_visibility==='friends'&&isFriend);
-    PUB.locationHidden=!canLocation;
-    if(canStats){const r=await sbc.rpc('get_user_stats',{p_user_id:id});if(r.error)throw r.error;PUB.stats=r.data}
-    else PUB.statsHidden=true;
+    if(canStats){
+      const ach=await sbc.rpc('get_profile_achievement_summary',{p_user_id:id});
+      if(!ach.error)PUB.achievements=ach.data;
+      const r=await sbc.rpc('get_user_stats',{p_user_id:id});if(r.error)throw r.error;PUB.stats=r.data;
+    }else{PUB.statsHidden=true;PUB.achievements=null;}
       }catch(error){console.warn('[public profile] load:',error&&error.message);PUB.error='No se ha podido cargar este perfil o sus datos públicos.'}
   finally{PUB.loading=false;PUB.clubsLoading=false;if(view==='user-profile')render()}
 }
@@ -1348,17 +1351,22 @@ function authInner(){
 async function loadProfile(id){
   if(!sbc||!id)return;
   const languageBeforeLoad=APP_LANG;AU.profile=null;AU.profileErr='';AU.profileLoading=true;paintAuth();
-  try{const {data,error}=await sbc.from('profiles').select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility,country,city,preferred_language').eq('id',id).single();
+  try{const {data,error}=await sbc.from('profiles').select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility,preferred_language').eq('id',id).single();
     if(!AU.user||AU.user.id!==id)return;AU.profileLoading=false;
-    if(error){AU.profileErr='No se ha podido cargar tu perfil. Comprueba la conexión e inténtalo de nuevo.';console.warn('[profile] load:',error.code,error.message)}else{AU.profile=data;AU.profileErr='';if(data.preferred_language==='es'||data.preferred_language==='en'){APP_LANG=data.preferred_language;try{localStorage.setItem(LANG_KEY,APP_LANG)}catch(e){}document.documentElement.lang=APP_LANG}}
+    if(error){AU.profileErr='No se ha podido cargar tu perfil. Comprueba la conexión e inténtalo de nuevo.';console.warn('[profile] load:',error.code,error.message)}else{
+      const location=await sbc.rpc('get_profile_location',{p_user_id:id});
+      if(location.error)throw location.error;
+      AU.profile={...data,...(location.data||{})};AU.profileErr='';
+      if(data.preferred_language==='es'||data.preferred_language==='en'){APP_LANG=data.preferred_language;try{localStorage.setItem(LANG_KEY,APP_LANG)}catch(e){}document.documentElement.lang=APP_LANG}
+    }
   }catch(error){if(!AU.user||AU.user.id!==id)return;AU.profileLoading=false;AU.profileErr='No se ha podido cargar tu perfil. Comprueba la conexión e inténtalo de nuevo.';console.warn('[profile] load:',error&&error.message)}
   if(APP_LANG!==languageBeforeLoad)render();else paintAuth();if(view==='friends')loadFriends();
 }
 async function storeAvatarUrl(url){
   if(!sbc||!AU.user||!AU.profile)throw new Error('Inicia sesión para cambiar tu foto.');
   const {data,error}=await sbc.from('profiles').update({avatar_url:url}).eq('id',AU.user.id)
-    .select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility,country,city,preferred_language').single();
-  if(error)throw error;AU.profile=data;paintAuth();
+    .select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility,preferred_language').single();
+  if(error)throw error;AU.profile={...AU.profile,...data};paintAuth();
 }
 async function uploadAvatar(input){
  const file=input.files&&input.files[0];if(!file)return;input.value='';
@@ -1386,9 +1394,9 @@ async function saveProfile(form){
   const country=String(form.querySelector('[name="country"]').value||'').trim().slice(0,80),city=String(form.querySelector('[name="city"]').value||'').trim().slice(0,80);
   const payload={display_name:name,alias:raw||null,country:country||null,city:city||null,stats_visibility:form.querySelector('[name="stats_visibility"]').value,history_visibility:form.querySelector('[name="history_visibility"]').value,location_visibility:form.querySelector('[name="location_visibility"]').value,preferred_language:APP_LANG};
   const btn=form.querySelector('button[type="submit"]');if(btn){btn.disabled=true;btn.textContent='Guardando…'}
-  try{const {data,error}=await sbc.from('profiles').update(payload).eq('id',AU.user.id).select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility,country,city,preferred_language').single();
+  try{const {data,error}=await sbc.from('profiles').update(payload).eq('id',AU.user.id).select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility,preferred_language').single();
     if(error){if(btn){btn.disabled=false;btn.textContent='Guardar perfil'}const message=error.code==='23505'?'Ese alias ya está en uso. Prueba con otro.':error.code==='23514'?'El alias o alguno de los datos no cumple el formato permitido.':'No se ha podido guardar el perfil. Inténtalo de nuevo.';toast(message);console.warn('[profile] save:',error.code,error.message);return}
-    AU.profile=data;AU.profileErr='';AU.err='';paintAuth();toast('Perfil guardado.');
+    AU.profile={...AU.profile,...data,...payload};AU.profileErr='';AU.err='';paintAuth();toast('Perfil guardado.');
   }catch(error){if(btn){btn.disabled=false;btn.textContent='Guardar perfil'}toast('No se ha podido guardar el perfil. Comprueba tu conexión.');console.warn('[profile] save:',error&&error.message)}
 }
 
