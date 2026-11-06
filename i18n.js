@@ -33,6 +33,9 @@ Object.assign(ES_EN,{
 Object.assign(ES_EN,{
  'Club de amigos · azul':'Friends Club · blue','Añadiendo…':'Adding…','＋ Añadir miembros':'+ Add members','¡FIN!':'GAME OVER!','🎉 No quedan partidos pendientes.':'🎉 No matches are pending.','Mira el resumen final o empieza una nueva quedada.':'View the final summary or start a new session.','aquí puedes corregir nombres y resultados.':'here you can edit names and results.','🏆 Cómo se decide:':'🏆 How rankings are decided:','Pong de PICKLE&MIX':'PICKLE&MIX Pong','Tu juego. Tus estadísticas. Tu comunidad.':'Your game. Your stats. Your community.','No se ha podido cargar tu perfil. Comprueba la conexión e inténtalo de nuevo.':'Could not load your profile. Check your connection and try again.','Cargando tu perfil…':'Loading your profile…','No se ha podido cargar este perfil o sus datos públicos.':'Could not load this profile or its public information.','No se ha podido cargar el perfil.':'Could not load the profile.','No se ha podido cargar tus quedadas…':'Could not load your sessions…','Fecha no disponible':'Date unavailable','Selecciona tu jugador':'Select your player','Ganador/a':'Winner','No se ha podido cargar esta sección':'Could not load this section'
 });
+Object.assign(ES_EN,{
+ 'KITCHEN':'KITCHEN','Leyenda del dink':'Dink legend','Maestro de la Kitchen':'Kitchen master','Buen toque':'Nice touch','En racha':'On a roll','Calentando':'Warming up','¡Nuevo récord!':'New record!','Récord:':'Record:','¡Red!':'Net!','¡Diana!':'Bullseye!','¡En el objetivo!':'On target!','Corta':'Short','Larga':'Long','Fuera':'Out','Viento':'Wind','muy suave':'very light','suave':'light','moderado':'moderate','fuerte':'strong','muy fuerte':'very strong','¡Empate!':'It’s a tie!','¡Has ganado!':'You win!','Gana el PC':'Computer wins','Gana Jugador':'Player wins','Carta':'Card','Tú':'You','PC':'CPU','Pausa':'Pause','Reanudar':'Resume','Volver al menú':'Back to menu','Izquierda':'Left','Derecha':'Right','Golpear':'Hit','Jugadores':'Players','Dificultad del PC':'Computer difficulty','Tablero':'Board','Encuentra las parejas. Si aciertas, repites turno.':'Find the matching pairs. If you get a match, you play again.','Salir ✕':'Exit ✕','Jugar de nuevo':'Play again','Menú':'Menu','Ranking':'Leaderboard','Mejor marca':'Best score','Récord':'Record','Puntuación':'Score'
+});
 function trDom(value){
  const raw=String(value||''),s=raw.trim();if(!s)return value;
  if(Object.prototype.hasOwnProperty.call(ES_EN,s))return raw.replace(s,ES_EN[s]);
@@ -49,6 +52,11 @@ function trDom(value){
  if((m=s.match(/^Club importado: (.+)$/)))return raw.replace(s,'Club imported: '+m[1]);
  if((m=s.match(/^Sesión iniciada como (.+)$/)))return raw.replace(s,'Signed in as '+m[1]);
  if((m=s.match(/^Correo de acceso \\(solo visible para ti\\): (.+)$/)))return raw.replace(s,'Sign-in email (only visible to you): '+m[1]);
+ if((m=s.match(/^Récord: (.+)$/)))return raw.replace(s,'Record: '+m[1]);
+ if((m=s.match(/^Gana Jugador (\\d+)$/)))return raw.replace(s,'Player '+m[1]+' wins');
+ if((m=s.match(/^Carta (\\d+)$/)))return raw.replace(s,'Card '+m[1]);
+ if((m=s.match(/^(\\d+) parejas · (\\d+) mov\\.$/)))return raw.replace(s,m[1]+' pairs · '+m[2]+' moves');
+ if((m=s.match(/^Jugador (\\d+)$/)))return raw.replace(s,'Player '+m[1]);
  if((m=s.match(/^Ver perfil de (.+)$/)))return raw.replace(s,'View profile of '+m[1]);
  if((m=s.match(/^Más opciones para (.+)$/)))return raw.replace(s,'More options for '+m[1]);
  if((m=s.match(/^Abrir el club (.+)$/)))return raw.replace(s,'Open club '+m[1]);
