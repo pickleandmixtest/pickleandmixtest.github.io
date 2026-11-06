@@ -40,6 +40,7 @@ function trDom(value){
 window.translateDOM=function(root){
  if(typeof APP_LANG==='undefined'||APP_LANG!=='en')return;
  root=root||document.body;if(!root)return;
+ if(root.ownerDocument&&root.ownerDocument.documentElement)root.ownerDocument.documentElement.lang=APP_LANG;
  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
  const nodes=[];while(walker.nextNode()){const n=walker.currentNode,p=n.parentElement;if(p&&!p.closest('script,style,textarea,pre,code'))nodes.push(n)}
  nodes.forEach(n=>{const t=trDom(n.nodeValue);if(t!==n.nodeValue)n.nodeValue=t});
