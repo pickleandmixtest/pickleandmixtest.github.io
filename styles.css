@@ -1579,3 +1579,7 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .profile-hero-actions .profile-friend-count{flex:0 1 auto;margin:0;min-width:0}
 .profile-hero-actions .profile-settings-btn{flex:0 0 auto;align-self:center;width:auto;min-width:124px;min-height:42px;margin:0}
 @media(max-width:380px){.profile-dashboard>.profile-hero .profile-settings-btn{width:auto}.profile-hero-actions{gap:8px}.profile-hero-actions .profile-settings-btn{min-width:108px;padding:7px 9px;font-size:12px}.profile-hero-actions .profile-friend-count{gap:6px;padding-right:9px}}
+
+
+/* Mantener los avisos emergentes por encima de la navegación inferior en móvil */
+@media(max-width:680px){#toast{bottom:calc(82px + env(safe-area-inset-bottom,0px));z-index:60;width:max-content;max-width:calc(100vw - 32px);box-sizing:border-box;text-align:center;white-space:normal}}
