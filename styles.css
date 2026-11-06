@@ -1501,3 +1501,38 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 
 /* Contador de amigos integrado en el banner principal del perfil */
 .profile-friend-count{display:inline-flex;align-items:center;align-self:flex-start;gap:9px;min-height:44px;margin-top:8px;padding:7px 12px 7px 8px;border:1px solid rgba(212,255,58,.72);border-radius:13px;background:var(--ball);color:var(--court);box-shadow:0 3px 0 rgba(7,24,45,.2);font:700 13px/1.1 "Trebuchet MS",system-ui,sans-serif;cursor:pointer;transition:transform .16s ease,box-shadow .16s ease,filter .16s ease;-webkit-tap-highlight-color:transparent}.profile-friend-count:hover{transform:translateY(-2px);box-shadow:0 5px 0 rgba(7,24,45,.2);filter:brightness(1.03)}.profile-friend-count:active{transform:translateY(0);box-shadow:0 1px 0 rgba(7,24,45,.2)}.profile-friend-count-icon{display:grid;place-items:center;flex:0 0 30px;width:30px;height:30px;border-radius:9px;background:var(--court);color:var(--ball)}.profile-friend-count-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.profile-friend-count-number{color:var(--court);font:900 17px/1 "Arial Black",Impact,sans-serif}.profile-friend-count-label{color:var(--court);font-size:12px;font-weight:800}.profile-friend-count-arrow{margin-left:5px;color:var(--court);font-size:22px;line-height:1;font-weight:500}.profile-friend-count:focus-visible{outline:3px solid #fff;outline-offset:3px}
+
+/* Feed cronológico de comunidad */
+.activity-page,.activity-intro{max-width:760px;margin:0 auto;padding:8px 0 28px}
+.activity-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:8px 0 18px}
+.activity-heading h2,.activity-intro h2{margin:4px 0 5px;font:900 clamp(27px,7vw,34px)/1.05 "Arial Black",Impact,sans-serif;color:var(--court)}
+.activity-heading p,.activity-intro p{margin:0;color:var(--mut);font-size:14px;line-height:1.5}
+.activity-refresh{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border:1px solid #dce5ef;border-radius:13px;background:#fff;color:var(--court);font-size:25px;cursor:pointer;box-shadow:0 2px 6px rgba(20,45,75,.05)}
+.activity-refresh:hover{background:#f5f9fd}
+.activity-filters{display:flex;gap:7px;padding:5px;margin:0 0 15px;border:1px solid #e2e9f1;border-radius:14px;background:#e8eef5}
+.activity-filters button{flex:1;min-height:39px;padding:8px 12px;border:0;border-radius:10px;background:transparent;color:#60748b;font:800 12px "Trebuchet MS",system-ui,sans-serif;cursor:pointer}
+.activity-filters button[aria-selected="true"]{background:#fff;color:var(--court);box-shadow:0 2px 7px rgba(22,48,77,.11)}
+.activity-list{display:grid;gap:11px}
+.activity-card{display:flex;width:100%;flex-direction:column;gap:8px;padding:15px 16px;border:1px solid #e1e9f1;border-radius:17px;background:#fff;color:var(--ink);text-align:left;font:inherit;cursor:pointer;box-shadow:0 3px 12px rgba(24,48,76,.045);transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+.activity-card:hover{transform:translateY(-1px);border-color:#cbd9e8;box-shadow:0 6px 18px rgba(24,48,76,.08)}
+.activity-card:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+.activity-card-top{display:flex;align-items:center;gap:9px;min-width:0}
+.activity-avatar{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:50%;object-fit:cover;background:#e8f0f8;color:#315b82;font-size:14px;font-weight:900}
+.activity-avatar-fallback{background:linear-gradient(145deg,#e7f0fb,#d5e5f7)}
+.activity-identity{display:flex;flex-direction:column;gap:2px;min-width:0}
+.activity-identity b{font-size:12px;color:#234565}
+.activity-identity small{font-size:10px;color:#8292a5}
+.activity-card-top time{margin-left:auto;flex:none;color:#91a0af;font-size:10px;text-align:right}
+.activity-card-label{display:flex;align-items:center;gap:6px;color:#55718e;font-size:10px;font-weight:800;letter-spacing:.02em}
+.activity-kind-icon{display:grid;place-items:center;width:21px;height:21px;border-radius:7px;background:#edf4fb;color:#2d6598;font-size:13px;font-style:normal}
+.activity-card-title{font-size:15px;line-height:1.35;color:var(--court)}
+.activity-card-summary{color:#62758b;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.activity-card-meta{color:#8392a3;font-size:10px}
+.activity-empty{display:grid;justify-items:center;gap:8px;padding:30px 22px;text-align:center}
+.activity-empty>b{color:var(--court);font-size:14px}
+.activity-empty p{max-width:340px;margin:0;color:var(--mut);font-size:12px;line-height:1.55}
+.activity-empty-mark{display:grid;place-items:center;width:46px;height:46px;border-radius:14px;background:#eef5fc;color:#3475ad;font-size:25px}
+.activity-loader{width:24px;height:24px;border:3px solid #e3ebf3;border-top-color:var(--sky);border-radius:50%;animation:activity-spin .8s linear infinite}
+@keyframes activity-spin{to{transform:rotate(360deg)}}
+.activity-more{display:block;width:100%;margin:14px 0 0}
+@media(max-width:520px){.activity-page,.activity-intro{padding-top:4px}.activity-card{padding:13px;border-radius:14px}.activity-card-top time{font-size:9px}.activity-heading{margin-top:4px}}
