@@ -68,7 +68,7 @@ function trDom(value){
  if((m=s.match(/^Club importado: (.+)$/)))return raw.replace(s,'Club imported: '+m[1]);
  if((m=s.match(/^Sesión iniciada como (.+)$/)))return raw.replace(s,'Signed in as '+m[1]);
  if((m=s.match(/^Correo de acceso \\(solo visible para ti\\): (.+)$/)))return raw.replace(s,'Sign-in email (only visible to you): '+m[1]);
- if((m=s.match(/^Récord: (.+)$/)))return raw.replace(s,'Record: '+m[1]);
+ if((m=s.match(/^Récord: (.+)$/)))return raw.replace(s,'Best: '+m[1]);
  if((m=s.match(/^Gana Jugador (\\d+)$/)))return raw.replace(s,'Player '+m[1]+' wins');
  if((m=s.match(/^Carta (\\d+)$/)))return raw.replace(s,'Card '+m[1]);
  if((m=s.match(/^(\\d+) parejas · (\\d+) mov\\.$/)))return raw.replace(s,m[1]+' pairs · '+m[2]+' moves');
