@@ -1,6 +1,6 @@
 -- Feed cronológico de actividad con acceso limitado al usuario autenticado.
 -- Solo muestra partidos de amistades aceptadas con historial visible y contenido de clubes propios.
-create or replace function public.get_activity_feed(
+create or replace function private.get_activity_feed(
   p_filter text default 'all',
   p_before timestamptz default null,
   p_before_id text default null,
@@ -132,6 +132,23 @@ begin
 end;
 $function$;
 
-revoke all on function public.get_activity_feed(text, timestamptz, text, integer) from public;
-revoke all on function public.get_activity_feed(text, timestamptz, text, integer) from anon;
+revoke all on function private.get_activity_feed(text, timestamptz, text, integer) from public, anon;
+grant usage on schema private to authenticated;
+grant execute on function private.get_activity_feed(text, timestamptz, text, integer) to authenticated;
+
+create or replace function public.get_activity_feed(
+  p_filter text default 'all',
+  p_before timestamptz default null,
+  p_before_id text default null,
+  p_limit integer default 20
+)
+returns jsonb
+language sql
+stable
+security invoker
+set search_path = pg_catalog
+as $function$
+  select private.get_activity_feed(p_filter, p_before, p_before_id, p_limit);
+$function$;
+revoke all on function public.get_activity_feed(text, timestamptz, text, integer) from public, anon;
 grant execute on function public.get_activity_feed(text, timestamptz, text, integer) to authenticated;
