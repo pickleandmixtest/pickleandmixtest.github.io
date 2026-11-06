@@ -60,19 +60,17 @@ self.addEventListener('fetch', event => {
 
   if (APP_SHELL.some(path => new URL(path, self.location.href).href === request.url)) {
     event.respondWith((async () => {
-      const cached = await caches.match(request);
-      const refresh = fetch(request).then(async response => {
+      try {
+        const response = await fetch(request);
         if (response.ok) {
           const cache = await caches.open(CACHE_NAME);
           await cache.put(request, response.clone());
         }
         return response;
-      });
-      if (cached) {
-        event.waitUntil(refresh.catch(() => {}));
-        return cached;
+      } catch (_) {
+        const cached = await caches.match(request);
+        return cached || Response.error();
       }
-      try { return await refresh; } catch (_) { return Response.error(); }
     })());
   }
 });
