@@ -13,7 +13,7 @@ async function setAppLanguage(value){
  document.documentElement.lang=value;
  if(AU.user&&sbc){
   const {data,error}=await sbc.from('profiles').update({preferred_language:value}).eq('id',AU.user.id).select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility,country,city,preferred_language').single();
-  if(error){APP_LANG=previous;try{localStorage.setItem(LANG_KEY,previous)}catch(e){}document.documentElement.lang=previous;toast(value==='en'?'Could not save your language preference.':'No se ha podido guardar el idioma.');console.warn('[language] save:',error.message);return}
+  if(error){APP_LANG=previous;try{localStorage.setItem(LANG_KEY,previous)}catch(e){}document.documentElement.lang=previous;toast(previous==='en'?'Could not save your language preference.':'No se ha podido guardar el idioma.');console.warn('[language] save:',error.message);return}
   AU.profile=data;
  }
  render();
