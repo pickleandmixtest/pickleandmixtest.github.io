@@ -228,23 +228,26 @@ const CL={items:[],members:[],memberCounts:{},people:[],selectedId:initialClubId
 const ADMIN={isAdmin:false,role:'',tab:'dashboard',users:[],clubs:[],admins:[],audit:[],activity:[],activityTag:'all',analytics:null,analyticsRange:30,page:1,busy:false,error:''};
 const MATCH_CLUBS={items:[],loading:false,loaded:false,open:false,busy:false,selected:''};
 const ACH_BADGES=[
-{id:'first_match',title:'Primera pala',desc:'Juega tu primer partido',group:'Actividad',mark:'01'},
-{id:'matches_10',title:'Calentando motores',desc:'Completa 10 partidos',group:'Actividad',mark:'10'},
-{id:'matches_50',title:'En la pista',desc:'Completa 50 partidos',group:'Actividad',mark:'50'},
-{id:'matches_100',title:'Veterano de pista',desc:'Completa 100 partidos',group:'Actividad',mark:'100'},
-{id:'matches_500',title:'Leyenda de la pista',desc:'Completa 500 partidos',group:'Actividad',mark:'500'},
-{id:'first_tournament',title:'Debutante',desc:'Participa en tu primer torneo',group:'Competición',mark:'01'},
-{id:'tournaments_5',title:'Competidor',desc:'Participa en 5 torneos',group:'Competición',mark:'05'},
-{id:'tournaments_10',title:'Habitual del torneo',desc:'Participa en 10 torneos',group:'Competición',mark:'10'},
-{id:'first_friend',title:'Primer contacto',desc:'Añade tu primer amigo',group:'Social',mark:'01'},
-{id:'friends_5',title:'Buena compañía',desc:'Consigue 5 amigos',group:'Social',mark:'05'},
-{id:'friends_15',title:'Conocido en la pista',desc:'Consigue 15 amigos',group:'Social',mark:'15'},
-{id:'friends_30',title:'Centro de la comunidad',desc:'Consigue 30 amigos',group:'Social',mark:'30'},
-{id:'first_club',title:'Socio',desc:'Únete a tu primer club',group:'Clubes',mark:'01'},
-{id:'clubs_3',title:'Comprometido',desc:'Pertenece a 3 clubes',group:'Clubes',mark:'03'},
-{id:'club_founder',title:'Fundador',desc:'Crea tu primer club',group:'Clubes',mark:'★'},
-{id:'first_organizer',title:'Organizador',desc:'Organiza tu primera quedada con resultados',group:'Comunidad',mark:'01'},
-{id:'organizer_10',title:'Impulsor',desc:'Organiza 10 quedadas con resultados',group:'Comunidad',mark:'10'}
+{id:'first_match',title:'Primera pala',desc:'Completa tu primer partido',group:'Deporte',mark:'01'},
+{id:'matches_25',title:'Ritmo de pista',desc:'Completa 25 partidos',group:'Deporte',mark:'25'},
+{id:'matches_75',title:'Jugador constante',desc:'Completa 75 partidos',group:'Deporte',mark:'75'},
+{id:'matches_150',title:'Veterano de pista',desc:'Completa 150 partidos',group:'Deporte',mark:'150'},
+{id:'matches_500',title:'Leyenda de la pista',desc:'Completa 500 partidos',group:'Deporte',mark:'500'},
+{id:'first_win',title:'Primera victoria',desc:'Gana tu primer partido',group:'Deporte',mark:'01'},
+{id:'wins_25',title:'Instinto ganador',desc:'Consigue 25 victorias',group:'Deporte',mark:'25'},
+{id:'wins_100',title:'Dominador',desc:'Consigue 100 victorias',group:'Deporte',mark:'100'},
+{id:'first_tournament',title:'Debutante',desc:'Participa en tu primer torneo',group:'Deporte',mark:'01'},
+{id:'tournaments_5',title:'Competidor',desc:'Participa en 5 torneos',group:'Deporte',mark:'05'},
+{id:'tournaments_15',title:'Circuito habitual',desc:'Participa en 15 torneos',group:'Deporte',mark:'15'},
+{id:'friends_5',title:'Buena compañía',desc:'Consigue 5 amigos',group:'Comunidad',mark:'05'},
+{id:'friends_15',title:'Red de jugadores',desc:'Consigue 15 amigos',group:'Comunidad',mark:'15'},
+{id:'friends_30',title:'Conector',desc:'Consigue 30 amigos',group:'Comunidad',mark:'30'},
+{id:'clubs_2',title:'En equipo',desc:'Pertenece a 2 clubes',group:'Comunidad',mark:'02'},
+{id:'clubs_5',title:'Vida de club',desc:'Pertenece a 5 clubes',group:'Comunidad',mark:'05'},
+{id:'club_founder',title:'Fundador',desc:'Crea tu primer club',group:'Comunidad',mark:'★'},
+{id:'organizer_3',title:'Organizador',desc:'Organiza 3 quedadas con resultados',group:'Comunidad',mark:'03'},
+{id:'organizer_10',title:'Impulsor',desc:'Organiza 10 quedadas con resultados',group:'Comunidad',mark:'10'},
+{id:'organizer_25',title:'Motor de la comunidad',desc:'Organiza 25 quedadas con resultados',group:'Comunidad',mark:'25'}
 ];
 const ACH_LEVELS=[{name:'Principiante',min:0},{name:'Aprendiz',min:100},{name:'Aficionado',min:300},{name:'Jugador habitual',min:600},{name:'Experimentado',min:1000},{name:'Avanzado',min:1800},{name:'Experto',min:3000},{name:'Leyenda',min:5000}];
 function achievementPanel(summary,publicMode){
