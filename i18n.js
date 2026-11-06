@@ -143,6 +143,7 @@ function trDom(value){
  if((m=s.match(/^Jugador: (.+)$/)))return raw.replace(s,'Player: '+m[1]);
  if((m=s.match(/^\/ tu propio alias para añadirte a ti\.$/)))return raw.replace(s,'/ your own username to add yourself.');
  if((m=s.match(/^(.+) · (.+) inscritos$/)))return raw.replace(s,m[1]+' · '+m[2]+' registered');
+ if((m=s.match(/^(\d+) inscritos · (\d+) en espera$/)))return raw.replace(s,m[1]+' registered · '+m[2]+' on the waitlist');
  if((m=s.match(/^(.+) · (.+) en espera$/)))return raw.replace(s,m[1]+' · '+m[2]+' on the waitlist');
  if((m=s.match(/^PC (\d+)$/)))return raw.replace(s,'CPU '+m[1]);
  if((m=s.match(/^TÚ (\d+)$/)))return raw.replace(s,'YOU '+m[1]);
