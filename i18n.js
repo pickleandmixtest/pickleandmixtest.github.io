@@ -50,6 +50,7 @@ Object.assign(ES_EN,{"Inicia sesión con Google para encontrar jugadores y crear
 Object.assign(ES_EN,{"Obligatorio. Entre 3 y 20 caracteres: letras minúsculas, números y guion bajo.":"Required. 3–20 characters: lowercase letters, numbers and underscores.","Para solicitar un Club Oficial, indica ciudad, dirección y al menos un medio de contacto.":"To apply for an Official Club, provide a city, address and at least one contact method.","La página web debe comenzar por http:// o https://.":"The website address must start with http:// or https://.","Sin alias":"No username","Sin descripción.":"No description.","Acción administrativa":"Administrative action","Supervisa los clubes de la plataforma y sus datos.":"Monitor platform clubs and their details.","Cargando":"Loading","Por definir":"To be decided","Todos los jugadores jugarán":"All players will play","Los invitados no acumulan estadísticas personales.":"Guest players don't accumulate personal statistics.","Puedes empezar igualmente.":"You can start anyway.","Estimación aproximada, no una garantía.":"Approximate estimate, not a guarantee.","En la lista de espera":"On the waitlist"," y más":" and more","En cola:":"In queue:","Después:":"Up next:","El ganador aparecerá cuando haya resultados.":"The winner will appear when results are available.","Gana el PC":"The computer wins","¡GANASTE!":"YOU WIN!","GANA EL PC":"THE COMPUTER WINS","PICKLE &amp; MIX · COMUNIDAD":"PICKLE &amp; MIX · COMMUNITY","Secciones de clubes":"Club sections","NUEVA COMUNIDAD":"NEW COMMUNITY","Pendientes":"PENDING","ENVIADAS":"SENT","BÚSQUEDA":"SEARCH","Un club":"A club","Jugador invitado":"Invited player","un administrador":"an administrator","Todos":"All","Privado":"Private","Abierto":"Open","Con aprobación":"Approval required","Cancelar":"Cancel","Cerrar":"Close","Editar":"Edit","Eliminar":"Delete","Guardar":"Save","Solicitudes":"Requests","Actividad":"Activity","Control":"Control","Resumen":"Overview"});
 Object.assign(ES_EN,{"centro":"center","¡Kitchen! +10":"Kitchen! +10","Toca para repetir":"Tap to play again","Botón de pausa: seguir":"Pause button: resume","Botón de inicio: menú":"Home button: menu","Fin del partido":"Game over","PUNTOS":"POINTS","LANZAMIENTOS":"SHOTS","RÉCORD":"BEST"});
 Object.assign(ES_EN,{"1) Fase de grupos: cada pareja juega contra las de su grupo.":"1) Group stage: each team plays every other team in its group.","Para solicitar un Club Oficial, indica ciudad, dirección y al menos un medio de contacto.":"To apply for an Official Club, provide a city, address and at least one contact method."});
+Object.assign(ES_EN,{"Invitación pendiente · ":"Pending invitation · "," · Propietario":" · Owner"," · tú":" · you","− Cancelar":"− Cancel","supera el límite":"over the limit","aquí puedes corregir nombres y resultados.":"you can edit names and results here.","recalcula solo los partidos pendientes.":"only recalculates pending matches.","= partidos que juega cada persona.":"= matches each player plays.","En":"In","Últimos":"Last","días":"days","En ":"In ","Últimos ":"Last "," días":" days","Sin caducidad":"No expiry"," · Sin caducidad":" · No expiry"," · Caduca ":" · Expires "});
 function trDom(value){
  const raw=String(value||''),s=raw.trim();if(!s)return value;
  if(Object.prototype.hasOwnProperty.call(ES_EN,s))return raw.replace(s,ES_EN[s]);
@@ -145,6 +146,19 @@ function trDom(value){
  if((m=s.match(/^(.+) · (.+) en espera$/)))return raw.replace(s,m[1]+' · '+m[2]+' on the waitlist');
  if((m=s.match(/^PC (\d+)$/)))return raw.replace(s,'CPU '+m[1]);
  if((m=s.match(/^TÚ (\d+)$/)))return raw.replace(s,'YOU '+m[1]);
+ if((m=s.match(/^Por (.+)$/)))return raw.replace(s,'By '+m[1]);
+ if((m=s.match(/^(\d+) usos · Caduca (.+)$/)))return raw.replace(s,m[1]+' uses · Expires '+m[2]);
+ if((m=s.match(/^(\d+) usos · Sin caducidad$/)))return raw.replace(s,m[1]+' uses · No expiry');
+ if((m=s.match(/^(.+) · Propietario$/)))return raw.replace(s,m[1]+' · Owner');
+ if((m=s.match(/^(.+) · tú$/)))return raw.replace(s,m[1]+' · you');
+ if((m=s.match(/^(.+) · Miembro del club$/)))return raw.replace(s,m[1]+' · Club member');
+ if((m=s.match(/^(\d+) inscritos · (\d+) en espera$/)))return raw.replace(s,m[1]+' registered · '+m[2]+' on the waitlist');
+ if((m=s.match(/^(\d+) a la vez\. Estimación aproximada, no una garantía\.$/)))return raw.replace(s,m[1]+' at a time. Approximate estimate, not a guarantee.');
+ if((m=s.match(/^⚠️ Reparto desigual: algunos jugadores disputarán un partido más que otros\. (\d+) ciclos\.$/)))return raw.replace(s,'⚠️ Uneven distribution: some players will play one more match than others. '+m[1]+' rounds.');
+ if((m=s.match(/^(\d+) victorias · diferencia de puntos ([+-]?\d+)$/)))return raw.replace(s,m[1]+' wins · point difference '+m[2]);
+ if((m=s.match(/^(\d+) comentarios?$/)))return raw.replace(s,m[1]+' comment'+(m[1]==='1'?'':'s'));
+ if((m=s.match(/^(\d+) inscritos$/)))return raw.replace(s,m[1]+' registered');
+ if((m=s.match(/^(\d+) en espera$/)))return raw.replace(s,m[1]+' on the waitlist');
  return value;
 }
 window.PM_TRANSLATIONS=ES_EN;window.translateTextValue=trDom;
