@@ -663,24 +663,31 @@ async function openUserProfile(id){
       }catch(error){console.warn('[public profile] load:',error&&error.message);PUB.error='No se ha podido cargar este perfil o sus datos públicos.'}
   finally{PUB.loading=false;PUB.clubsLoading=false;if(view==='user-profile')render()}
 }
+const ACT_I18N={
+ es:{player:'Jugador',shared:'Partido compartido',newEvent:'Nuevo evento',newPost:'Nueva publicación',win:'Victoria',played:'Partido disputado',title:'Actividad',intro:'Inicia sesión para descubrir lo que comparten tus amigos y los clubes a los que perteneces.',subtitle:'Lo último que está pasando en tu comunidad.',filters:['Todo','Amigos','Clubes'],refresh:'Actualizar actividad',loading:'Cargando actividad…',emptyTitle:'Aún no hay actividad',emptyText:'Cuando tus amigos compartan partidos o tus clubes publiquen novedades y eventos, aparecerán aquí.',more:'Cargar más',loadingMore:'Cargando…',club:'Club'},
+ en:{player:'Player',shared:'Shared match',newEvent:'New event',newPost:'New post',win:'Win',played:'Match played',title:'Activity',intro:'Sign in to discover what your friends and clubs are sharing.',subtitle:'The latest updates from your community.',filters:['All','Friends','Clubs'],refresh:'Refresh activity',loading:'Loading activity…',emptyTitle:'No activity yet',emptyText:'When your friends share matches or your clubs publish updates and events, they will appear here.',more:'Load more',loadingMore:'Loading…',club:'Club'}
+};
+const act=k=>(ACT_I18N[APP_LANG]||ACT_I18N.es)[k]||ACT_I18N.es[k]||k;
 function activityDate(value){
   return value?new Date(value).toLocaleString(APP_LANG==='en'?'en-US':'es-ES',{dateStyle:'medium',timeStyle:'short'}):'';
 }
 function activityCard(item){
-  const avatar=item.actor_avatar?'<img class="activity-avatar" src="'+esc(item.actor_avatar)+'" alt="">':'<span class="activity-avatar activity-avatar-fallback">'+esc((item.actor_name||'J').slice(0,1).toUpperCase())+'</span>';
-  const identity='<span class="activity-identity"><b>'+esc(item.actor_name||'Jugador')+'</b>'+(item.actor_alias?'<small>@'+esc(item.actor_alias)+'</small>':'')+'</span>';
+  const avatar=item.actor_avatar?'<img class="activity-avatar" src="'+esc(item.actor_avatar)+'" alt="">':'<span class="activity-avatar activity-avatar-fallback">'+esc((item.actor_name||act('player')).slice(0,1).toUpperCase())+'</span>';
+  const identity='<span class="activity-identity"><b>'+esc(item.actor_name||act('player'))+'</b>'+(item.actor_alias?'<small>@'+esc(item.actor_alias)+'</small>':'')+'</span>';
   const when='<time>'+activityDate(item.created_at)+'</time>';
   if(item.source==='friends'){
-    return '<button type="button" class="activity-card activity-friend-card" data-up="'+esc(item.actor_id)+'"><span class="activity-card-top">'+avatar+identity+when+'</span><span class="activity-card-label"><i class="activity-kind-icon">↗</i> Partido compartido</span><b class="activity-card-title">'+esc(item.title||'Quedada')+'</b><span class="activity-card-summary">'+esc(item.summary||'Ha disputado un partido')+'</span></button>';
+    const won=!!(item.details&&item.details.won),own=Number(item.details&&item.details.own_score)||0,opp=Number(item.details&&item.details.opponent_score)||0;
+    const summary=(won?act('win'):act('played'))+' · '+own+'–'+opp;
+    return '<button type="button" class="activity-card activity-friend-card" data-up="'+esc(item.actor_id)+'"><span class="activity-card-top">'+avatar+identity+when+'</span><span class="activity-card-label"><i class="activity-kind-icon">↗</i> '+act('shared')+'</span><b class="activity-card-title">'+esc(item.title||'Quedada')+'</b><span class="activity-card-summary">'+esc(summary)+'</span></button>';
   }
   const event=item.kind==='club_event';
-  return '<button type="button" class="activity-card activity-club-card" data-club-open="'+esc(item.club_id)+'"><span class="activity-card-top">'+avatar+identity+when+'</span><span class="activity-card-label"><i class="activity-kind-icon">'+(event?'◷':'✎')+'</i> '+(event?'Nuevo evento':'Nueva publicación')+' <span>· '+esc(item.club_name||'Club')+'</span></span><b class="activity-card-title">'+esc(item.title||'')+'</b>'+(item.summary?'<span class="activity-card-summary">'+esc(item.summary)+'</span>':'')+(event&&item.details&&item.details.starts_at?'<span class="activity-card-meta">'+activityDate(item.details.starts_at)+(item.details.location?' · '+esc(item.details.location):'')+'</span>':'')+'</button>';
+  return '<button type="button" class="activity-card activity-club-card" data-club-open="'+esc(item.club_id)+'"><span class="activity-card-top">'+avatar+identity+when+'</span><span class="activity-card-label"><i class="activity-kind-icon">'+(event?'◷':'✎')+'</i> '+(event?act('newEvent'):act('newPost'))+' <span>· '+esc(item.club_name||act('club'))+'</span></span><b class="activity-card-title">'+esc(item.title||'')+'</b>'+(item.summary?'<span class="activity-card-summary">'+esc(item.summary)+'</span>':'')+(event&&item.details&&item.details.starts_at?'<span class="activity-card-meta">'+activityDate(item.details.starts_at)+(item.details.location?' · '+esc(item.details.location):'')+'</span>':'')+'</button>';
 }
 function vActivity(){
-  if(!AU.user)return '<section class="activity-intro"><span class="section-kicker">PICKLE &amp; MIX · COMUNIDAD</span><h2>Actividad</h2><p>Inicia sesión para descubrir lo que comparten tus amigos y los clubes a los que perteneces.</p></section><div class="card acct">'+authInner()+'</div>';
-  const filters=[['all','Todo'],['friends','Amigos'],['clubs','Clubes']];
+  if(!AU.user)return '<section class="activity-intro"><span class="section-kicker">PICKLE &amp; MIX · COMMUNITY</span><h2>'+act('title')+'</h2><p>'+act('intro')+'</p></section><div class="card acct">'+authInner()+'</div>';
+  const filters=[['all',act('filters')[0]],['friends',act('filters')[1]],['clubs',act('filters')[2]]];
   const list=ACT.items.length?ACT.items.map(activityCard).join(''):'';
-  return '<section class="activity-page"><div class="activity-heading"><div><span class="section-kicker">PICKLE &amp; MIX · COMUNIDAD</span><h2>Actividad</h2><p>Lo último que está pasando en tu comunidad.</p></div><button type="button" class="activity-refresh" data-feed-refresh aria-label="Actualizar actividad" title="Actualizar">↻</button></div><div class="activity-filters" role="tablist" aria-label="Filtrar actividad">'+filters.map(([v,label])=>'<button type="button" role="tab" data-feed-filter="'+v+'" aria-selected="'+(ACT.filter===v)+'">'+label+'</button>').join('')+'</div>'+(ACT.error?'<div class="err">'+esc(ACT.error)+'</div>':'')+(ACT.loading&&!ACT.items.length?'<div class="card activity-empty"><span class="activity-loader"></span><b>Cargando actividad…</b></div>':list?'<div class="activity-list">'+list+'</div>':'<div class="card activity-empty"><span class="activity-empty-mark">↗</span><b>Aún no hay actividad</b><p>Cuando tus amigos compartan partidos o tus clubes publiquen novedades y eventos, aparecerán aquí.</p></div>')+(ACT.hasMore?'<button type="button" class="btn ghost activity-more" data-feed-more '+(ACT.loading?'disabled':'')+'>'+(ACT.loading?'Cargando…':'Cargar más')+'</button>':'')+'</section>';
+  return '<section class="activity-page"><div class="activity-heading"><div><span class="section-kicker">PICKLE &amp; MIX · COMMUNITY</span><h2>'+act('title')+'</h2><p>'+act('subtitle')+'</p></div><button type="button" class="activity-refresh" data-feed-refresh aria-label="'+act('refresh')+'" title="'+act('refresh')+'">↻</button></div><div class="activity-filters" role="tablist" aria-label="'+act('title')+'">'+filters.map(([v,label])=>'<button type="button" role="tab" data-feed-filter="'+v+'" aria-selected="'+(ACT.filter===v)+'">'+label+'</button>').join('')+'</div>'+(ACT.error?'<div class="err">'+esc(ACT.error)+'</div>':'')+(ACT.loading&&!ACT.items.length?'<div class="card activity-empty"><span class="activity-loader"></span><b>'+act('loading')+'</b></div>':list?'<div class="activity-list">'+list+'</div>':'<div class="card activity-empty"><span class="activity-empty-mark">↗</span><b>'+act('emptyTitle')+'</b><p>'+act('emptyText')+'</p></div>')+(ACT.hasMore?'<button type="button" class="btn ghost activity-more" data-feed-more '+(ACT.loading?'disabled':'')+'>'+(ACT.loading?act('loadingMore'):act('more'))+'</button>':'')+'</section>';
 }
 function paintActivity(){if(view==='activity'){const root=document.querySelector('#app');if(root){root.innerHTML=header()+vActivity()+foot()+bottomNavigation();translateDOM(root)}}}
 async function loadActivity(reset){
@@ -696,7 +703,7 @@ async function loadActivity(reset){
     const page=rows.slice(0,20);
     ACT.items=reset?page:ACT.items.concat(page);
     ACT.loaded=true;
-  }catch(error){console.warn('[activity] load:',error&&error.message);ACT.error='No se ha podido cargar la actividad. Inténtalo de nuevo.';ACT.hasMore=false;ACT.loaded=true}
+  }catch(error){console.warn('[activity] load:',error&&error.message);ACT.error=APP_LANG==='en'?'Could not load activity. Please try again.':'No se ha podido cargar la actividad. Inténtalo de nuevo.';ACT.hasMore=false;ACT.loaded=true}
   finally{ACT.loading=false;paintActivity()}
 }
 function friendActivityRow(item){

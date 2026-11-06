@@ -57,7 +57,7 @@ begin
         else 'Partido disputado · ' || case when mp.side = 'a' then m.side_a_score else m.side_b_score end::text || '–' ||
           case when mp.side = 'a' then m.side_b_score else m.side_a_score end::text
       end as summary,
-      jsonb_build_object('session_id', s.id, 'match_id', m.id) as details
+      jsonb_build_object('session_id', s.id, 'match_id', m.id, 'won', case when mp.side = 'a' then m.side_a_score > m.side_b_score else m.side_b_score > m.side_a_score end, 'own_score', case when mp.side = 'a' then m.side_a_score else m.side_b_score end, 'opponent_score', case when mp.side = 'a' then m.side_b_score else m.side_a_score end) as details
     from public.play_session_matches m
     join public.play_sessions s on s.id = m.session_id
     join public.play_match_players mp on mp.match_id = m.id
