@@ -1821,3 +1821,47 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
  .club-post-detail-comments .club-comment-form{align-items:stretch;flex-direction:column}
  .club-post-detail-comments .club-comment-form .btn{align-self:flex-end}
 }
+
+/* Rediseño de selección de jugadores */
+.player-builder{display:flex;flex-direction:column;gap:12px;margin:14px 0 18px}
+.player-builder-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 2px 4px}
+.player-builder-heading>div{min-width:0}
+.player-builder-kicker{display:block;color:#39817f;font-size:9px;font-weight:900;letter-spacing:.13em;margin-bottom:4px}
+.player-builder-heading h3{margin:0;color:var(--court);font-size:21px;font-weight:900}
+.player-builder-heading p{margin:4px 0 0;color:var(--mut);font-size:12px;line-height:1.4}
+.player-total{display:grid;place-items:center;align-content:center;min-width:48px;height:48px;border-radius:15px;background:#eaf4f5;color:#174b68;font-size:20px;font-weight:900}
+.player-total small{font-size:9px;font-weight:800;color:#587b8a}
+.player-add{margin:0;padding:15px;border:1px solid #dce6ef;border-radius:17px;box-shadow:0 3px 12px #18304f0b}
+.player-section-title{display:flex;align-items:center;gap:10px;min-width:0}
+.player-step{display:grid;place-items:center;flex:0 0 29px;width:29px;height:29px;border-radius:10px;background:#e8f2f7;color:#245b7d;font-size:12px;font-weight:900}
+.player-section-title>div{display:grid;gap:2px;min-width:0}
+.player-section-title b{font-size:13px;color:var(--ink)}
+.player-section-title small{font-size:11px;color:var(--mut);line-height:1.35}
+.player-add-controls{display:flex;gap:8px;margin-top:13px}
+.player-add-controls input{min-width:0;flex:1}
+.player-add-controls .btn{min-width:86px}
+.player-add .hint{margin:9px 0 0;font-size:11px;line-height:1.45}
+.player-source-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.player-source-card{display:flex;align-items:flex-start;gap:9px;min-width:0;padding:13px;border:1px solid #dce6ef;border-radius:16px;background:linear-gradient(145deg,#fff,#f6f9fc);box-shadow:0 3px 12px #18304f09}
+.player-source-icon{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border-radius:11px;background:#e8f3f1;color:#28766f;font-size:9px;font-weight:900;letter-spacing:-.03em}
+.player-self-card .player-source-icon{background:#eaf1fa;color:#315e91}
+.player-source-copy{display:flex;flex:1;flex-direction:column;align-items:flex-start;gap:4px;min-width:0}
+.player-source-copy>b{font-size:12px;line-height:1.25;color:var(--ink)}
+.player-source-copy>small{font-size:10px;line-height:1.4;color:var(--mut)}
+.player-source-copy .btn{margin-top:5px}
+.player-source-card>.btn{align-self:center;flex:0 0 auto;padding:7px 9px;font-size:10px}
+.match-club-import{margin:0}
+.player-club-picker{display:flex;flex-direction:column;gap:7px;width:100%;margin-top:5px}
+.player-club-picker select{width:100%;min-width:0}
+.match-club-import>.hint{width:100%;margin:3px 0 0;font-size:10px;line-height:1.4}
+.player-roster{margin:0;padding:14px;border:1px solid #dce6ef;border-radius:17px}
+.player-roster-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.player-roster-count{display:grid;place-items:center;min-width:27px;height:27px;padding:0 7px;border-radius:9px;background:#edf2f7;color:#355b7d;font-size:11px;font-weight:900}
+.player-entry{display:flex;align-items:center;gap:9px;margin:0!important;padding:8px 0;border-top:1px solid #edf1f5}
+.player-avatar{display:grid;place-items:center;flex:0 0 33px;width:33px;height:33px;border-radius:11px;background:#edf2f7;color:#365b7d;font-size:13px;font-weight:900}
+.player-avatar.linked{background:#e6f4ed;color:#26744b}
+.player-entry input{min-width:0;flex:1;width:0;padding:8px 9px;font-size:13px}
+.player-account{font-size:9px;font-weight:800;color:#718096;white-space:nowrap}
+.player-account.linked{color:#24734a}
+.player-entry .btn{flex:0 0 31px;width:31px;min-width:31px;height:31px;padding:0}
+@media(max-width:520px){.player-source-grid{grid-template-columns:1fr}.player-source-card{align-items:center}.player-source-copy>small{max-width:260px}.player-entry{gap:7px}.player-account{font-size:8px}.player-entry input{padding:7px 6px}}
