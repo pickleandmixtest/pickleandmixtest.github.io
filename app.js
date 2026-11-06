@@ -1284,7 +1284,7 @@ document.addEventListener('click',e=>{
   if(t.hasAttribute('data-club-tab')){CL.tab=['info','events','posts','members','manage'].includes(d.clubTab)?d.clubTab:'info';CL.openPostId=null;CL.openEventId=null;paintClubs();return}
   if(d.clubPostOpen){if(e.target.closest('button,a,input,textarea,select,form,label'))return;CL.openPostId=CL.openPostId===d.clubPostOpen?null:d.clubPostOpen;paintClubs();return}
   if(d.clubEventOpen){CL.openEventId=d.clubEventOpen;paintClubs();return}
-  if(t.hasAttribute('data-club-event-close')){if(t.classList.contains('club-event-modal')||!t.closest('.club-event-dialog')){CL.openEventId=null;paintClubs()}return}
+  if(t.hasAttribute('data-club-event-close')){if(e.target===t||t.classList.contains('club-event-modal-close')){CL.openEventId=null;paintClubs()}return}
   if(d.a==='admin'){if(!ADMIN.isAdmin)return toast('Sin permisos.');view='admin';render();adminLoad(ADMIN.tab);return}
   if(t.hasAttribute('data-admin-range')){ADMIN.analyticsRange=Number(t.dataset.adminRange)||30;ADMIN.analytics=null;adminLoad('dashboard');return}if(t.hasAttribute('data-atab')){ADMIN.tab=t.dataset.atab;if(ADMIN.tab==='users'){ADMIN.page=1;ADMIN.users=[]}render();adminLoad(ADMIN.tab);return}
   if(t.hasAttribute('data-activity-filter')){ADMIN.activityTag=t.dataset.activityFilter;ADMIN.activity=[];render();adminLoad('activity');return}
@@ -1593,3 +1593,5 @@ document.addEventListener('touchend',e=>{
   if(dy>=75&&Math.abs(dx)<Math.max(45,dy*.6)&&window.scrollY<=0)loadActivity(true);
 },{passive:true});
 document.addEventListener('touchcancel',()=>{activityPullStart=null},{passive:true});
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&CL.openEventId&&view==='club-detail'){CL.openEventId=null;paintClubs()}});
