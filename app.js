@@ -5,15 +5,15 @@ const LANGS={
  es:{home:'Inicio',party:'Partido',clubs:'Clubes',profile:'Perfil',admin:'Administración',settings:'Configuración',backProfile:'Volver a Mi perfil',publicName:'Nombre público',uniqueAlias:'Alias único',requiredAlias:'Obligatorio. Entre 3 y 20 caracteres: letras minúsculas, números y guion bajo.',country:'País',city:'Ciudad',locationHelp:'Indica tu ubicación manualmente. No se utiliza el GPS.',statsVisibility:'Quién puede ver tus estadísticas',historyVisibility:'Quién puede ver tu historial',locationVisibility:'Quién puede ver tu ubicación',everyone:'Todo el mundo',friends:'Solo amigos',nobody:'Nadie',saveProfile:'Guardar perfil',logout:'Cerrar sesión',language:'Idioma',languageHelp:'Elige el idioma de Pickle&Mix.',spanish:'Español',english:'English'},
  en:{home:'Home',party:'Match',clubs:'Clubs',profile:'Profile',admin:'Administration',settings:'Settings',backProfile:'Back to My profile',publicName:'Display name',uniqueAlias:'Unique username',requiredAlias:'Required. 3–20 characters: lowercase letters, numbers and underscores.',country:'Country',city:'City',locationHelp:'Enter your location manually. GPS is not used.',statsVisibility:'Who can see your statistics',historyVisibility:'Who can see your history',locationVisibility:'Who can see your location',everyone:'Everyone',friends:'Friends only',nobody:'Nobody',saveProfile:'Save profile',logout:'Sign out',language:'Language',languageHelp:'Choose your Pickle&Mix language.',spanish:'Español',english:'English'}
 };
-let APP_LANG='es';try{const saved=localStorage.getItem(LANG_KEY);if(saved==='en'||saved==='es')APP_LANG=saved}catch(e){}
+let APP_LANG='es';try{const saved=localStorage.getItem(LANG_KEY);if(saved==='en'||saved==='es')APP_LANG=saved}catch(e){}document.documentElement.lang=APP_LANG;
 const tr=k=>(LANGS[APP_LANG]&&LANGS[APP_LANG][k])||LANGS.es[k]||k;
 async function setAppLanguage(value){
  if(value!=='es'&&value!=='en')return;
- APP_LANG=value;try{localStorage.setItem(LANG_KEY,value)}catch(e){}
+ const previous=APP_LANG;APP_LANG=value;try{localStorage.setItem(LANG_KEY,value)}catch(e){}
  document.documentElement.lang=value;
  if(AU.user&&sbc){
   const {data,error}=await sbc.from('profiles').update({preferred_language:value}).eq('id',AU.user.id).select('id,display_name,alias,avatar_url,stats_visibility,history_visibility,location_visibility,country,city,preferred_language').single();
-  if(error){toast(value==='en'?'Could not save your language preference.':'No se ha podido guardar el idioma.');console.warn('[language] save:',error.message);return}
+  if(error){APP_LANG=previous;try{localStorage.setItem(LANG_KEY,previous)}catch(e){}document.documentElement.lang=previous;toast(value==='en'?'Could not save your language preference.':'No se ha podido guardar el idioma.');console.warn('[language] save:',error.message);return}
   AU.profile=data;
  }
  render();
