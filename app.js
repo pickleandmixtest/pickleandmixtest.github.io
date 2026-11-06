@@ -689,10 +689,10 @@ function activityCard(item){
   return '<button type="button" class="activity-card activity-card--club '+(event?'activity-card--event':'activity-card--post')+'" data-club-open="'+esc(item.club_id)+'"><span class="activity-card-top">'+avatar+identity+when+'</span><span class="activity-card-kind"><span class="activity-kind-icon">'+(event?'◷':'✎')+'</span>'+kindLabel+'<span class="activity-kind-club">'+esc(item.club_name||act('club'))+'</span></span><span class="activity-card-title">'+esc(item.title||'')+'</span>'+(item.summary?'<span class="activity-card-summary">'+esc(item.summary)+'</span>':'')+meta+'<span class="activity-card-open">'+(APP_LANG==='en'?'Open club':'Ver club')+' <span aria-hidden="true">↗</span></span></button>';
 }
 function vActivity(){
-  if(!AU.user)return '<div class="card acct">'+authInner()+'</div>';
+  if(!AU.user)return vAuthLanding();
   const filters=[['all',act('filters')[0]],['friends',act('filters')[1]],['clubs',act('filters')[2]]];
   const list=ACT.items.length?ACT.items.map(activityCard).join(''):'';
-  return '<section class="activity-page"><div class="activity-heading activity-heading--actions"><button type="button" class="activity-refresh" data-feed-refresh aria-label="'+act('refresh')+'" title="'+act('refresh')+'">↻</button></div><div class="activity-filters" role="tablist" aria-label="'+act('title')+'">'+filters.map(([v,label])=>'<button type="button" role="tab" data-feed-filter="'+v+'" aria-selected="'+(ACT.filter===v)+'">'+label+'</button>').join('')+'</div>'+(ACT.error?'<div class="err">'+esc(ACT.error)+'</div>':'')+(ACT.loading&&!ACT.items.length?'<div class="card activity-empty"><span class="activity-loader"></span><b>'+act('loading')+'</b></div>':list?'<div class="activity-list">'+list+'</div>':'<div class="card activity-empty"><span class="activity-empty-mark">↗</span><b>'+act('emptyTitle')+'</b><p>'+act('emptyText')+'</p></div>')+(ACT.hasMore?'<button type="button" class="btn ghost activity-more" data-feed-more '+(ACT.loading?'disabled':'')+'>'+(ACT.loading?act('loadingMore'):act('more'))+'</button>':'')+'</section>';
+  return '<section class="activity-page"><div class="activity-filters" role="tablist" aria-label="'+act('title')+'">'+filters.map(([v,label])=>'<button type="button" role="tab" data-feed-filter="'+v+'" aria-selected="'+(ACT.filter===v)+'">'+label+'</button>').join('')+'</div>'+(ACT.error?'<div class="err">'+esc(ACT.error)+'</div>':'')+(ACT.loading&&!ACT.items.length?'<div class="card activity-empty"><span class="activity-loader"></span><b>'+act('loading')+'</b></div>':list?'<div class="activity-list">'+list+'</div>':'<div class="card activity-empty"><span class="activity-empty-mark">↗</span><b>'+act('emptyTitle')+'</b><p>'+act('emptyText')+'</p></div>')+(ACT.hasMore?'<button type="button" class="btn ghost activity-more" data-feed-more '+(ACT.loading?'disabled':'')+'>'+(ACT.loading?act('loadingMore'):act('more'))+'</button>':'')+'</section>';
 }
 function paintActivity(){if(view==='activity'){const root=document.querySelector('#app');if(root){root.innerHTML=header()+vActivity()+foot()+bottomNavigation();translateDOM(root)}}}
 async function loadActivity(reset){
@@ -1271,7 +1271,6 @@ document.addEventListener('click',e=>{
   if(t.hasAttribute('data-club-image-open')){const input=document.querySelector('[data-club-image-file]');if(input){input.dataset.clubImage=d.clubImageOpen;input.click()}return}
   if(t.hasAttribute('data-feed-filter')){if(ACT.loading)return;const next=t.dataset.feedFilter;if(['all','friends','clubs'].includes(next)&&next!==ACT.filter){ACT.filter=next;loadActivity(true)}return}
   if(t.hasAttribute('data-feed-more')){loadActivity(false);return}
-  if(t.hasAttribute('data-feed-refresh')){loadActivity(true);return}
   if(d.a==='friends'){view='friends';FR.error='';render();loadFriends();return}
   if(d.a==='profile'){view='profile';AU.profileSettingsOpen=false;render();if(AU.user){loadMyHistory();loadFriends()}return}
   if(d.a==='clubs'){view='clubs';CL.error='';CL.selectedId=null;render();loadClubs();return}
@@ -1399,7 +1398,6 @@ function authInner(){
       '<label for="profile-language">'+tr('language')+'</label><select id="profile-language" data-language-select><option value="es"'+(APP_LANG==='es'?' selected':'')+'>Español</option><option value="en"'+(APP_LANG==='en'?' selected':'')+'>English</option></select><small>'+tr('languageHelp')+'</small><button class="btn" type="submit">'+tr('saveProfile')+'</button></form><button class="btn ghost" data-a="logout">Cerrar sesión</button></div>';
   }
   if(!sbc)return AU.guest?'':'<p class="hint">El acceso con Google no está disponible ahora mismo. La app funciona con normalidad sin cuenta.</p>';
-  if(!AU.ready)return '<p class="hint" role="status">Comprobando sesión…</p>';
   const go=AU.busy?'<button class="btn gg" disabled>Conectando con Google…</button>':'<button class="btn gg" data-a="login">'+GLOGO+'Continuar con Google</button>';
   const guestState=AU.guest?'<span class="guest-mode">Modo invitado · estás jugando sin cuenta</span>':'';
   return '<div class="guest-welcome"><section class="guest-hero"><span class="guest-free">REGISTRO GRATUITO</span><h3>Tu juego. Tus estadísticas. Tu comunidad.</h3><p>Crea tu cuenta gratuita y lleva tu experiencia de pickleball un paso más allá.</p>'+go+'<small>Accede rápidamente con tu cuenta de Google.</small></section>'+guestState+'<section class="guest-benefits"><h3>¿Qué consigues al registrarte?</h3><div class="guest-benefit"><span class="guest-icon">01</span><div><b>Tus estadísticas personales</b><small>Partidos, victorias y porcentaje de triunfos.</small></div></div><div class="guest-benefit"><span class="guest-icon">02</span><div><b>Tu historial de partidos</b><small>Guarda tus quedadas y consulta resultados anteriores.</small></div></div><div class="guest-benefit"><span class="guest-icon">03</span><div><b>Amigos y comunidad</b><small>Busca jugadores, envía solicitudes y visita sus perfiles.</small></div></div><div class="guest-benefit"><span class="guest-icon">04</span><div><b>Clasificación entre amigos</b><small>Compara resultados y sigue vuestra evolución.</small></div></div><div class="guest-benefit"><span class="guest-icon">05</span><div><b>Notificaciones sociales</b><small>Recibe avisos de solicitudes y nuevas conexiones.</small></div></div></section><section class="guest-continue"><b>¿Prefieres seguir sin registrarte?</b><p>No hay problema. Puedes seguir utilizando las funciones principales de PICKLE &amp; MIX como invitado, sin crear una cuenta.</p>'+(AU.guest?'':'<button class="btn ghost" data-a="guest">Continuar sin registrarse</button>')+'</section><section class="guest-continue guest-language"><label for="profile-language">'+tr('language')+'</label><select id="profile-language" data-language-select><option value="es"'+(APP_LANG==='es'?' selected':'')+'>Español</option><option value="en"'+(APP_LANG==='en'?' selected':'')+'>English</option></select><small>'+tr('languageHelp')+'</small></section></div>'+e;
@@ -1524,7 +1522,7 @@ function vAdmin(){
 async function adminAction(a,id,extra){if(a==='dashboard-refresh'||a==='users-refresh'||a==='clubs-refresh'||a==='admins-refresh'||a==='audit-refresh'||a==='activity-refresh'){if(a==='dashboard-refresh')ADMIN.analytics=null;if(a==='users-refresh'){ADMIN.users=[];ADMIN.page=1;}if(a==='clubs-refresh')ADMIN.clubs=[];if(a==='admins-refresh')ADMIN.admins=[];if(a==='audit-refresh')ADMIN.audit=[];if(a==='activity-refresh')ADMIN.activity=[];return adminLoad(a.replace('-refresh',''))}if(a==='users-next'){ADMIN.page++;return adminLoad('users')}try{if(['suspend_user','reactivate_user','delete_user'].includes(a)){if(!confirm(a==='delete_user'?'Eliminar definitivamente esta cuenta?':a==='suspend_user'?'Suspender esta cuenta?':'Reactivar esta cuenta?'))return;await adminCall(a,{user_id:id});await adminLoad('users');return}if(a==='club-rename'){const x=ADMIN.clubs.find(c=>c.id===id),name=prompt('Nuevo nombre del club',x?.name||'');if(name===null)return;await adminCall('update_club',{club_id:id,name});await adminLoad('clubs');return}if(a==='club-verify'){const x=ADMIN.clubs.find(c=>c.id===id);await adminCall('update_club',{club_id:id,name:x.name,official_status:extra});await adminLoad('clubs');return}if(a==='delete_club'){if(!confirm('Eliminar este club definitivamente?'))return;await adminCall('delete_club',{club_id:id});await adminLoad('clubs');return}if(a==='remove_admin'){if(!confirm('Retirar permisos administrativos?'))return;await adminCall('remove_admin',{user_id:id});await adminLoad('admins')}}catch(e){toast(e.message||'No se pudo completar la acción')}}
 async function adminAdd(form){const fd=new FormData(form),alias=String(fd.get('alias')||'').trim().replace(/^@/,'').toLowerCase(),role=fd.get('role');try{const {data,error}=await sbc.from('profiles').select('id').eq('alias',alias).maybeSingle();if(error)throw error;if(!data)throw new Error('No existe ese alias');if(!confirm('¿Conceder permisos a @'+alias+'?'))return;await adminCall('add_admin',{user_id:data.id,role});await adminLoad('admins')}catch(e){toast(e.message||'No se pudo asignar el rol')}}
 
-function paintAuth(){if(view==='activity'){render();return}const b=$('#authbox'),c=$('#authchip');if(b)b.innerHTML=authInner();if(c)c.innerHTML=authChipIn();translateDOM()}
+function paintAuth(){if(view==='activity'||view==='profile'){render();return}const b=$('#authbox'),c=$('#authchip');if(b)b.innerHTML=authInner();if(c)c.innerHTML=authChipIn();translateDOM()}
 if(typeof window!=='undefined'&&typeof document!=='undefined'){
   try{AU.guest=localStorage.getItem(GUEST_K)==='1'}catch(e){}
   AU.oauth=/[?&#]code=|access_token=/.test(location.search+location.hash);
@@ -1570,3 +1568,18 @@ if(typeof module!=='undefined')module.exports={gen,trial,genQ,rotInfo};
 
 document.addEventListener('change',e=>{const s=e.target.closest('[data-language-select]');if(s)setAppLanguage(s.value)});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')A.closeg()});
+
+// Actualizar el feed con el gesto nativo de arrastrar hacia abajo (solo desde el inicio de la página).
+let activityPullStart=null;
+document.addEventListener('touchstart',e=>{
+  if(view!=='activity'||!AU.user||ACT.loading||!e.touches||e.touches.length!==1){activityPullStart=null;return}
+  if(window.scrollY<=0)activityPullStart={x:e.touches[0].clientX,y:e.touches[0].clientY};
+},{passive:true});
+document.addEventListener('touchend',e=>{
+  if(!activityPullStart)return;
+  const start=activityPullStart;activityPullStart=null;
+  if(view!=='activity'||!AU.user||ACT.loading||!e.changedTouches||!e.changedTouches.length)return;
+  const dx=e.changedTouches[0].clientX-start.x,dy=e.changedTouches[0].clientY-start.y;
+  if(dy>=75&&Math.abs(dx)<Math.max(45,dy*.6)&&window.scrollY<=0)loadActivity(true);
+},{passive:true});
+document.addEventListener('touchcancel',()=>{activityPullStart=null},{passive:true});
