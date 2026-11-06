@@ -1865,3 +1865,18 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .player-account.linked{color:#24734a}
 .player-entry .btn{flex:0 0 31px;width:31px;min-width:31px;height:31px;padding:0}
 @media(max-width:520px){.player-source-grid{grid-template-columns:1fr}.player-source-card{align-items:center}.player-source-copy>small{max-width:260px}.player-entry{gap:7px}.player-account{font-size:8px}.player-entry input{padding:7px 6px}}
+
+
+/* Corrección del selector de clubes en Preparar partido */
+.match-club-import{display:grid;grid-template-columns:34px minmax(0,1fr);align-items:center;gap:9px;width:100%;min-width:0}
+.match-club-import>.player-source-icon{grid-column:1;grid-row:1;align-self:start}
+.match-club-import>.player-source-copy{grid-column:2;grid-row:1;min-width:0;width:100%}
+.match-club-import>.player-club-picker,.match-club-import>.hint{grid-column:1/-1;min-width:0;width:100%}
+.match-club-import .player-club-picker{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;padding:11px;border:1px solid #dce6ef;border-radius:13px;background:#f5f8fb}
+.match-club-import .player-club-picker select{min-width:0;width:100%;max-width:100%}
+.match-club-import .player-club-picker .btn{width:auto;min-width:112px;margin:0;white-space:nowrap}
+.match-club-import>.hint{margin:0;padding:8px 10px;line-height:1.45}
+@media(max-width:520px){
+ .match-club-import .player-club-picker{grid-template-columns:minmax(0,1fr);gap:8px}
+ .match-club-import .player-club-picker .btn{width:100%;min-width:0}
+}
