@@ -1583,3 +1583,10 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 
 /* Mantener los avisos emergentes por encima de la navegación inferior en móvil */
 @media(max-width:680px){#toast{bottom:calc(82px + env(safe-area-inset-bottom,0px));z-index:60;width:max-content;max-width:calc(100vw - 32px);box-sizing:border-box;text-align:center;white-space:normal}}
+
+
+/* Mantener contador de amigos y edición en una sola fila */
+.profile-hero-actions{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;flex-wrap:nowrap;gap:10px;width:100%;min-width:0}
+.profile-hero-actions .profile-friend-count{flex:0 1 auto;min-width:0;white-space:nowrap}
+.profile-hero-actions .profile-settings-btn{flex:0 0 auto;white-space:nowrap;min-width:0;width:auto;align-self:center}
+@media(max-width:380px){.profile-hero-actions{gap:7px}.profile-hero-actions .profile-friend-count{gap:5px;padding:6px 8px 6px 6px}.profile-hero-actions .profile-friend-count-icon{flex-basis:26px;width:26px;height:26px}.profile-hero-actions .profile-settings-btn{padding:7px 9px;font-size:12px}}
