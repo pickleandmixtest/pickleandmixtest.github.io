@@ -2,8 +2,8 @@
 const K='pickleMix.v1',$=s=>document.querySelector(s);
 const LANG_KEY='pickleMix.language';
 const LANGS={
- es:{home:'Inicio',party:'Partido',clubs:'Clubes',profile:'Perfil',admin:'Administración',settings:'Configuración',backProfile:'Volver a Mi perfil',publicName:'Nombre público',uniqueAlias:'Alias único',requiredAlias:'Obligatorio. Entre 3 y 20 caracteres: letras minúsculas, números y guion bajo.',country:'País',city:'Ciudad',locationHelp:'Indica tu ubicación manualmente. No se utiliza el GPS.',statsVisibility:'Quién puede ver tus estadísticas',historyVisibility:'Quién puede ver tu historial',locationVisibility:'Quién puede ver tu ubicación',everyone:'Todo el mundo',friends:'Solo amigos',nobody:'Nadie',saveProfile:'Guardar perfil',logout:'Cerrar sesión',language:'Idioma',languageHelp:'Elige el idioma de Pickle&Mix.',spanish:'Español',english:'English'},
- en:{home:'Home',party:'Match',clubs:'Clubs',profile:'Profile',admin:'Administration',settings:'Settings',backProfile:'Back to My profile',publicName:'Display name',uniqueAlias:'Unique username',requiredAlias:'Required. 3–20 characters: lowercase letters, numbers and underscores.',country:'Country',city:'City',locationHelp:'Enter your location manually. GPS is not used.',statsVisibility:'Who can see your statistics',historyVisibility:'Who can see your history',locationVisibility:'Who can see your location',everyone:'Everyone',friends:'Friends only',nobody:'Nobody',saveProfile:'Save profile',logout:'Sign out',language:'Language',languageHelp:'Choose your Pickle&Mix language.',spanish:'Español',english:'English'}
+ es:{home:'Inicio',party:'Partido',clubs:'Clubes',activity:'Actividad',profile:'Perfil',admin:'Administración',settings:'Configuración',backProfile:'Volver a Mi perfil',publicName:'Nombre público',uniqueAlias:'Alias único',requiredAlias:'Obligatorio. Entre 3 y 20 caracteres: letras minúsculas, números y guion bajo.',country:'País',city:'Ciudad',locationHelp:'Indica tu ubicación manualmente. No se utiliza el GPS.',statsVisibility:'Quién puede ver tus estadísticas',historyVisibility:'Quién puede ver tu historial',locationVisibility:'Quién puede ver tu ubicación',everyone:'Todo el mundo',friends:'Solo amigos',nobody:'Nadie',saveProfile:'Guardar perfil',logout:'Cerrar sesión',language:'Idioma',languageHelp:'Elige el idioma de Pickle&Mix.',spanish:'Español',english:'English'},
+ en:{home:'Home',party:'Match',clubs:'Clubs',activity:'Activity',profile:'Profile',admin:'Administration',settings:'Settings',backProfile:'Back to My profile',publicName:'Display name',uniqueAlias:'Unique username',requiredAlias:'Required. 3–20 characters: lowercase letters, numbers and underscores.',country:'Country',city:'City',locationHelp:'Enter your location manually. GPS is not used.',statsVisibility:'Who can see your statistics',historyVisibility:'Who can see your history',locationVisibility:'Who can see your location',everyone:'Everyone',friends:'Friends only',nobody:'Nobody',saveProfile:'Save profile',logout:'Sign out',language:'Language',languageHelp:'Choose your Pickle&Mix language.',spanish:'Español',english:'English'}
 };
 let APP_LANG='es';try{const saved=localStorage.getItem(LANG_KEY);if(saved==='en'||saved==='es')APP_LANG=saved}catch(e){}document.documentElement.lang=APP_LANG;
 const tr=k=>(LANGS[APP_LANG]&&LANGS[APP_LANG][k])||LANGS.es[k]||k;
@@ -24,8 +24,8 @@ const fresh=()=>({players:[],settings:{courts:1,points:11,cycles:3,mode:'rot',pa
 function valid(d){return d&&Array.isArray(d.players)&&Array.isArray(d.matches)&&d.settings&&d.players.every(p=>p&&typeof p.id=='number'&&typeof p.name=='string')&&d.matches.every(m=>m&&Array.isArray(m.a)&&Array.isArray(m.b)&&m.a.length==2&&m.b.length==2&&['pending','done','skipped'].includes(m.status))&&(d.settings.mode!=='fixed'||Array.isArray(d.teams))&&['courts','points','cycles'].every(k=>Number.isInteger(d.settings[k])&&d.settings[k]>0)}
 let S=fresh();try{const d=JSON.parse(localStorage.getItem(K));if(valid(d)){S=d;if(!S.started&&S.settings.points===7)S.settings.points=11}}catch(e){}
 const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
-const ROUTE_TO_VIEW={inicio:'home',preparar:'setup',partido:'game',jugadores:'more',resumen:'final',perfil:'profile',amigos:'friends',historial:'history',quedadas:'sessions',clubes:'clubs',admin:'admin'};
-const VIEW_TO_ROUTE={home:'inicio',setup:'preparar',game:'partido',more:'jugadores',final:'resumen',profile:'perfil',friends:'amigos',history:'historial',sessions:'quedadas','session-detail':'quedadas','user-profile':'amigos',clubs:'clubes','club-detail':'clubes',admin:'admin'};
+const ROUTE_TO_VIEW={inicio:'home',preparar:'setup',partido:'game',jugadores:'more',resumen:'final',perfil:'profile',amigos:'friends',historial:'history',quedadas:'sessions',clubes:'clubs',actividad:'activity',admin:'admin'};
+const VIEW_TO_ROUTE={home:'inicio',setup:'preparar',game:'partido',more:'jugadores',final:'resumen',profile:'perfil',friends:'amigos',history:'historial',sessions:'quedadas','session-detail':'quedadas','user-profile':'amigos',clubs:'clubes','club-detail':'clubes',activity:'actividad',admin:'admin'};
 const initialRoute=location.hash.replace(/^#\/?/,'').toLowerCase();
 const initialClubId=initialRoute.startsWith('clubes/')?decodeURIComponent(initialRoute.slice(7)):null;
 const profileRouteId=initialRoute.startsWith('jugadores/')?decodeURIComponent(initialRoute.slice(10)):null;
@@ -213,14 +213,16 @@ function render(){
     if(!routeInitialized){history.replaceState(null,'',url);routeInitialized=true}
     else history.pushState(null,'',url);
   }else routeInitialized=true;
-  const f={home:vHome,setup:vSetup,game:vGame,more:vMore,final:vFinal,profile:vProfile,friends:vFriends,history:vHistory,sessions:vSessions,'session-detail':vSessionDetail,'user-profile':vUserProfile,clubs:vClubs,'club-detail':vClubDetail,admin:vAdmin}[view];
+  const f={home:vHome,activity:vActivity,setup:vSetup,game:vGame,more:vMore,final:vFinal,profile:vProfile,friends:vFriends,history:vHistory,sessions:vSessions,'session-detail':vSessionDetail,'user-profile':vUserProfile,clubs:vClubs,'club-detail':vClubDetail,admin:vAdmin}[view];
   $('#app').innerHTML=header()+f()+(err?`<div class="err">${esc(err)}</div>`:'')+foot()+bottomNavigation();translateDOM();err='';nerr='';if(view==='home')initPong('pong',null,true);
+  if(view==='activity'&&AU.user&&!ACT.loading&&!ACT.loaded)loadActivity(true);
   if(msg){toast(msg);msg=''}
 }
 let PG={u:0,c:0};
 const HIST={items:[],sessions:[],selectedSessionId:null,invites:[],inviteBusy:'',stats:{played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0},loading:false,error:'',loaded:false};
 const PUB={id:initialProfileId,profile:null,stats:null,history:[],achievements:null,clubs:[],clubsLoading:!!initialProfileId,error:'',loading:!!initialProfileId,statsHidden:false,historyHidden:false};
 const ACH={summary:null,loading:false,error:'',open:false,publicMode:false,notifications:[],notificationsOpen:false};
+const ACT={items:[],filter:'all',loading:false,loaded:false,error:'',hasMore:false};
 const FR={items:[],people:[],query:'',results:[],loading:false,searching:false,error:'',loaded:false,ranking:[],rankingLoading:false,activity:[],activityLoading:false,busy:'',panel:''};
 const CL={items:[],members:[],people:[],selectedId:initialClubId,section:'mine',loading:false,error:'',busy:'',createOpen:false,requests:[],invitations:[],links:[],events:[],registrations:[],posts:[],comments:[],postOpen:false,inviteUrl:'',eventOpen:false,settingsOpen:false,inviteRedeemBusy:false,myRequest:null,incomingInvites:[]};
 const ADMIN={isAdmin:false,role:'',tab:'dashboard',users:[],clubs:[],admins:[],audit:[],activity:[],activityTag:'all',analytics:null,analyticsRange:30,page:1,busy:false,error:''};
@@ -345,11 +347,11 @@ function partySubnav(){
 }
 function header(){
   const inParty=['setup','game','more','final'].includes(view);
-  const t=[['home',tr('home')],['party',tr('party')],['clubs',tr('clubs')]],cur={home:'home',setup:'party',game:'party',more:'party',final:'party',clubs:'clubs','club-detail':'clubs'}[view];
+  const t=[['home',tr('home')],['party',tr('party')],['clubs',tr('clubs')],['activity',tr('activity')]],cur={home:'home',setup:'party',game:'party',more:'party',final:'party',clubs:'clubs','club-detail':'clubs',activity:'activity'}[view];
   return`<header class="top"><div class="top-main"><div class="mark">PICKLE<b>&amp;MIX</b></div><div class="who" id="authchip">${authChipIn()}</div></div><nav class="tabs" aria-label="Navegación principal">${t.map(x=>`<button data-a="${x[0]}"${x[0]===cur?' aria-current="page"':''}>${x[1]}</button>`).join('')}${ADMIN.isAdmin?`<button data-a="admin"${view==='admin'?' aria-current="page"':''}>${tr('admin')}</button>`:''}</nav>${inParty?partySubnav():''}</header>`}
 function bottomNavigation(){
-  const current={home:'home',setup:'party',game:'party',more:'party',final:'party',clubs:'clubs','club-detail':'clubs',profile:'profile',friends:'profile',history:'profile',sessions:'profile','session-detail':'profile','user-profile':'profile',admin:'admin'}[view]||'home';
-  const items=[['home',tr('home'),'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>'],['party',tr('party'),'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3 4 7l3 4 3-4-3-4Zm10 10-3 4 3 4 3-4-3-4ZM8 9l8 6M5 19l4-4m6-6 4-4"/></svg>'],['clubs',tr('clubs'),'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m7-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm13 10v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>'],['profile',tr('profile'),'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>']];
+  const current={home:'home',activity:'activity',setup:'party',game:'party',more:'party',final:'party',clubs:'clubs','club-detail':'clubs',profile:'profile',friends:'profile',history:'profile',sessions:'profile','session-detail':'profile','user-profile':'profile',admin:'admin'}[view]||'home';
+  const items=[['home',tr('home'),'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>'],['party',tr('party'),'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3 4 7l3 4 3-4-3-4Zm10 10-3 4 3 4 3-4-3-4ZM8 9l8 6M5 19l4-4m6-6 4-4"/></svg>'],['clubs',tr('clubs'),'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m7-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm13 10v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>'],['activity',tr('activity'),'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>'],['profile',tr('profile'),'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>']];
   if(ADMIN.isAdmin)items.push(['admin',tr('admin'),'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 6v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="m9 12 2 2 4-4"/></svg>']);
   return '<nav class="bottom-nav" aria-label="Navegación principal">'+items.map(([id,label,svg])=>'<button type="button" data-a="'+id+'"'+(current===id?' aria-current="page"':'')+'>'+svg+'<span>'+label+'</span></button>').join('')+'</nav>';
 }
@@ -660,6 +662,49 @@ async function openUserProfile(id){
     }else{PUB.statsHidden=true;PUB.achievements=null;}
       }catch(error){console.warn('[public profile] load:',error&&error.message);PUB.error='No se ha podido cargar este perfil o sus datos públicos.'}
   finally{PUB.loading=false;PUB.clubsLoading=false;if(view==='user-profile')render()}
+}
+const ACT_I18N={
+ es:{player:'Jugador',shared:'Partido compartido',newEvent:'Nuevo evento',newPost:'Nueva publicación',win:'Victoria',played:'Partido disputado',title:'Actividad',intro:'Inicia sesión para descubrir lo que comparten tus amigos y los clubes a los que perteneces.',subtitle:'Lo último que está pasando en tu comunidad.',filters:['Todo','Amigos','Clubes'],refresh:'Actualizar actividad',loading:'Cargando actividad…',emptyTitle:'Aún no hay actividad',emptyText:'Cuando tus amigos compartan partidos o tus clubes publiquen novedades y eventos, aparecerán aquí.',more:'Cargar más',loadingMore:'Cargando…',club:'Club'},
+ en:{player:'Player',shared:'Shared match',newEvent:'New event',newPost:'New post',win:'Win',played:'Match played',title:'Activity',intro:'Sign in to discover what your friends and clubs are sharing.',subtitle:'The latest updates from your community.',filters:['All','Friends','Clubs'],refresh:'Refresh activity',loading:'Loading activity…',emptyTitle:'No activity yet',emptyText:'When your friends share matches or your clubs publish updates and events, they will appear here.',more:'Load more',loadingMore:'Loading…',club:'Club'}
+};
+const act=k=>(ACT_I18N[APP_LANG]||ACT_I18N.es)[k]||ACT_I18N.es[k]||k;
+function activityDate(value){
+  return value?new Date(value).toLocaleString(APP_LANG==='en'?'en-US':'es-ES',{dateStyle:'medium',timeStyle:'short'}):'';
+}
+function activityCard(item){
+  const avatar=item.actor_avatar?'<img class="activity-avatar" src="'+esc(item.actor_avatar)+'" alt="">':'<span class="activity-avatar activity-avatar-fallback">'+esc((item.actor_name||act('player')).slice(0,1).toUpperCase())+'</span>';
+  const identity='<span class="activity-identity"><b>'+esc(item.actor_name||act('player'))+'</b>'+(item.actor_alias?'<small>@'+esc(item.actor_alias)+'</small>':'')+'</span>';
+  const when='<time>'+activityDate(item.created_at)+'</time>';
+  if(item.source==='friends'){
+    const won=!!(item.details&&item.details.won),own=Number(item.details&&item.details.own_score)||0,opp=Number(item.details&&item.details.opponent_score)||0;
+    const summary=(won?act('win'):act('played'))+' · '+own+'–'+opp;
+    return '<button type="button" class="activity-card activity-friend-card" data-up="'+esc(item.actor_id)+'"><span class="activity-card-top">'+avatar+identity+when+'</span><span class="activity-card-label"><i class="activity-kind-icon">↗</i> '+act('shared')+'</span><b class="activity-card-title">'+esc(item.title||'Quedada')+'</b><span class="activity-card-summary">'+esc(summary)+'</span></button>';
+  }
+  const event=item.kind==='club_event';
+  return '<button type="button" class="activity-card activity-club-card" data-club-open="'+esc(item.club_id)+'"><span class="activity-card-top">'+avatar+identity+when+'</span><span class="activity-card-label"><i class="activity-kind-icon">'+(event?'◷':'✎')+'</i> '+(event?act('newEvent'):act('newPost'))+' <span>· '+esc(item.club_name||act('club'))+'</span></span><b class="activity-card-title">'+esc(item.title||'')+'</b>'+(item.summary?'<span class="activity-card-summary">'+esc(item.summary)+'</span>':'')+(event&&item.details&&item.details.starts_at?'<span class="activity-card-meta">'+activityDate(item.details.starts_at)+(item.details.location?' · '+esc(item.details.location):'')+'</span>':'')+'</button>';
+}
+function vActivity(){
+  if(!AU.user)return '<section class="activity-intro"><span class="section-kicker">PICKLE &amp; MIX · COMMUNITY</span><h2>'+act('title')+'</h2><p>'+act('intro')+'</p></section><div class="card acct">'+authInner()+'</div>';
+  const filters=[['all',act('filters')[0]],['friends',act('filters')[1]],['clubs',act('filters')[2]]];
+  const list=ACT.items.length?ACT.items.map(activityCard).join(''):'';
+  return '<section class="activity-page"><div class="activity-heading"><div><span class="section-kicker">PICKLE &amp; MIX · COMMUNITY</span><h2>'+act('title')+'</h2><p>'+act('subtitle')+'</p></div><button type="button" class="activity-refresh" data-feed-refresh aria-label="'+act('refresh')+'" title="'+act('refresh')+'">↻</button></div><div class="activity-filters" role="tablist" aria-label="'+act('title')+'">'+filters.map(([v,label])=>'<button type="button" role="tab" data-feed-filter="'+v+'" aria-selected="'+(ACT.filter===v)+'">'+label+'</button>').join('')+'</div>'+(ACT.error?'<div class="err">'+esc(ACT.error)+'</div>':'')+(ACT.loading&&!ACT.items.length?'<div class="card activity-empty"><span class="activity-loader"></span><b>'+act('loading')+'</b></div>':list?'<div class="activity-list">'+list+'</div>':'<div class="card activity-empty"><span class="activity-empty-mark">↗</span><b>'+act('emptyTitle')+'</b><p>'+act('emptyText')+'</p></div>')+(ACT.hasMore?'<button type="button" class="btn ghost activity-more" data-feed-more '+(ACT.loading?'disabled':'')+'>'+(ACT.loading?act('loadingMore'):act('more'))+'</button>':'')+'</section>';
+}
+function paintActivity(){if(view==='activity'){const root=document.querySelector('#app');if(root){root.innerHTML=header()+vActivity()+foot()+bottomNavigation();translateDOM(root)}}}
+async function loadActivity(reset){
+  if(!sbc||!AU.user||ACT.loading)return;
+  if(reset){ACT.items=[];ACT.hasMore=false;ACT.error='';ACT.loaded=false}
+  const last=reset?null:ACT.items[ACT.items.length-1];
+  ACT.loading=true;paintActivity();
+  try{
+    const {data,error}=await sbc.rpc('get_activity_feed',{p_filter:ACT.filter,p_before:last?last.created_at:null,p_before_id:last?last.id:null,p_limit:20});
+    if(error)throw error;
+    const rows=Array.isArray(data)?data:[];
+    ACT.hasMore=rows.length>20;
+    const page=rows.slice(0,20);
+    ACT.items=reset?page:ACT.items.concat(page);
+    ACT.loaded=true;
+  }catch(error){console.warn('[activity] load:',error&&error.message);ACT.error=APP_LANG==='en'?'Could not load activity. Please try again.':'No se ha podido cargar la actividad. Inténtalo de nuevo.';ACT.hasMore=false;ACT.loaded=true}
+  finally{ACT.loading=false;paintActivity()}
 }
 function friendActivityRow(item){
   return '<div class="history-row"><div><b>'+esc(item.friendName)+' · '+esc(item.session_title||'Quedada')+'</b><span class="mut">'+new Date(item.played_at).toLocaleDateString(APP_LANG==='en'?'en-US':'es-ES')+' · '+(item.won?'Victoria':'Derrota')+'</span><small>'+esc((item.teammates||[]).join(' / '))+' vs '+esc((item.opponents||[]).join(' / '))+'</small></div><strong class="'+(item.won?'win':'loss')+'">'+item.own_score+'–'+item.opponent_score+'</strong></div>';
@@ -1182,7 +1227,7 @@ const A={
       .catch(e=>{AU.err='No se pudo cerrar la sesión. Inténtalo de nuevo.';console.warn('[auth] logout:',e&&e.message);paintAuth()})},
   guest(){AU.guest=true;try{localStorage.setItem(GUEST_K,'1')}catch(e){}},
   reloadProfile(){if(AU.user)loadProfile(AU.user.id)},
-  setup(){view='setup'},home(){view='home'},profile(){view='profile';AU.profileSettingsOpen=false;loadFriendActivity()},sessions(){view='sessions';HIST.selectedSessionId=null;if(!HIST.loaded)loadMyHistory()},friends(){view='friends';FR.error='';loadFriends()},party(){view=S.started?'game':'setup';ed=null},clubs(){view='clubs';CL.error='';CL.selectedId=null;loadClubs()},history(){view='history';loadMyHistory()},profileSettings(){AU.profileSettingsOpen=true;paintAuth()},profileOverview(){AU.profileSettingsOpen=false;paintAuth()},achievements(){ACH.open=true;ACH.publicMode=false;paintAuth()},publicAchievements(){ACH.open=true;ACH.publicMode=true;render()},achievementsClose(){ACH.open=false;if(ACH.publicMode)render();else paintAuth()},notificationsToggle(){ACH.notificationsOpen=!ACH.notificationsOpen;paintAuth()},notificationsReadAll(){markNotificationsRead()},go(){view='game';ed=null},more(){view='more'},final(){view='final'},
+  setup(){view='setup'},home(){view='home'},profile(){view='profile';AU.profileSettingsOpen=false;loadFriendActivity()},sessions(){view='sessions';HIST.selectedSessionId=null;if(!HIST.loaded)loadMyHistory()},friends(){view='friends';FR.error='';loadFriends()},activity(){view='activity';ACT.error='';render()},party(){view=S.started?'game':'setup';ed=null},clubs(){view='clubs';CL.error='';CL.selectedId=null;loadClubs()},history(){view='history';loadMyHistory()},profileSettings(){AU.profileSettingsOpen=true;paintAuth()},profileOverview(){AU.profileSettingsOpen=false;paintAuth()},achievements(){ACH.open=true;ACH.publicMode=false;paintAuth()},publicAchievements(){ACH.open=true;ACH.publicMode=true;render()},achievementsClose(){ACH.open=false;if(ACH.publicMode)render();else paintAuth()},notificationsToggle(){ACH.notificationsOpen=!ACH.notificationsOpen;paintAuth()},notificationsReadAll(){markNotificationsRead()},go(){view='game';ed=null},more(){view='more'},final(){view='final'},
   start(){S.savedSessionId=null;const c=S.settings;if(S.players.length<4){err='Necesitas al menos 4 jugadores.';return}
     if(S.players.length<4*c.courts){err=`Con ${c.courts} pistas necesitas al menos ${4*c.courts} jugadores.`;return}
     if(FX()&&S.players.length%2){err='Con parejas fijas necesitas un número par de jugadores.';return}
@@ -1215,10 +1260,13 @@ const A={
   reset(){if(confirm('Se borrarán jugadores, partidos y resultados. ¿Seguro?')&&confirm('Última comprobación: ¿empezar una quedada nueva?')){S=fresh();SC={};ed=null;ct=1;tmp=null;view='home'}}
 };
 document.addEventListener('click',e=>{
-  const t=e.target.closest('[data-a],[data-atab],[data-admin],[data-admin-range],[data-activity-filter],[data-match-club-toggle],[data-match-club-import],[data-community-panel],[data-fa],[data-up],[data-linkplayer],[data-addself],[data-session-response],[data-session-open],[data-club-section],[data-club-open],[data-club-join],[data-club-leave],[data-club-delete],[data-club-create-toggle],[data-club-settings-toggle],[data-club-link-create],[data-club-link-copy],[data-club-copy-current],[data-club-link-revoke],[data-club-invite-revoke],[data-club-request],[data-club-request-cancel],[data-club-invitation],[data-club-member-menu],[data-club-member-action],[data-club-event-toggle],[data-club-post-toggle],[data-club-post-menu],[data-club-post-edit],[data-club-post-edit-cancel],[data-club-post-delete],[data-club-post-comments],[data-club-comment-menu],[data-club-comment-delete],[data-club-event-register],[data-club-image-open],[data-image-editor-action],[data-club-event-cancel],[data-club-event-delete],[data-notification-open],[data-sc],[data-ct],[data-del],[data-st],[data-pd],[data-edit],[data-mode],[data-pm]');if(!e.target.closest('.club-member-item'))document.querySelectorAll('.club-member-item.menu-open').forEach(x=>{x.classList.remove('menu-open');const b=x.querySelector('[data-club-member-menu]'),m=x.querySelector('.club-member-menu-popover');if(b)b.setAttribute('aria-expanded','false');if(m)m.setAttribute('aria-hidden','true')});if(!e.target.closest('.club-comment-admin-actions'))document.querySelectorAll('.club-comment-admin-actions.menu-open').forEach(x=>{x.classList.remove('menu-open');const b=x.querySelector('[data-club-comment-menu]'),m=x.querySelector('.club-comment-menu-popover');if(b)b.setAttribute('aria-expanded','false');if(m)m.setAttribute('aria-hidden','true')});if(!e.target.closest('.club-post-actions'))document.querySelectorAll('.club-post-actions.menu-open').forEach(x=>{x.classList.remove('menu-open');const b=x.querySelector('[data-club-post-menu]'),m=x.querySelector('.club-post-menu-popover');if(b)b.setAttribute('aria-expanded','false');if(m)m.setAttribute('aria-hidden','true')});if(!t)return;const d=t.dataset;if(d.a==='achievementsClose'&&e.target.closest('[data-achievement-modal]')&&!e.target.closest('.achievement-modal-close'))return;
+  const t=e.target.closest('[data-a],[data-feed-filter],[data-feed-more],[data-feed-refresh],[data-atab],[data-admin],[data-admin-range],[data-activity-filter],[data-match-club-toggle],[data-match-club-import],[data-community-panel],[data-fa],[data-up],[data-linkplayer],[data-addself],[data-session-response],[data-session-open],[data-club-section],[data-club-open],[data-club-join],[data-club-leave],[data-club-delete],[data-club-create-toggle],[data-club-settings-toggle],[data-club-link-create],[data-club-link-copy],[data-club-copy-current],[data-club-link-revoke],[data-club-invite-revoke],[data-club-request],[data-club-request-cancel],[data-club-invitation],[data-club-member-menu],[data-club-member-action],[data-club-event-toggle],[data-club-post-toggle],[data-club-post-menu],[data-club-post-edit],[data-club-post-edit-cancel],[data-club-post-delete],[data-club-post-comments],[data-club-comment-menu],[data-club-comment-delete],[data-club-event-register],[data-club-image-open],[data-image-editor-action],[data-club-event-cancel],[data-club-event-delete],[data-notification-open],[data-sc],[data-ct],[data-del],[data-st],[data-pd],[data-edit],[data-mode],[data-pm]');if(!e.target.closest('.club-member-item'))document.querySelectorAll('.club-member-item.menu-open').forEach(x=>{x.classList.remove('menu-open');const b=x.querySelector('[data-club-member-menu]'),m=x.querySelector('.club-member-menu-popover');if(b)b.setAttribute('aria-expanded','false');if(m)m.setAttribute('aria-hidden','true')});if(!e.target.closest('.club-comment-admin-actions'))document.querySelectorAll('.club-comment-admin-actions.menu-open').forEach(x=>{x.classList.remove('menu-open');const b=x.querySelector('[data-club-comment-menu]'),m=x.querySelector('.club-comment-menu-popover');if(b)b.setAttribute('aria-expanded','false');if(m)m.setAttribute('aria-hidden','true')});if(!e.target.closest('.club-post-actions'))document.querySelectorAll('.club-post-actions.menu-open').forEach(x=>{x.classList.remove('menu-open');const b=x.querySelector('[data-club-post-menu]'),m=x.querySelector('.club-post-menu-popover');if(b)b.setAttribute('aria-expanded','false');if(m)m.setAttribute('aria-hidden','true')});if(!t)return;const d=t.dataset;if(d.a==='achievementsClose'&&e.target.closest('[data-achievement-modal]')&&!e.target.closest('.achievement-modal-close'))return;
   // Navegación explícita: no depende de las acciones genéricas del resto de la app.
   if(t.hasAttribute('data-image-editor-action')){if(d.imageEditorAction==='apply')applyImageEditor();else closeImageEditor();return}
   if(t.hasAttribute('data-club-image-open')){const input=document.querySelector('[data-club-image-file]');if(input){input.dataset.clubImage=d.clubImageOpen;input.click()}return}
+  if(t.hasAttribute('data-feed-filter')){if(ACT.loading)return;const next=t.dataset.feedFilter;if(['all','friends','clubs'].includes(next)&&next!==ACT.filter){ACT.filter=next;loadActivity(true)}return}
+  if(t.hasAttribute('data-feed-more')){loadActivity(false);return}
+  if(t.hasAttribute('data-feed-refresh')){loadActivity(true);return}
   if(d.a==='friends'){view='friends';FR.error='';render();loadFriends();return}
   if(d.a==='profile'){view='profile';AU.profileSettingsOpen=false;render();if(AU.user){loadMyHistory();loadFriends()}return}
   if(d.a==='clubs'){view='clubs';CL.error='';CL.selectedId=null;render();loadClubs();return}
@@ -1491,7 +1539,7 @@ if(typeof window!=='undefined'&&typeof document!=='undefined'){
       if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))AU.profileLoading=true;
       if(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'){if(view==='home')render();else paintAuth();setTimeout(checkAdminAccess,0)}
       if(u&&(ch||ev==='INITIAL_SESSION')){watchFriendships(u.id);watchProfileNotifications(u.id)}
-      if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))setTimeout(()=>{loadProfile(u.id);loadMyHistory();loadFriends();loadMyAchievements();if(view==='clubs'||view==='club-detail')loadClubs();if(view==='user-profile'&&PUB.id)openUserProfile(PUB.id);redeemClubInviteFromUrl()},0);
+      if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))setTimeout(()=>{loadProfile(u.id);loadMyHistory();loadFriends();loadMyAchievements();if(view==='clubs'||view==='club-detail')loadClubs();if(view==='activity'){ACT.loaded=false;loadActivity(true)}if(view==='user-profile'&&PUB.id)openUserProfile(PUB.id);redeemClubInviteFromUrl()},0);
       if(u&&ch&&AU.oauth&&ev==='SIGNED_IN'){AU.oauth=false;toast('Sesión iniciada como '+auName(u))}});
     setTimeout(()=>{if(!AU.ready){AU.ready=true;paintAuth()}},4000)}
   catch(e){sbc=null;console.warn('[auth] onAuthStateChange:',e&&e.message)}}
@@ -1505,6 +1553,7 @@ function syncRouteFromLocation(){
     view=next;ed=null;CL.selectedId=clubId||null;if(next==='user-profile')PUB.id=profileId;routeInitialized=true;render();
     if((next==='clubs'||next==='club-detail')&&AU.user){if(!CL.items.length)loadClubs();else if(clubId)loadClubData(clubId)}
     if(next==='user-profile'&&profileId&&AU.user)openUserProfile(profileId);
+    if(next==='activity'&&AU.user)loadActivity(true);
   }
 }
 if(typeof window!=='undefined'){
