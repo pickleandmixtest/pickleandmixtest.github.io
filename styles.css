@@ -1626,3 +1626,40 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .club-event-detail>p{margin:0 0 7px;color:#50657b;font-size:12px;line-height:1.5}
 .club-event-detail .club-event-attendees{display:block;color:#728197;font-size:10px;line-height:1.45}
 .club-detail-page[data-club-tab="events"] .club-event-card:not([data-club-event-expanded="true"])>p,.club-detail-page[data-club-tab="events"] .club-event-card:not([data-club-event-expanded="true"]) .club-event-attendees{display:none}
+
+
+/* Clubes: navegación real por pestañas y densidad compacta */
+.club-detail-page{gap:9px!important}
+.club-detail-page [data-club-panel]{display:none!important}
+.club-detail-page[data-club-tab="info"] [data-club-panel="info"],
+.club-detail-page[data-club-tab="events"] [data-club-panel="events"],
+.club-detail-page[data-club-tab="posts"] [data-club-panel="posts"],
+.club-detail-page[data-club-tab="members"] [data-club-panel="members"]{display:block!important}
+.club-detail-page[data-club-tab="manage"] [data-club-panel="manage"]{display:flex!important}
+.club-detail-page .club-description,
+.club-detail-page .club-official-contact,
+.club-detail-page .club-members,
+.club-detail-page .club-admin-section{padding:11px!important;border-radius:13px!important}
+.club-detail-page .club-section-heading{gap:2px!important;margin-bottom:6px!important}
+.club-detail-page .club-section-heading h3,
+.club-detail-page .club-section-heading-row h3{font-size:15px!important}
+.club-detail-page .club-description>p{font-size:12px!important;line-height:1.5!important}
+.club-detail-page .club-detail-tabs{margin:0!important}
+.club-detail-page .club-events-section{gap:6px!important}
+.club-detail-page .club-event-card{padding:9px 0!important}
+.club-detail-page .club-event-card h4{margin:5px 0!important}
+.club-detail-page .club-event-meta{gap:6px!important}
+.club-detail-page .club-event-expand{margin-top:6px!important;padding:6px 0!important}
+.club-detail-page .club-event-detail{margin-top:6px!important;padding:8px 9px!important}
+.club-detail-page .club-post-card{padding:10px 0!important}
+.club-detail-page .club-members .club-member-row{padding:6px 0!important}
+.club-detail-page .club-join-card{padding:12px!important}
+.club-detail-page .club-admin-zone{gap:7px!important;padding-top:0!important}
+.club-detail-page .club-admin-zone-heading h3{font-size:15px!important}
+@media(max-width:520px){
+ .club-detail-page{gap:8px!important}
+ .club-detail-page .club-description,
+ .club-detail-page .club-official-contact,
+ .club-detail-page .club-members,
+ .club-detail-page .club-admin-section{padding:10px!important}
+}
