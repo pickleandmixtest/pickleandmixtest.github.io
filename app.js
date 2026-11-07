@@ -1685,11 +1685,11 @@ if(typeof window!=='undefined'&&typeof document!=='undefined'){
       if(ch){HIST.invites=[];HIST.inviteBusy='';HIST.items=[];HIST.loaded=false;HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0}}
       if(ch&&!u){if(profileNotificationChannel){sbc.removeChannel(profileNotificationChannel);profileNotificationChannel=null}ADMIN.isAdmin=false;ADMIN.role='';if(view==='admin')view='profile';ACH.summary=null;ACH.notifications=[];ACH.open=false;ACH.notificationsOpen=false;watchFriendships(null);AU.profile=null;AU.profileErr='';AU.profileLoading=false;HIST.loaded=false;HIST.items=[];HIST.stats={played:0,wins:0,losses:0,winRate:0,pointsFor:0,pointsAgainst:0,sessions:0}}
       if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))AU.profileLoading=true;
-      if(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'){if(view==='home'||view==='setup')render();else paintAuth();setTimeout(checkAdminAccess,0)}
+      if(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'){if(view==='home'||view==='setup')render();else paintAuth();if(view==='settings'&&SETTINGS_TAB==='notifications')loadNotificationPreferences();setTimeout(checkAdminAccess,0)}
       if(u&&(ch||ev==='INITIAL_SESSION')){watchFriendships(u.id);watchProfileNotifications(u.id)}
       if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))setTimeout(()=>{loadProfile(u.id);loadMyHistory();loadFriends();loadMyAchievements();if(view==='clubs'||view==='club-detail')loadClubs();if(view==='activity'){ACT.loaded=false;loadActivity(true)}if(view==='user-profile'&&PUB.id)openUserProfile(PUB.id);redeemClubInviteFromUrl()},0);
       if(u&&ch&&AU.oauth&&ev==='SIGNED_IN'){AU.oauth=false;toast('Sesión iniciada como '+auName(u))}});
-    setTimeout(()=>{if(!AU.ready){AU.ready=true;paintAuth()}},4000)}
+    setTimeout(()=>{if(!AU.ready){AU.ready=true;paintAuth();if(view==='settings'&&SETTINGS_TAB==='notifications')loadNotificationPreferences()}},4000)}
   catch(e){sbc=null;console.warn('[auth] onAuthStateChange:',e&&e.message)}}
   addEventListener('pageshow',e=>{if(e.persisted&&AU.busy){AU.busy=false;paintAuth()}});
   /* Si la foto de Google no carga, se muestra la inicial */
