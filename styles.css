@@ -1927,3 +1927,24 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .settings-pref-row input[type=checkbox]:checked,.settings-pref-master input[type=checkbox]:checked{background:var(--ball);border-color:var(--ball)}
 .settings-pref-row input[type=checkbox]:checked:after,.settings-pref-master input[type=checkbox]:checked:after{transform:translateX(16px);background:var(--court)}
 .settings-pref-row input[type=checkbox]:focus-visible,.settings-pref-master input[type=checkbox]:focus-visible{outline:2px solid var(--court);outline-offset:3px}
+
+
+/* Interruptores horizontales de preferencias, estilo pill */
+.settings-pref-row input[type=checkbox],
+.settings-pref-master input[type=checkbox]{
+  width:52px;
+  height:30px;
+  min-width:52px;
+  border-radius:999px;
+}
+.settings-pref-row input[type=checkbox]:after,
+.settings-pref-master input[type=checkbox]:after{
+  top:3px;
+  left:3px;
+  width:22px;
+  height:22px;
+}
+.settings-pref-row input[type=checkbox]:checked:after,
+.settings-pref-master input[type=checkbox]:checked:after{
+  transform:translateX(22px);
+}
