@@ -1921,40 +1921,23 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .clubs-directory-back{align-self:flex-start;padding:7px 0;border:0;background:transparent;color:var(--court);font-size:12px;font-weight:850;cursor:pointer}
 .clubs-directory .club-type-heading{display:none}
 
-/* Interruptores de notificación: proporción horizontal y consistente */
-.settings-pref-row,
-.settings-pref-master{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:16px;
-}
-.settings-pref-row{
-  padding:13px 0;
-  border-bottom:1px solid #edf1f5;
-}
-.settings-pref-row:last-of-type{border-bottom:0}
-.settings-pref-copy,
-.settings-pref-master>span{
-  display:flex;
-  flex:1 1 auto;
-  flex-direction:column;
-  gap:4px;
-  min-width:0;
-}
+/* Interruptores de notificación: tamaño compacto y horizontal */
 .settings-pref-row input[type=checkbox],
 .settings-pref-master input[type=checkbox]{
-  appearance:none;
   -webkit-appearance:none;
+  appearance:none;
   box-sizing:border-box;
   position:relative;
   display:block;
-  flex:0 0 58px;
-  width:58px;
-  min-width:58px;
-  height:28px;
+  flex:0 0 46px;
+  width:46px;
+  min-width:46px;
+  max-width:46px;
+  height:26px;
+  min-height:0;
   margin:0;
   padding:0;
+  line-height:normal;
   border:1px solid #c9d4df;
   border-radius:999px;
   background:#e6ebf0;
@@ -1965,8 +1948,8 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .settings-pref-master input[type=checkbox]::after{
   content:"";
   position:absolute;
-  top:3px;
-  left:3px;
+  top:2px;
+  left:2px;
   width:20px;
   height:20px;
   border-radius:50%;
@@ -1981,8 +1964,7 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 }
 .settings-pref-row input[type=checkbox]:checked::after,
 .settings-pref-master input[type=checkbox]:checked::after{
-  transform:translateX(30px);
-  background:#fff;
+  transform:translateX(20px);
 }
 .settings-pref-row input[type=checkbox]:focus-visible,
 .settings-pref-master input[type=checkbox]:focus-visible{
