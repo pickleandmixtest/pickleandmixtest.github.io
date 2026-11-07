@@ -1456,7 +1456,7 @@ document.addEventListener('click',e=>{
   if(d.addself!==undefined){addSelfPlayer();return}
   if(d.linkplayer){const friend=linkedFriends().find(p=>p.id===d.linkplayer);if(friend&&!S.players.some(p=>p.userId===friend.id)){let name=(friend.display_name||friend.alias||'Jugador').slice(0,24);if(nameTaken(name))name=('@'+(friend.alias||friend.display_name||'amigo')).slice(0,24);S.players.push({id:S.nid++,name,userId:friend.id,status:'active'});save()}else if(friend)toast('Ese amigo ya está en la quedada.');render();return}
   if(d.up){openUserProfile(d.up);return}
-  if(d.a){A[d.a]();}
+  if(d.a){if(d.a==='logout'&&!confirm('¿Seguro que quieres cerrar sesión en Pickle&Mix?'))return;A[d.a]();}
   else if(d.sc){const c=d.sc[0],v=+d.sc.slice(1),r=scoreStep(tmp,c,v,S.settings.points);if(r.ok)tmp[c]=r.val;else toast(r.msg);$('#app').innerHTML=header()+vGame();translateDOM();return}
   else if(d.ct){ct=+d.ct;ed=null}
   else if(d.mode)S.settings.mode=d.mode;
