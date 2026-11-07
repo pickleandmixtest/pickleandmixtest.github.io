@@ -214,7 +214,7 @@ function render(){
     else history.pushState(null,'',url);
   }else routeInitialized=true;
   const f={home:vHome,activity:vActivity,setup:vSetup,game:vGame,more:vMore,final:vFinal,profile:vProfile,settings:vSettings,friends:vFriends,history:vHistory,sessions:vSessions,'session-detail':vSessionDetail,'user-profile':vUserProfile,clubs:vClubs,'club-detail':vClubDetail,admin:vAdmin}[view];
-  $('#app').innerHTML=header()+f()+(err?`<div class="err">${esc(err)}</div>`:'')+foot()+bottomNavigation();translateDOM();err='';nerr='';if(view==='home')initPong('pong',null,true);
+  $('#app').innerHTML=header()+f()+(err?`<div class="err">${esc(err)}</div>`:'')+bottomNavigation();translateDOM();err='';nerr='';if(view==='home')initPong('pong',null,true);
   if(view==='activity'&&AU.user&&!ACT.loading&&!ACT.loaded)loadActivity(true);
   if(msg){toast(msg);msg=''}
 }
@@ -422,7 +422,7 @@ function vFriends(){
 }
 
 /* ---------- Clubes ---------- */
-function paintClubs(){if(view!=='clubs'&&view!=='club-detail')return;const root=document.querySelector('#app');if(!root)return;try{root.innerHTML=header()+(view==='club-detail'?vClubDetail():vClubs())+foot()+bottomNavigation();translateDOM(root)}catch(error){console.error('[clubs] render error:',error);if(view==='club-detail'&&CL.openPostId){CL.openPostId=null;try{root.innerHTML=header()+vClubDetail()+foot()+bottomNavigation();translateDOM(root);toast('No se ha podido abrir la publicación. El club sigue disponible.');return}catch(fallbackError){console.error('[clubs] fallback render error:',fallbackError)}}root.innerHTML=header()+'<section class="card" style="margin:20px;padding:20px"><h3>No se ha podido mostrar esta sección</h3><p>Se ha producido un error al cargar el contenido. Vuelve a intentarlo.</p><button class="btn" type="button" data-a="clubs">Volver a clubes</button></section>'+foot()+bottomNavigation()}}
+function paintClubs(){if(view!=='clubs'&&view!=='club-detail')return;const root=document.querySelector('#app');if(!root)return;try{root.innerHTML=header()+(view==='club-detail'?vClubDetail():vClubs())+bottomNavigation();translateDOM(root)}catch(error){console.error('[clubs] render error:',error);if(view==='club-detail'&&CL.openPostId){CL.openPostId=null;try{root.innerHTML=header()+vClubDetail()+bottomNavigation();translateDOM(root);toast('No se ha podido abrir la publicación. El club sigue disponible.');return}catch(fallbackError){console.error('[clubs] fallback render error:',fallbackError)}}root.innerHTML=header()+'<section class="card" style="margin:20px;padding:20px"><h3>No se ha podido mostrar esta sección</h3><p>Se ha producido un error al cargar el contenido. Vuelve a intentarlo.</p><button class="btn" type="button" data-a="clubs">Volver a clubes</button></section>'+bottomNavigation()}}
 async function loadClubs(){
   if(!sbc||!AU.user)return;
   CL.loading=true;CL.error='';paintClubs();
@@ -726,7 +726,7 @@ function vActivity(){
   const list=ACT.items.length?ACT.items.map(activityCard).join(''):'';
   return '<section class="activity-page"><div class="activity-filters" role="tablist" aria-label="'+act('title')+'">'+filters.map(([v,label])=>'<button type="button" role="tab" data-feed-filter="'+v+'" aria-selected="'+(ACT.filter===v)+'">'+label+'</button>').join('')+'</div>'+(ACT.error?'<div class="err">'+esc(ACT.error)+'</div>':'')+(ACT.loading&&!ACT.items.length?'<div class="card activity-empty"><span class="activity-loader"></span><b>'+act('loading')+'</b></div>':list?'<div class="activity-list">'+list+'</div>':'<div class="card activity-empty"><span class="activity-empty-mark">↗</span><b>'+act('emptyTitle')+'</b><p>'+act('emptyText')+'</p></div>')+(ACT.hasMore?'<button type="button" class="btn ghost activity-more" data-feed-more '+(ACT.loading?'disabled':'')+'>'+(ACT.loading?act('loadingMore'):act('more'))+'</button>':'')+'</section>';
 }
-function paintActivity(){if(view==='activity'){const root=document.querySelector('#app');if(root){root.innerHTML=header()+vActivity()+foot()+bottomNavigation();translateDOM(root)}}}
+function paintActivity(){if(view==='activity'){const root=document.querySelector('#app');if(root){root.innerHTML=header()+vActivity()+bottomNavigation();translateDOM(root)}}}
 async function loadActivity(reset){
   if(!sbc||!AU.user||ACT.loading)return;
   if(reset){ACT.items=[];ACT.hasMore=false;ACT.error='';ACT.loaded=false}
@@ -775,7 +775,7 @@ async function loadFriends(){
   }catch(error){console.warn('[friends] load:',error&&error.message);FR.error='No se han podido cargar tus amistades. Comprueba la conexión e inténtalo de nuevo.'}
   finally{FR.loading=false;paintFriends();paintFriendBadge();loadFriendLeaderboard();if(view==='profile'){render();loadFriendActivity()}}
 }
-function paintFriends(){if(view==='friends'){const root=document.querySelector('#app');if(root){root.innerHTML=header()+vFriends()+foot()+bottomNavigation();translateDOM(root)}}}
+function paintFriends(){if(view==='friends'){const root=document.querySelector('#app');if(root){root.innerHTML=header()+vFriends()+bottomNavigation();translateDOM(root)}}}
 async function searchFriends(form){
   const q=String(form.querySelector('[name="q"]').value||'').trim().replace(/^@/,'').slice(0,40);FR.query=q;FR.results=[];FR.error='';
   if(!q){paintFriends();return}
@@ -1402,7 +1402,7 @@ document.addEventListener('click',e=>{
   if(d.linkplayer){const friend=linkedFriends().find(p=>p.id===d.linkplayer);if(friend&&!S.players.some(p=>p.userId===friend.id)){let name=(friend.display_name||friend.alias||'Jugador').slice(0,24);if(nameTaken(name))name=('@'+(friend.alias||friend.display_name||'amigo')).slice(0,24);S.players.push({id:S.nid++,name,userId:friend.id,status:'active'});save()}else if(friend)toast('Ese amigo ya está en la quedada.');render();return}
   if(d.up){openUserProfile(d.up);return}
   if(d.a){A[d.a]();}
-  else if(d.sc){const c=d.sc[0],v=+d.sc.slice(1),r=scoreStep(tmp,c,v,S.settings.points);if(r.ok)tmp[c]=r.val;else toast(r.msg);$('#app').innerHTML=header()+vGame()+foot();translateDOM();return}
+  else if(d.sc){const c=d.sc[0],v=+d.sc.slice(1),r=scoreStep(tmp,c,v,S.settings.points);if(r.ok)tmp[c]=r.val;else toast(r.msg);$('#app').innerHTML=header()+vGame();translateDOM();return}
   else if(d.ct){ct=+d.ct;ed=null}
   else if(d.mode)S.settings.mode=d.mode;
   else if(d.pm)S.settings.pairing=d.pm;
