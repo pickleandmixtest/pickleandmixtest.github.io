@@ -1910,3 +1910,20 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .settings-pref-note{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
 .settings-pref-note p{margin:0;color:var(--mut);font-size:13px;line-height:1.5}
 @media(max-width:520px){.settings-pref-card{padding:13px}.settings-pref-future{gap:8px}.settings-pref-future em{font-size:8px}}
+
+
+/* Vista previa de clubes: tres resultados por categoría y directorio completo */
+.club-directory-more{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:42px;margin-top:2px;padding:10px 13px;border:1px solid #dce6f0;border-radius:12px;background:#f7f9fc;color:var(--court);font-size:12px;font-weight:850;cursor:pointer;transition:background .16s,border-color .16s}
+.club-directory-more:hover{border-color:#b9c9da;background:#eef3f8}
+.club-directory-more span{display:grid;place-items:center;min-width:23px;height:23px;padding:0 6px;border-radius:8px;background:#e5edf6;color:#365879;font-size:10px}
+.club-directory-more b{margin-left:auto;font-size:19px;line-height:1}
+.clubs-directory{gap:13px}
+.clubs-directory-back{align-self:flex-start;padding:7px 0;border:0;background:transparent;color:var(--court);font-size:12px;font-weight:850;cursor:pointer}
+.clubs-directory .club-type-heading{display:none}
+
+/* Interruptores compactos con el verde lima de Pickle&Mix */
+.settings-pref-row input[type=checkbox],.settings-pref-master input[type=checkbox]{width:38px;height:22px;border:1px solid #c9d4df;border-radius:999px;background:#e6ebf0}
+.settings-pref-row input[type=checkbox]:after,.settings-pref-master input[type=checkbox]:after{top:3px;left:3px;width:14px;height:14px;background:#fff;box-shadow:0 1px 3px #18304f35}
+.settings-pref-row input[type=checkbox]:checked,.settings-pref-master input[type=checkbox]:checked{background:var(--ball);border-color:var(--ball)}
+.settings-pref-row input[type=checkbox]:checked:after,.settings-pref-master input[type=checkbox]:checked:after{transform:translateX(16px);background:var(--court)}
+.settings-pref-row input[type=checkbox]:focus-visible,.settings-pref-master input[type=checkbox]:focus-visible{outline:2px solid var(--court);outline-offset:3px}
