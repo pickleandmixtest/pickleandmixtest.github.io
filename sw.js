@@ -1,11 +1,11 @@
 /* Pickle&Mix TEST · app-shell cache. Supabase data always remains network-only. */
-const CACHE_NAME = 'pickle-mix-shell-v34';
+const CACHE_NAME = 'pickle-mix-shell-v35';
 const APP_SHELL = [
   './',
   './index.html',
   './styles.css?v=93',
   './i18n.js?v=14',
-  './app.js?v=150',
+  './app.js?v=151',
   './favicon.svg?v=2',
   './manifest.webmanifest'
 ];
