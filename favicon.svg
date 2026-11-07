@@ -1,13 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="15" fill="#12325e"/>
-  <circle cx="32" cy="32" r="22" fill="#d4ff3a"/>
-  <g fill="#12325e">
-    <circle cx="24" cy="20" r="2.5"/>
-    <circle cx="38" cy="20" r="2.5"/>
-    <circle cx="18" cy="31" r="2.5"/>
-    <circle cx="32" cy="31" r="2.5"/>
-    <circle cx="46" cy="31" r="2.5"/>
-    <circle cx="24" cy="43" r="2.5"/>
-    <circle cx="38" cy="43" r="2.5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Pickle and Mix">
+  <rect width="512" height="512" rx="112" fill="#12325e"/>
+  <g transform="translate(24 0) scale(.72)">
+    <text x="0" y="279" fill="#ffffff" font-family="Arial Black, Impact, sans-serif" font-size="92" font-weight="900" letter-spacing="-5">PICKLE</text>
+    <g transform="rotate(2.9 500 235)">
+      <rect x="374" y="179" width="248" height="116" rx="24" fill="#d4ff3a"/>
+      <text x="498" y="267" fill="#12325e" text-anchor="middle" font-family="Arial Black, Impact, sans-serif" font-size="92" font-weight="900" letter-spacing="-5">&amp;MIX</text>
+    </g>
   </g>
 </svg>
