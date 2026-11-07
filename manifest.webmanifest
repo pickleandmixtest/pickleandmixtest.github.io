@@ -8,14 +8,14 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#eef3f8",
+  "background_color": "#12325e",
   "theme_color": "#12325e",
   "icons": [
     {
-      "src": "./favicon.svg?v=2",
+      "src": "./favicon.svg?v=3",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }
