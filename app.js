@@ -32,7 +32,7 @@ const initialSettingsTab=initialRoute.startsWith('ajustes/')?(SETTINGS_ROUTE_TO_
 const initialClubId=initialRoute.startsWith('clubes/')?decodeURIComponent(initialRoute.slice(7)):null;
 const profileRouteId=initialRoute.startsWith('jugadores/')?decodeURIComponent(initialRoute.slice(10)):null;
 let initialProfileId=profileRouteId;try{if(!initialProfileId)initialProfileId=sessionStorage.getItem('pickleMix.publicProfileRoute')}catch(e){}
-let view=initialClubId?'club-detail':initialProfileId?'user-profile':(ROUTE_TO_VIEW[initialRoute]||(S.started?'game':'home')),tmp=null,msg='',err='',nerr='',ed=null,ct=1,SC={};
+let view=initialClubId?'club-detail':initialProfileId?'user-profile':(initialSettingsTab!=='main'?'settings':(ROUTE_TO_VIEW[initialRoute]||(S.started?'game':'home'))),tmp=null,msg='',err='',nerr='',ed=null,ct=1,SC={};
 const nameErrBox=()=>nerr?`<div class="err">${esc(nerr)}</div>`:'';
 
 /* ---------- Algoritmo de rotación ---------- */
