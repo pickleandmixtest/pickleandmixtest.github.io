@@ -27,6 +27,8 @@ const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
 const ROUTE_TO_VIEW={inicio:'home',preparar:'setup',partido:'game',jugadores:'more',resumen:'final',perfil:'profile',ajustes:'settings',amigos:'friends',historial:'history',quedadas:'sessions',clubes:'clubs',actividad:'activity',admin:'admin'};
 const VIEW_TO_ROUTE={home:'inicio',setup:'preparar',game:'partido',more:'jugadores',final:'resumen',profile:'perfil',settings:'ajustes',friends:'amigos',history:'historial',sessions:'quedadas','session-detail':'quedadas','user-profile':'amigos',clubs:'clubes','club-detail':'clubes',activity:'actividad',admin:'admin'};
 const initialRoute=location.hash.replace(/^#\/?/,'').toLowerCase();
+const SETTINGS_ROUTE_TO_TAB={privacidad:'privacy',notificaciones:'notifications',cuenta:'account',ayuda:'help',acerca:'about'};
+const initialSettingsTab=initialRoute.startsWith('ajustes/')?(SETTINGS_ROUTE_TO_TAB[initialRoute.split('/')[1]]||'main'):'main';
 const initialClubId=initialRoute.startsWith('clubes/')?decodeURIComponent(initialRoute.slice(7)):null;
 const profileRouteId=initialRoute.startsWith('jugadores/')?decodeURIComponent(initialRoute.slice(10)):null;
 let initialProfileId=profileRouteId;try{if(!initialProfileId)initialProfileId=sessionStorage.getItem('pickleMix.publicProfileRoute')}catch(e){}
@@ -207,7 +209,8 @@ let routeInitialized=false;
 function render(){
   if(view==='user-profile'&&PUB.id){try{sessionStorage.setItem('pickleMix.publicProfileRoute',PUB.id)}catch(e){}}
   else{try{sessionStorage.removeItem('pickleMix.publicProfileRoute')}catch(e){}}
-  const route=view==='club-detail'&&CL.selectedId?'#clubes/'+encodeURIComponent(CL.selectedId):view==='user-profile'&&PUB.id?'#jugadores/'+encodeURIComponent(PUB.id):'#'+(VIEW_TO_ROUTE[view]||'inicio');
+  const SETTINGS_TAB_TO_ROUTE={privacy:'privacidad',notifications:'notificaciones',account:'cuenta',help:'ayuda',about:'acerca'};
+  const route=view==='club-detail'&&CL.selectedId?'#clubes/'+encodeURIComponent(CL.selectedId):view==='user-profile'&&PUB.id?'#jugadores/'+encodeURIComponent(PUB.id):view==='settings'&&SETTINGS_TAB!=='main'?'#ajustes/'+(SETTINGS_TAB_TO_ROUTE[SETTINGS_TAB]||'privacidad'):'#'+(VIEW_TO_ROUTE[view]||'inicio');
   if(location.hash!==route){
     const url=location.pathname+location.search+route;
     if(!routeInitialized){history.replaceState(null,'',url);routeInitialized=true}
@@ -934,7 +937,7 @@ async function loadMyHistory(){
 }
 function vAuthLanding(){return '<div id="authbox" class="auth-landing">'+authInner()+'</div>'}
 function vProfile(){return vAuthLanding()}
-let SETTINGS_TAB='main';
+let SETTINGS_TAB=initialSettingsTab;
 const NOTIF_DEFAULTS={in_app_enabled:true,friend_requests_enabled:true,club_posts_enabled:true,club_events_enabled:true,achievements_enabled:true};
 let NOTIF_PREFS={...NOTIF_DEFAULTS,loaded:false,loading:false,saving:false};
 async function loadNotificationPreferences(){
@@ -1693,8 +1696,9 @@ if(typeof window!=='undefined'&&typeof document!=='undefined'){
   document.addEventListener('error',e=>{const t=e.target;if(t&&t.tagName==='IMG'&&t.classList.contains('av')){const s=document.createElement('span');s.className='av';s.setAttribute('aria-hidden','true');s.textContent=t.dataset.i||'?';t.replaceWith(s)}},true);
 }
 function syncRouteFromLocation(){
-  const route=location.hash.replace(/^#\/?/,'').toLowerCase(),clubId=route.startsWith('clubes/')?decodeURIComponent(route.slice(7)):null,profileId=route.startsWith('jugadores/')?decodeURIComponent(route.slice(10)):null,next=clubId?'club-detail':profileId?'user-profile':ROUTE_TO_VIEW[route];
-  if(next&&(next!==view||(next==='club-detail'&&clubId!==CL.selectedId)||(next==='user-profile'&&profileId!==PUB.id))){
+  const route=location.hash.replace(/^#\/?/,'').toLowerCase(),clubId=route.startsWith('clubes/')?decodeURIComponent(route.slice(7)):null,profileId=route.startsWith('jugadores/')?decodeURIComponent(route.slice(10)):null,settingsRoute=route.startsWith('ajustes/')?route.split('/')[1]:null,next=clubId?'club-detail':profileId?'user-profile':settingsRoute?'settings':ROUTE_TO_VIEW[route];
+  if(next&&(next!==view||(next==='club-detail'&&clubId!==CL.selectedId)||(next==='user-profile'&&profileId!==PUB.id)||(next==='settings'&&SETTINGS_TAB!==(SETTINGS_ROUTE_TO_TAB[settingsRoute]||'main')))){
+    if(next==='settings')SETTINGS_TAB=SETTINGS_ROUTE_TO_TAB[settingsRoute]||'main';
     view=next;ed=null;CL.selectedId=clubId||null;if(next==='user-profile')PUB.id=profileId;routeInitialized=true;render();
     if((next==='clubs'||next==='club-detail')&&AU.user){if(!CL.items.length)loadClubs();else if(clubId)loadClubData(clubId)}
     if(next==='user-profile'&&profileId&&AU.user)openUserProfile(profileId);
