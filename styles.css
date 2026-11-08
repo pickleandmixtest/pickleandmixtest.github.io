@@ -2046,3 +2046,9 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
     box-shadow:0 8px 24px rgba(5,20,42,.18)!important;
   }
 }
+
+/* Selector de idioma disponible también en modo invitado */
+.guest-language-card{margin:14px 0;padding:16px}
+.guest-language-card label{display:block;margin-bottom:8px;font-weight:750}
+.guest-language-card select{width:100%;min-height:44px;border:1px solid var(--line,#dce3eb);border-radius:10px;padding:10px 12px;background:var(--surface,#fff);color:inherit;font:inherit}
+.guest-language-card small{display:block;margin-top:7px;color:var(--muted,#687386)}
