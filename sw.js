@@ -1,5 +1,5 @@
 /* Pickle&Mix TEST · app-shell cache. Supabase data always remains network-only. */
-const CACHE_NAME = 'pickle-mix-shell-v43';
+const CACHE_NAME = 'pickle-mix-shell-v44';
 const APP_SHELL = [
   './',
   './index.html',
@@ -13,8 +13,6 @@ const APP_SHELL = [
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
-    // Install only when the complete shell is available; an incomplete update
-    // must not replace a previously working offline cache.
     await cache.addAll(APP_SHELL);
     await self.skipWaiting();
   })());
@@ -32,7 +30,6 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const request = event.request;
   if (request.method !== 'GET') return;
-
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
