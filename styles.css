@@ -2052,3 +2052,28 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .guest-language-card label{display:block;margin-bottom:8px;font-weight:750}
 .guest-language-card select{width:100%;min-height:44px;border:1px solid var(--line,#dce3eb);border-radius:10px;padding:10px 12px;background:var(--surface,#fff);color:inherit;font:inherit}
 .guest-language-card small{display:block;margin-top:7px;color:var(--muted,#687386)}
+
+/* Centro de ayuda y bandeja de soporte */
+.support-contact-form{display:flex;flex-direction:column;gap:10px}
+.support-contact-form label{font-size:13px;font-weight:750;margin-top:5px}
+.support-contact-form input,.support-contact-form select,.support-contact-form textarea{width:100%;box-sizing:border-box;border:1px solid var(--line,#dce3eb);border-radius:11px;padding:12px;background:var(--surface,#fff);color:inherit;font:inherit;font-size:14px}
+.support-contact-form textarea{resize:vertical;min-height:125px;line-height:1.5}
+.support-contact-form small{font-size:12px;color:var(--muted,#687386);line-height:1.45}
+.support-contact-form button{width:100%;margin-top:5px}
+.support-email-card{margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.support-email-card p{margin:4px 0 0;color:var(--muted,#687386);font-size:13px}
+.support-email-card a{overflow-wrap:anywhere}
+.support-admin-message{border:1px solid var(--line,#e2e8f0);border-radius:14px;padding:15px;margin:12px 0;background:var(--surface,#fff)}
+.support-admin-top,.support-admin-top>div,.support-admin-meta,.support-admin-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.support-admin-top{justify-content:space-between;color:var(--muted,#687386);font-size:11px}
+.support-admin-message h4{margin:12px 0 7px;font-size:16px}
+.support-admin-body{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55;font-size:13px}
+.support-admin-meta{margin-top:12px;padding-top:10px;border-top:1px solid var(--line,#e8edf2);font-size:12px;color:var(--muted,#687386)}
+.support-admin-meta a{color:var(--accent,#49621a);font-weight:700;overflow-wrap:anywhere}
+.support-admin-status{font-size:10px;font-weight:800;padding:4px 7px;border-radius:20px;background:#eef2f6;color:#596779}
+.support-admin-status.status-reviewing{background:#fff3d8;color:#946300}
+.support-admin-status.status-resolved{background:#e5f5ec;color:#267347}
+.support-admin-actions{margin-top:12px}
+.support-admin-actions button{font-size:11px!important;padding:7px 10px!important}
+.support-admin-actions button:disabled{opacity:.45;cursor:default}
+@media(max-width:520px){.support-email-card{align-items:stretch}.support-email-card a{width:100%;text-align:center;box-sizing:border-box}.support-admin-actions button{flex:1}}
