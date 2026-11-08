@@ -2130,3 +2130,11 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .profile-club-tabs small{font-size:11px}
 .profile-clubs-more{width:100%;margin-top:8px}
 .profile-clubs-footnote{margin-top:7px;color:var(--mut);font-size:10px;text-align:center}
+/* Estadísticas del perfil público */
+.profile-public-stats-title{color:var(--court);margin:14px 2px 8px}
+.profile-public-stats{display:flex;flex-direction:column;gap:10px}
+.profile-point-balance{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface, #f7f9fb)}
+.profile-point-balance>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.profile-point-balance b{font-size:14px;color:var(--court)}
+.profile-point-balance small{font-size:11px;line-height:1.35;color:var(--mut)}
+.profile-point-balance strong{flex:none;font:900 25px/1 "Arial Black",Impact,sans-serif;color:var(--court)}
