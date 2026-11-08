@@ -1997,13 +1997,13 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
   scrollbar-gutter:stable;
 }
 
-/* Corrección definitiva del desplegable: anclado a la campanita */
+/* Notificaciones: panel fijo dentro de la pantalla, alineado al borde derecho */
 .notification-anchor{position:relative!important}
 .notification-popover{
-  position:absolute!important;
-  top:calc(100% + 10px)!important;
+  position:fixed!important;
+  top:calc(env(safe-area-inset-top,0px) + 104px)!important;
   left:auto!important;
-  right:0!important;
+  right:12px!important;
   width:min(340px,calc(100vw - 24px))!important;
   max-width:calc(100vw - 24px)!important;
   max-height:min(65vh,460px)!important;
@@ -2014,8 +2014,7 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
   overflow:hidden!important;
   z-index:1000!important;
 }
-.notification-popover-head,
-.notification-popover-foot{flex:0 0 auto!important}
+.notification-popover-head,.notification-popover-foot{flex:0 0 auto!important}
 .notification-popover-list{
   flex:1 1 auto!important;
   min-height:0!important;
@@ -2027,10 +2026,11 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 }
 @media(max-width:520px){
   .notification-popover{
-    top:calc(100% + 9px)!important;
-    right:-4px!important;
+    top:calc(env(safe-area-inset-top,0px) + 104px)!important;
+    right:12px!important;
     left:auto!important;
-    width:min(340px,calc(100vw - 24px))!important;
+    width:min(320px,calc(100vw - 24px))!important;
+    max-width:calc(100vw - 24px)!important;
     max-height:min(65vh,460px)!important;
   }
 }
