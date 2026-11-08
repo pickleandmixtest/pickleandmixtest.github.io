@@ -1,11 +1,11 @@
 /* Pickle&Mix TEST · app-shell cache. Supabase data always remains network-only. */
-const CACHE_NAME = 'pickle-mix-shell-v50';
+const CACHE_NAME = 'pickle-mix-shell-v51';
 const APP_SHELL = [
   './',
   './index.html',
   './styles.css?v=94',
-  './i18n.js?v=16',
-  './app.js?v=159',
+  './i18n.js?v=17',
+  './app.js?v=160',
   './manifest.webmanifest',
   './favicon.svg',
   './icons/pickle-mix-192.jpg'
@@ -66,4 +66,31 @@ self.addEventListener('fetch', event => {
       }
     })());
   }
+});
+
+self.addEventListener('push', event => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch (_) {}
+  event.waitUntil(self.registration.showNotification(data.title || 'Pickle&Mix', {
+    body: data.body || 'Tienes una novedad en Pickle&Mix.',
+    icon: './icons/pickle-mix-192.jpg',
+    badge: './icons/pickle-mix-192.jpg',
+    tag: data.tag || 'pickle-mix-notification',
+    data: { url: data.url || './' },
+    renotify: false
+  }));
+});
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const target = new URL(event.notification.data?.url || './', self.location.origin).href;
+  event.waitUntil((async () => {
+    const list = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const client of list) {
+      if (client.url.startsWith(self.location.origin) && 'focus' in client) {
+        await client.navigate(target);
+        return client.focus();
+      }
+    }
+    return self.clients.openWindow(target);
+  })());
 });
