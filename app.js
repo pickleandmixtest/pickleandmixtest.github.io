@@ -945,13 +945,13 @@ async function loadMyHistory(){
 function vAuthLanding(){return '<div id="authbox" class="auth-landing">'+authInner()+'</div>'}
 function vProfile(){return vAuthLanding()}
 let SETTINGS_TAB=initialSettingsTab;
-const NOTIF_DEFAULTS={in_app_enabled:true,friend_requests_enabled:true,club_posts_enabled:true,club_events_enabled:true,achievements_enabled:true};
+const NOTIF_DEFAULTS={in_app_enabled:true,push_enabled:false,friend_requests_enabled:true,club_posts_enabled:true,club_events_enabled:true,achievements_enabled:true};
 let NOTIF_PREFS={...NOTIF_DEFAULTS,loaded:false,loading:false,saving:false};
 async function loadNotificationPreferences(){
  if(!AU.user||!sbc){NOTIF_PREFS={...NOTIF_DEFAULTS,loaded:true,loading:false,saving:false};render();return}
  NOTIF_PREFS.loading=true;NOTIF_PREFS.loaded=false;render();
  try{
-  const {data,error}=await sbc.from('profile_notification_preferences').select('in_app_enabled,friend_requests_enabled,club_posts_enabled,club_events_enabled,achievements_enabled').eq('user_id',AU.user.id).maybeSingle();
+  const {data,error}=await sbc.from('profile_notification_preferences').select('in_app_enabled,push_enabled,friend_requests_enabled,club_posts_enabled,club_events_enabled,achievements_enabled').eq('user_id',AU.user.id).maybeSingle();
   if(error)throw error;
   NOTIF_PREFS={...NOTIF_DEFAULTS,...(data||{}),loaded:true,loading:false,saving:false};
  }catch(error){
@@ -965,7 +965,7 @@ async function saveNotificationPreference(key,value){
  if(!AU.user||!sbc||!Object.prototype.hasOwnProperty.call(NOTIF_DEFAULTS,key))return;
  const previous=NOTIF_PREFS[key];NOTIF_PREFS[key]=!!value;NOTIF_PREFS.saving=true;render();
  try{
-  const payload={user_id:AU.user.id,in_app_enabled:NOTIF_PREFS.in_app_enabled,friend_requests_enabled:NOTIF_PREFS.friend_requests_enabled,club_posts_enabled:NOTIF_PREFS.club_posts_enabled,club_events_enabled:NOTIF_PREFS.club_events_enabled,achievements_enabled:NOTIF_PREFS.achievements_enabled,updated_at:new Date().toISOString()};
+  const payload={user_id:AU.user.id,in_app_enabled:NOTIF_PREFS.in_app_enabled,push_enabled:NOTIF_PREFS.push_enabled,friend_requests_enabled:NOTIF_PREFS.friend_requests_enabled,club_posts_enabled:NOTIF_PREFS.club_posts_enabled,club_events_enabled:NOTIF_PREFS.club_events_enabled,achievements_enabled:NOTIF_PREFS.achievements_enabled,updated_at:new Date().toISOString()};
   const {error}=await sbc.from('profile_notification_preferences').upsert(payload,{onConflict:'user_id'});
   if(error)throw error;
   toast('Preferencias guardadas.');
@@ -978,6 +978,38 @@ async function saveNotificationPreference(key,value){
   if(view==='settings'&&SETTINGS_TAB==='notifications')render();
  }
 }
+
+const PUSH_VAPID_PUBLIC_KEY='BA0ugLtufmV4ZUsDkFf7xcdx55cwcfCumQTO4H3IY28QmXG5Dr2hSaUhR_zvT9FhlOtLgxXLBGxzu83O1L1PhLY';
+function pushBase64ToBytes(value){const pad='='.repeat((4-value.length%4)%4);const raw=atob((value+pad).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(raw,c=>c.charCodeAt(0))}
+async function setPushEnabled(enabled){
+ if(!AU.user||!sbc){toast('Inicia sesión para activar las notificaciones push.');render();return}
+ try{
+  if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))throw new Error('Este navegador no admite notificaciones push.');
+  const reg=await navigator.serviceWorker.ready;
+  let subscription=await reg.pushManager.getSubscription();
+  if(enabled){
+   let permission=Notification.permission;
+   if(permission==='default')permission=await Notification.requestPermission();
+   if(permission!=='granted')throw new Error('No se ha concedido permiso para mostrar notificaciones.');
+   if(!subscription)subscription=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:pushBase64ToBytes(PUSH_VAPID_PUBLIC_KEY)});
+   const data=subscription.toJSON(),keys=data.keys||{};
+   if(!data.endpoint||!keys.p256dh||!keys.auth)throw new Error('No se ha podido registrar este dispositivo.');
+   const {error}=await sbc.from('push_subscriptions').upsert({user_id:AU.user.id,endpoint:data.endpoint,p256dh:keys.p256dh,auth:keys.auth,user_agent:navigator.userAgent,updated_at:new Date().toISOString()},{onConflict:'endpoint'});
+   if(error)throw error;
+  }else if(subscription){
+   const endpoint=subscription.endpoint;
+   const {error}=await sbc.from('push_subscriptions').delete().eq('endpoint',endpoint);
+   if(error)throw error;
+   await subscription.unsubscribe();
+  }
+  await saveNotificationPreference('push_enabled',!!enabled);
+ }catch(error){
+  NOTIF_PREFS.push_enabled=!enabled;render();
+  toast(error&&error.message?error.message:'No se ha podido actualizar la configuración push.');
+  console.warn('[push] setup:',error&&error.message);
+ }
+}
+
 function settingsBack(){return '<div class="settings-page-head"><button type="button" class="settings-back" data-a="'+(SETTINGS_TAB==='main'?'profile':'settingsHome')+'"><span aria-hidden="true">‹</span> '+(SETTINGS_TAB==='main'?'Mi perfil':'Ajustes')+'</button><span class="settings-head-label">AJUSTES</span></div>'}
 function settingsRow(icon,title,desc,action){return '<button type="button" class="settings-row" data-a="'+action+'"><span class="settings-row-icon">'+icon+'</span><span class="settings-row-copy"><b>'+title+'</b><small>'+desc+'</small></span><span class="settings-row-arrow" aria-hidden="true">›</span></button>'}
 function vSettings(){const tab=SETTINGS_TAB;
@@ -1002,9 +1034,10 @@ function vSettings(){const tab=SETTINGS_TAB;
    pref('club_events_enabled','Eventos de clubes','Cuando se anuncie un nuevo evento en uno de tus clubes.')+
    pref('achievements_enabled','Logros y medallas','Cuando desbloquees una nueva insignia.')+
    (NOTIF_PREFS.saving?'<p class="settings-pref-saving">Guardando preferencias…</p>':'<p class="settings-pref-autosave">Los cambios se guardan automáticamente.</p>')+'</section>'+
-   '<section class="card settings-pref-card"><div class="settings-pref-section-head"><div><b>Otras formas de recibir avisos</b><small>Estas opciones todavía no están disponibles.</small></div></div>'+
-   '<div class="settings-pref-future"><span class="settings-pref-future-icon">↗</span><span><b>Notificaciones push</b><small>Avisos del dispositivo, incluso con la aplicación cerrada.</small></span><em>Próximamente</em></div>'+
-   '<div class="settings-pref-future"><span class="settings-pref-future-icon">✉</span><span><b>Correo electrónico</b><small>Recibir novedades en tu dirección de email.</small></span><em>Próximamente</em></div></section></div>';
+   '<section class="card settings-pref-card"><div class="settings-pref-section-head"><div><b>Notificaciones push</b><small>Recibe avisos del dispositivo aunque Pickle&amp;Mix esté cerrada.</small></div><span class="settings-pref-status">DISPONIBLE</span></div>'+
+   '<label class="settings-pref-master"><span><b>Activar notificaciones push</b><small>Necesitas permitir las notificaciones en este dispositivo. Puedes desactivarlas cuando quieras.</small></span><input type="checkbox" data-notification-pref="push_enabled" '+(NOTIF_PREFS.push_enabled?'checked':'')+(NOTIF_PREFS.saving?' disabled':'')+' aria-label="Activar notificaciones push"></label>'+
+   '<p class="settings-pref-autosave">Solo para cuentas registradas. En iPhone, la app debe estar añadida a la pantalla de inicio.</p></section>'+
+   '<section class="card settings-pref-card"><div class="settings-pref-section-head"><div><b>Correo electrónico</b><small>Recibir novedades en tu dirección de email.</small></div><span class="settings-pref-status">PRÓXIMAMENTE</span></div></section></div>';
  }
  if(tab==='account')return '<div class="settings-page">'+settingsBack()+'<div class="settings-intro"><span>CUENTA</span><h2>Tu cuenta</h2><p>Gestiona tus datos personales y el acceso a Pickle&amp;Mix.</p></div><section class="card settings-account-card">'+(AU.user?'<div class="me">'+auAvatar(AU.user)+'<div><b>'+esc(auName(AU.user))+'</b><small>'+esc(AU.user.email||'')+'</small></div></div><button class="btn ghost" data-a="profileSettings">Editar datos del perfil</button><button class="btn ghost settings-logout" data-a="logout">Cerrar sesión</button>':'<p>Estás utilizando Pickle&Mix sin una cuenta registrada.</p><button class="btn" data-a="profile">Iniciar sesión o crear cuenta</button>')+'</section></div>';
  if(tab==='language')return '<div class="settings-page">'+settingsBack()+'<div class="settings-intro"><span>PREFERENCIAS</span><h2>Idioma</h2><p>Selecciona el idioma en el que quieres utilizar Pickle&amp;Mix.</p></div><section class="card settings-form settings-language-card"><label for="settings-language">Idioma de la aplicación</label><select id="settings-language" data-language-select><option value="es"'+(APP_LANG==='es'?' selected':'')+'>Español</option><option value="en"'+(APP_LANG==='en'?' selected':'')+'>English</option></select><small>El cambio se aplica inmediatamente.</small></section></div>';
@@ -1478,7 +1511,7 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('input',e=>{const t=e.target;if(t.matches('[data-admin-search]')){const q=t.value.toLowerCase();document.querySelectorAll('[data-admin-row]').forEach(x=>x.hidden=!x.dataset.adminRow.toLowerCase().includes(q));return}if(t.matches('[data-club-search]')){const q=t.value.trim().toLocaleLowerCase('es');document.querySelectorAll('[data-club-search-text]').forEach(card=>{card.hidden=!card.dataset.clubSearchText.includes(q)});document.querySelectorAll('[data-club-group]').forEach(group=>{group.hidden=!!q&&!group.querySelector('[data-club-search-text]:not([hidden])')});return}if(t.matches('form[data-f="add"] input[name="n"]')){const box=t.closest('form').querySelector('#player-suggestions'),raw=t.value.trim(),isMention=raw.startsWith('@'),q=raw.replace(/^@/,'').toLocaleLowerCase('es');if(!box)return;if(!isMention){box.hidden=true;box.innerHTML='';return}const ownAlias=String((AU.profile&&AU.profile.alias)||'').toLocaleLowerCase('es'),ownName=String((AU.profile&&AU.profile.display_name)||'').toLocaleLowerCase('es'),hasSelf=AU.user&&!S.players.some(x=>x.userId===AU.user.id)&&(q==='yo'||(q&&((ownAlias&&ownAlias.includes(q))||ownName.includes(q))));const self=hasSelf?'<button type="button" class="player-suggestion" data-addself><b>@'+esc(ownAlias||'yo')+'</b><small>'+esc((AU.profile&&AU.profile.display_name)||auName(AU.user))+'</small><span>Este eres tú</span></button>':'';const found=AU.user&&q?linkedFriends().filter(p=>!S.players.some(x=>x.userId===p.id)&&((p.alias||'').toLocaleLowerCase('es').includes(q)||(p.display_name||'').toLocaleLowerCase('es').includes(q))).slice(0,6):[];box.innerHTML=self+found.map(p=>'<button type="button" class="player-suggestion" data-linkplayer="'+p.id+'"><b>@'+esc(p.alias||p.display_name)+'</b><small>'+esc(p.display_name||'')+'</small><span>Vincular</span></button>').join('');box.hidden=!box.innerHTML}});
 function updateOfficialClubFields(form){if(!form)return;const select=form.querySelector('[data-club-type]'),box=form.querySelector('[data-club-official-fields]'),city=form.querySelector('[data-club-city]'),on=!!select&&select.value==='official';if(box)box.hidden=!on;if(city)city.required=on;if(box)box.querySelectorAll('input').forEach(input=>{input.required=on&&input.name==='official_address'})}
-document.addEventListener('change',e=>{if(e.target.matches('[data-notification-pref]')){saveNotificationPreference(e.target.dataset.notificationPref,e.target.checked);return}if(e.target.matches('[data-avatar-file]'))uploadAvatar(e.target);if(e.target.matches('[data-club-image-file]')){const input=e.target,kind=input.dataset.clubImage,file=input.files&&input.files[0];input.value='';if(file)uploadClubImage(file,kind)}if(e.target.matches('[data-club-type]'))updateOfficialClubFields(e.target.form)});
+document.addEventListener('change',e=>{if(e.target.matches('[data-notification-pref]')){if(e.target.dataset.notificationPref==='push_enabled'){setPushEnabled(e.target.checked);return}saveNotificationPreference(e.target.dataset.notificationPref,e.target.checked);return}if(e.target.matches('[data-avatar-file]'))uploadAvatar(e.target);if(e.target.matches('[data-club-image-file]')){const input=e.target,kind=input.dataset.clubImage,file=input.files&&input.files[0];input.value='';if(file)uploadClubImage(file,kind)}if(e.target.matches('[data-club-type]'))updateOfficialClubFields(e.target.form)});
 document.addEventListener('submit',e=>{e.preventDefault();if(e.target.dataset.f==='admin-add'){adminAdd(e.target);return}if(e.target.dataset.f==='profile'){saveProfile(e.target);return}if(e.target.dataset.f==='privacy'){savePrivacy(e.target);return}if(e.target.dataset.f==='friend-search'){searchFriends(e.target);return}if(e.target.dataset.f==='save-session'){savePlaySession(e.target);return}if(e.target.dataset.f==='club-create'){createClub(e.target);return}if(e.target.dataset.f==='club-settings'){saveClubSettings(e.target);return}if(e.target.dataset.f==='club-invite'){inviteClubMember(e.target);return}if(e.target.dataset.f==='club-event'){createClubEvent(e.target);return}if(e.target.dataset.f==='club-post'){createClubPost(e.target);return}if(e.target.dataset.f==='club-post-edit'){updateClubPost(e.target);return}if(e.target.dataset.f==='club-comment'){createClubComment(e.target);return}const f=e.target.dataset.f,v=e.target.n&&e.target.n.value;if(!v||!v.trim())return;if(f==='add'&&v.trim().startsWith('@')){const mention=v.trim().slice(1).toLocaleLowerCase('es'),ownAlias=String((AU.profile&&AU.profile.alias)||'').toLocaleLowerCase('es');if(AU.user&&(mention==='yo'||(ownAlias&&mention===ownAlias))){addSelfPlayer();return}toast('Selecciona una sugerencia para vincular a tu amigo.');return}
   const r=addNames(v);if(r.added&&f==='addlive')replan('Jugador añadido.');
   if(r.dups.length)nerr=dupMsg(r.dups,r.added);
