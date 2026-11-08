@@ -7,14 +7,15 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "any",
   "background_color": "#12325e",
   "theme_color": "#12325e",
   "icons": [
     {
-      "src": "https://woolozllrvabjrflmqec.supabase.co/storage/v1/object/public/club-assets/8deab5b6-1012-404b-8985-84741b939204/avatar.png?v=1793918097145",
+      "src": "./favicon.svg",
       "sizes": "any",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any"
     }
   ]
