@@ -1976,3 +1976,23 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
   opacity:.45;
   cursor:not-allowed;
 }
+
+/* Notificaciones: lista con scroll propio y cabecera/pie siempre visibles */
+.notification-popover{
+  display:flex!important;
+  flex-direction:column!important;
+  min-height:0!important;
+}
+.notification-popover-head,
+.notification-popover-foot{
+  flex:0 0 auto!important;
+}
+.notification-popover-list{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-gutter:stable;
+}
