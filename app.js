@@ -1416,8 +1416,8 @@ document.addEventListener('click',e=>{
   if(d.a==='profile'){view='profile';AU.profileSettingsOpen=false;render();if(AU.user){loadMyHistory();loadFriends()}return}
   if(d.a==='clubs'){view='clubs';CL.error='';CL.selectedId=null;CL.directoryGroup=null;render();loadClubs();return}
   if(t.hasAttribute('data-club-section')){CL.section=d.clubSection==='explore'?'explore':'mine';CL.directoryGroup=null;paintClubs();return}
-  if(t.hasAttribute('data-club-directory')){CL.directoryGroup=['official','friends','managed','member'].includes(d.clubDirectory)?d.clubDirectory:'friends';CL.section=['managed','member'].includes(CL.directoryGroup)?'mine':'explore';paintClubs();return}
-  if(t.hasAttribute('data-club-directory-back')){CL.directoryGroup=null;paintClubs();return}
+  if(t.hasAttribute('data-club-directory')){CL.directoryGroup=['official','friends','managed','member'].includes(d.clubDirectory)?d.clubDirectory:'friends';CL.section=['managed','member'].includes(CL.directoryGroup)?'mine':'explore';paintClubs();requestAnimationFrame(()=>window.scrollTo(0,0));return}
+  if(t.hasAttribute('data-club-directory-back')){CL.directoryGroup=null;paintClubs();requestAnimationFrame(()=>window.scrollTo(0,0));return}
   if(t.hasAttribute('data-club-tab')){CL.tab=['info','events','posts','members','manage'].includes(d.clubTab)?d.clubTab:'info';CL.openPostId=null;CL.openEventId=null;paintClubs();return}
   if(d.clubPostOpen){if(e.target.closest('button,a,input,textarea,select,form,label')&&!t.matches('[data-club-post-open]'))return;CL.openPostId=d.clubPostOpen;CL.openEventId=null;paintClubs();return}
    if(t.hasAttribute('data-club-post-close')){if(e.target===t||t.classList.contains('club-post-modal-close')){CL.openPostId=null;CL.editingPostId=null;paintClubs()}return}
