@@ -719,28 +719,13 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 /* Campanita y desplegable de notificaciones en la cabecera */
 .who{position:relative}
 .header-account-actions{display:flex;align-items:center;gap:8px;min-width:0}
-.notification-anchor{position:relative;display:flex;align-items:center}
+.notification-anchor{position:relative;display:flex;align-items:center;flex:0 0 auto}
 .notification-bell{position:relative;display:grid;place-items:center;width:36px;height:36px;padding:0;border:1px solid rgba(255,255,255,.24);border-radius:50%;background:rgba(255,255,255,.1);color:#fff;cursor:pointer}
 .notification-bell:hover,.notification-bell[aria-expanded="true"]{background:rgba(255,255,255,.2)}
 .notification-bell svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .notification-bell-count{position:absolute;top:-4px;right:-5px;display:grid;place-items:center;min-width:17px;height:17px;padding:0 4px;border:2px solid var(--court);border-radius:20px;background:var(--ball);color:var(--ink);font-size:9px;font-weight:900;line-height:1}
-.notification-popover{position:absolute;top:calc(100% + 12px);right:-54px;width:min(330px,calc(100vw - 28px));max-height:min(65vh,460px);display:flex;flex-direction:column;overflow:hidden;border:1px solid #dce5ef;border-radius:16px;background:#fff;color:#173454;box-shadow:0 12px 36px rgba(5,20,42,.25);z-index:30;text-align:left}
-.notification-popover-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 15px;border-bottom:1px solid #edf1f5}
-.notification-popover-head>div{display:flex;flex-direction:column;gap:3px}
-.notification-popover-head b{font-size:14px;color:#12325e}
-.notification-popover-head small{font-size:10px;color:#7a8796}
-.notification-popover-head>button{width:28px;height:28px;border:0;border-radius:50%;background:#f0f3f7;color:#536579;font-size:20px;cursor:pointer}
-.notification-popover-list{overflow-y:auto;padding:0 14px}
-.notification-popover-list .notification-item{padding:11px 0}
-.notification-popover-list .notification-item b{font-size:12px}
-.notification-popover-list .notification-item p{font-size:11px}
-.notification-popover-list .notification-item small{font-size:10px}
-.notification-empty{margin:0;padding:20px 4px;color:#748294;font-size:12px;line-height:1.5;text-align:center}
-.notification-popover-foot{padding:9px 14px;border-top:1px solid #edf1f5;background:#fbfcfe}
-.notification-popover-foot button{padding:6px 0;border:0;background:transparent;color:#49621a;font-size:11px;font-weight:800;cursor:pointer}
-@media(max-width:520px){.header-account-actions{gap:6px}.notification-bell{width:32px;height:32px}.notification-bell svg{width:18px;height:18px}.notification-popover{right:-48px;width:min(320px,calc(100vw - 24px));max-height:62vh}}
-
-
+@media(max-width:520px){.header-account-actions{gap:6px}.notification-bell{width:32px;height:32px}.notification-bell svg{width:18px;height:18px}}
+ 
 /* Navegación secundaria de Partido: centrada y más reconocible */
 .party-subnav{
   box-sizing:border-box;
@@ -830,38 +815,6 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
   .party-subnav{gap:7px;margin-top:8px}
   .party-subnav button{min-height:46px;padding:9px 5px;font-size:12px}
 }
-
-/* El panel de notificaciones se despliega a casi todo el ancho visible */
-.notification-popover{
-  position:fixed!important;
-  top:calc(env(safe-area-inset-top,0px) + 76px)!important;
-  left:12px!important;
-  right:12px!important;
-  width:auto!important;
-  max-width:none!important;
-  max-height:calc(100dvh - env(safe-area-inset-top,0px) - 92px)!important;
-  border-radius:18px;
-  z-index:100!important;
-  box-shadow:0 18px 48px rgba(5,20,42,.34);
-}
-.notification-popover-head{padding:15px 18px}
-.notification-popover-head b{font-size:16px}
-.notification-popover-head small{font-size:11px}
-.notification-popover-list{padding:0 18px}
-.notification-popover-list .notification-item{padding:14px 0}
-.notification-popover-list .notification-item b{font-size:13px}
-.notification-popover-list .notification-item p{font-size:12px;line-height:1.45}
-.notification-popover-list .notification-item small{font-size:10px}
-.notification-popover-foot{padding:11px 18px}
-@media(max-width:520px){
-  .notification-popover{
-    top:calc(env(safe-area-inset-top,0px) + 68px)!important;
-    left:8px!important;
-    right:8px!important;
-    max-height:calc(100dvh - env(safe-area-inset-top,0px) - 82px)!important;
-  }
-}
-
 
 /* La navegación secundaria debe ocupar toda la caja interior de la cabecera */
 .top > .party-subnav{
@@ -1977,82 +1930,19 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
   cursor:not-allowed;
 }
 
-/* Notificaciones: lista con scroll propio y cabecera/pie siempre visibles */
-.notification-popover{
-  display:flex!important;
-  flex-direction:column!important;
-  min-height:0!important;
-}
-.notification-popover-head,
-.notification-popover-foot{
-  flex:0 0 auto!important;
-}
-.notification-popover-list{
-  flex:1 1 auto!important;
-  min-height:0!important;
-  overflow-x:hidden!important;
-  overflow-y:auto!important;
-  overscroll-behavior:contain;
-  -webkit-overflow-scrolling:touch;
-  scrollbar-gutter:stable;
-}
-
-/* Notificaciones: panel fijo dentro de la pantalla, alineado al borde derecho */
-.notification-anchor{position:relative!important}
+/* Desplegable de notificaciones: compacto y siempre dentro de la pantalla */
 .notification-popover{
   position:fixed!important;
-  top:calc(env(safe-area-inset-top,0px) + 104px)!important;
-  left:auto!important;
+  top:calc(env(safe-area-inset-top,0px) + 76px)!important;
   right:12px!important;
-  width:min(340px,calc(100vw - 24px))!important;
-  max-width:calc(100vw - 24px)!important;
-  max-height:min(65vh,460px)!important;
-  height:auto!important;
-  min-height:0!important;
-  display:flex!important;
-  flex-direction:column!important;
-  overflow:hidden!important;
-  z-index:1000!important;
-}
-.notification-popover-head,.notification-popover-foot{flex:0 0 auto!important}
-.notification-popover-list{
-  flex:1 1 auto!important;
-  min-height:0!important;
-  max-height:none!important;
-  overflow-x:hidden!important;
-  overflow-y:auto!important;
-  overscroll-behavior:contain;
-  -webkit-overflow-scrolling:touch;
-}
-@media(max-width:520px){
-  .notification-popover{
-    top:calc(env(safe-area-inset-top,0px) + 104px)!important;
-    right:12px!important;
-    left:auto!important;
-    width:min(320px,calc(100vw - 24px))!important;
-    max-width:calc(100vw - 24px)!important;
-    max-height:min(65vh,460px)!important;
-  }
-}
-
-
-/* === Notificaciones: estilos unificados y definitivos === */
-.notification-anchor{
-  position:relative!important;
-  display:flex!important;
-  align-items:center!important;
-  flex:0 0 auto!important;
-}
-.notification-popover{
-  position:absolute!important;
-  inset:auto 0 auto auto!important;
-  top:calc(100% + 9px)!important;
+  left:auto!important;
   box-sizing:border-box!important;
-  width:min(340px,calc(100vw - 24px))!important;
+  width:min(320px,calc(100vw - 24px))!important;
   min-width:0!important;
   max-width:calc(100vw - 24px)!important;
   height:auto!important;
-  max-height:min(62vh,440px)!important;
+  max-height:min(60vh,420px)!important;
+  min-height:0!important;
   margin:0!important;
   padding:0!important;
   display:flex!important;
@@ -2078,6 +1968,7 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
   background:#fff!important;
   border-bottom:1px solid #edf1f5!important;
 }
+.notification-popover-head>div{display:flex;flex-direction:column;gap:3px;min-width:0}
 .notification-popover-head b{font-size:14px!important;line-height:1.25!important;color:#12325e!important}
 .notification-popover-head small{font-size:10px!important;line-height:1.3!important;color:#7a8796!important}
 .notification-popover-head>button{
@@ -2086,7 +1977,7 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
   display:grid!important;place-items:center!important;
   border:0!important;border-radius:50%!important;
   background:#f0f3f7!important;color:#536579!important;
-  font-size:20px!important;line-height:1!important;
+  font-size:20px!important;line-height:1!important;cursor:pointer;
 }
 .notification-popover-list{
   box-sizing:border-box!important;
@@ -2108,19 +1999,21 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
   gap:9px!important;
   padding:12px 2px!important;
   margin:0!important;
+  border:0!important;
   border-bottom:1px solid #edf1f5!important;
   border-radius:0!important;
   background:transparent!important;
+  color:#173454!important;
   text-align:left!important;
 }
 .notification-popover-list .notification-item:last-child{border-bottom:0!important}
-.notification-popover-list .notification-item>div{flex:1 1 auto!important;min-width:0!important;gap:4px!important}
+.notification-popover-list .notification-item>div{flex:1 1 auto!important;min-width:0!important;display:flex;flex-direction:column;gap:4px!important}
 .notification-popover-list .notification-symbol{flex:0 0 29px!important;width:29px!important;height:29px!important}
 .notification-popover-list .notification-item b{font-size:12px!important;line-height:1.35!important;overflow-wrap:anywhere!important}
-.notification-popover-list .notification-item p{font-size:11px!important;line-height:1.45!important;overflow-wrap:anywhere!important}
+.notification-popover-list .notification-item p{margin:0!important;font-size:11px!important;line-height:1.45!important;overflow-wrap:anywhere!important}
 .notification-popover-list .notification-item small{font-size:10px!important}
 .notification-popover-list .notification-open-arrow{flex:0 0 auto!important}
-.notification-empty{padding:22px 8px!important;font-size:12px!important;line-height:1.5!important}
+.notification-empty{margin:0!important;padding:22px 8px!important;color:#748294!important;font-size:12px!important;line-height:1.5!important;text-align:center!important}
 .notification-popover-foot{
   box-sizing:border-box!important;
   flex:0 0 auto!important;
@@ -2128,13 +2021,4 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
   border-top:1px solid #edf1f5!important;
   background:#fbfcfe!important;
 }
-.notification-popover-foot button{font-size:11px!important}
-@media(max-width:520px){
-  .notification-popover{
-    top:calc(100% + 8px)!important;
-    right:0!important;
-    width:min(320px,calc(100vw - 24px))!important;
-    max-width:calc(100vw - 24px)!important;
-    max-height:min(60vh,420px)!important;
-  }
-}
+.notification-popover-foot button{padding:6px 0;border:0;background:transparent;color:#49621a;font-size:11px!important;font-weight:800;cursor:pointer}
