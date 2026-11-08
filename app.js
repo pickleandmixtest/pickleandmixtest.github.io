@@ -287,10 +287,10 @@ function achievementCatalog(summary,publicMode){
 }
 function notificationsPanel(){
   const items=ACH.notifications||[],unread=items.filter(n=>!n.read_at).length;
-  return '<section class="notification-popover" role="dialog" aria-label="Notificaciones"><header class="notification-popover-head"><div><b>Notificaciones</b><small>'+(unread?unread+' sin leer':'Estás al día')+'</small></div><button type="button" data-a="notificationsToggle" aria-label="Cerrar notificaciones">×</button></header><div class="notification-popover-list">'+(items.length?items.map(n=>{const clubNotice=n.notification_type==='club_post_created'||n.notification_type==='club_event_created',friendNotice=n.notification_type==='friend_request_received',actionable=clubNotice||friendNotice,symbol=n.notification_type==='achievement_unlocked'?'✦':n.notification_type==='club_post_created'?'▤':n.notification_type==='club_event_created'?'◷':friendNotice?'♧':'•',inner='<span class="notification-symbol">'+symbol+'</span><div><b>'+esc(n.title)+'</b><p>'+esc(n.body)+'</p><small>'+new Date(n.created_at).toLocaleDateString(APP_LANG==='en'?'en-US':'es-ES',{day:'numeric',month:'short',year:'numeric'})+'</small></div>';return actionable?'<button type="button" class="notification-item notification-link '+(n.read_at?'is-read':'is-unread')+'" data-notification-open="'+n.notification_type+'" data-id="'+esc(n.reference_id)+'">'+inner+'<span class="notification-open-arrow">›</span></button>':'<article class="notification-item '+(n.read_at?'is-read':'is-unread')+'">'+inner+'</article>'}).join(''):'<p class="notification-empty">Todavía no tienes notificaciones. Cuando haya novedades, aparecerán aquí.</p>')+'</div>'+(unread?'<footer class="notification-popover-foot"><button type="button" data-a="notificationsReadAll">Marcar todas como leídas</button></footer>':'')+'</section>';
+  return '<section class="notification-popover" role="dialog" aria-label="Notificaciones"><header class="notification-popover-head"><div><b>Notificaciones</b><small>'+(unread?unread+' sin leer':'Estás al día')+'</small></div><button type="button" data-a="notificationsToggle" aria-label="Cerrar notificaciones">×</button></header><div class="notification-popover-list">'+(items.length?items.map(n=>{const clubNotice=n.notification_type==='club_post_created'||n.notification_type==='club_event_created',friendNotice=n.notification_type==='friend_request_received',supportNotice=n.notification_type==='support_reply_received',actionable=clubNotice||friendNotice||supportNotice,symbol=supportNotice?'✉':n.notification_type==='achievement_unlocked'?'✦':n.notification_type==='club_post_created'?'▤':n.notification_type==='club_event_created'?'◷':friendNotice?'♧':'•',inner='<span class="notification-symbol">'+symbol+'</span><div><b>'+esc(n.title)+'</b><p>'+esc(n.body)+'</p><small>'+new Date(n.created_at).toLocaleDateString(APP_LANG==='en'?'en-US':'es-ES',{day:'numeric',month:'short',year:'numeric'})+'</small></div>';return actionable?'<button type="button" class="notification-item notification-link '+(n.read_at?'is-read':'is-unread')+'" data-notification-open="'+n.notification_type+'" data-id="'+esc(n.reference_id)+'">'+inner+'<span class="notification-open-arrow">›</span></button>':'<article class="notification-item '+(n.read_at?'is-read':'is-unread')+'">'+inner+'</article>'}).join(''):'<p class="notification-empty">Todavía no tienes notificaciones. Cuando haya novedades, aparecerán aquí.</p>')+'</div>'+(unread?'<footer class="notification-popover-foot"><button type="button" data-a="notificationsReadAll">Marcar todas como leídas</button></footer>':'')+'</section>';
 }
 let profileNotificationChannel=null;
-function watchProfileNotifications(userId){if(profileNotificationChannel){sbc.removeChannel(profileNotificationChannel);profileNotificationChannel=null}if(!sbc||!userId)return;profileNotificationChannel=sbc.channel('profile-notifications-'+userId).on('postgres_changes',{event:'INSERT',schema:'public',table:'profile_notifications',filter:'user_id=eq.'+userId},payload=>{const n=payload&&payload.new;if(!n)return;ACH.notifications=[n,...(ACH.notifications||[]).filter(x=>x.id!==n.id)].slice(0,20);paintAuth();if(n.notification_type==='club_post_created'||n.notification_type==='club_event_created'||n.notification_type==='friend_request_received')toast(n.title)}).subscribe()}
+function watchProfileNotifications(userId){if(profileNotificationChannel){sbc.removeChannel(profileNotificationChannel);profileNotificationChannel=null}if(!sbc||!userId)return;profileNotificationChannel=sbc.channel('profile-notifications-'+userId).on('postgres_changes',{event:'INSERT',schema:'public',table:'profile_notifications',filter:'user_id=eq.'+userId},payload=>{const n=payload&&payload.new;if(!n)return;ACH.notifications=[n,...(ACH.notifications||[]).filter(x=>x.id!==n.id)].slice(0,20);paintAuth();if(n.notification_type==='club_post_created'||n.notification_type==='club_event_created'||n.notification_type==='friend_request_received'||n.notification_type==='support_reply_received')toast(n.title)}).subscribe()}
 async function openFriendRequestNotification(id){
   if(!sbc||!AU.user)return;
   try{
@@ -300,6 +300,17 @@ async function openFriendRequestNotification(id){
   }catch(error){console.warn('[notifications] open friend request:',error&&error.message);view='friends';await loadFriends()}
 }
 async function openClubNotification(type,id){if(!sbc||!AU.user||!id)return;const table=type==='club_post_created'?'club_posts':type==='club_event_created'?'club_events':null;if(!table)return;try{const {data,error}=await sbc.from(table).select('club_id').eq('id',id).maybeSingle();if(error)throw error;if(!data){toast('Esta novedad ya no está disponible.');return}await sbc.from('profile_notifications').update({read_at:new Date().toISOString()}).eq('user_id',AU.user.id).eq('notification_type',type).eq('reference_id',id).is('read_at',null);ACH.notifications=(ACH.notifications||[]).map(n=>n.notification_type===type&&n.reference_id===id?{...n,read_at:n.read_at||new Date().toISOString()}:n);ACH.notificationsOpen=false;CL.selectedId=data.club_id;CL.tab='info';CL.openPostId=null;CL.openEventId=null;view='club-detail';render();await loadClubs()}catch(e){console.warn('[notifications] open club item:',e&&e.message);toast('No se ha podido abrir esta novedad.')}}
+async function openSupportReplyNotification(id,fromPush=false){
+ if(!sbc||!AU.user||!id||!/^[0-9a-f-]{36}$/i.test(id))return;
+ ACH.notificationsOpen=false;SETTINGS_TAB='help';view='settings';SUPPORT.selected=id;SUPPORT.loaded=false;SUPPORT.replies=[];render();
+ try{
+  const {error}=await sbc.from('profile_notifications').update({read_at:new Date().toISOString()}).eq('user_id',AU.user.id).eq('notification_type','support_reply_received').eq('reference_id',id).is('read_at',null);
+  if(error)throw error;
+  ACH.notifications=(ACH.notifications||[]).map(n=>n.notification_type==='support_reply_received'&&n.reference_id===id?{...n,read_at:n.read_at||new Date().toISOString()}:n);
+  if(fromPush){const params=new URLSearchParams(location.search);params.delete('support_ticket');history.replaceState(history.state,'',location.pathname+(params.toString()?'?'+params.toString():'')+location.hash)}
+  await loadMySupport();
+ }catch(error){console.warn('[notifications] open support reply:',error&&error.message);toast('No se ha podido abrir esta consulta.');}
+}
 async function markNotificationsRead(){
   if(!sbc||!AU.user)return;
   const {error}=await sbc.from('profile_notifications').update({read_at:new Date().toISOString()}).eq('user_id',AU.user.id).is('read_at',null);
@@ -946,13 +957,13 @@ async function loadMyHistory(){
 function vAuthLanding(){return '<div id="authbox" class="auth-landing">'+authInner()+'</div>'}
 function vProfile(){return vAuthLanding()}
 let SETTINGS_TAB=initialSettingsTab;
-const NOTIF_DEFAULTS={in_app_enabled:true,push_enabled:false,friend_requests_enabled:true,club_posts_enabled:true,club_events_enabled:true,achievements_enabled:true};
+const NOTIF_DEFAULTS={in_app_enabled:true,push_enabled:false,friend_requests_enabled:true,club_posts_enabled:true,club_events_enabled:true,achievements_enabled:true,support_replies_enabled:true};
 let NOTIF_PREFS={...NOTIF_DEFAULTS,loaded:false,loading:false,saving:false};
 async function loadNotificationPreferences(){
  if(!AU.user||!sbc){NOTIF_PREFS={...NOTIF_DEFAULTS,loaded:true,loading:false,saving:false};render();return}
  NOTIF_PREFS.loading=true;NOTIF_PREFS.loaded=false;render();
  try{
-  const {data,error}=await sbc.from('profile_notification_preferences').select('in_app_enabled,push_enabled,friend_requests_enabled,club_posts_enabled,club_events_enabled,achievements_enabled').eq('user_id',AU.user.id).maybeSingle();
+  const {data,error}=await sbc.from('profile_notification_preferences').select('in_app_enabled,push_enabled,friend_requests_enabled,club_posts_enabled,club_events_enabled,achievements_enabled,support_replies_enabled').eq('user_id',AU.user.id).maybeSingle();
   if(error)throw error;
   NOTIF_PREFS={...NOTIF_DEFAULTS,...(data||{}),loaded:true,loading:false,saving:false};
  }catch(error){
@@ -966,7 +977,7 @@ async function saveNotificationPreference(key,value){
  if(!AU.user||!sbc||!Object.prototype.hasOwnProperty.call(NOTIF_DEFAULTS,key))return;
  const previous=NOTIF_PREFS[key];NOTIF_PREFS[key]=!!value;NOTIF_PREFS.saving=true;render();
  try{
-  const payload={user_id:AU.user.id,in_app_enabled:NOTIF_PREFS.in_app_enabled,push_enabled:NOTIF_PREFS.push_enabled,friend_requests_enabled:NOTIF_PREFS.friend_requests_enabled,club_posts_enabled:NOTIF_PREFS.club_posts_enabled,club_events_enabled:NOTIF_PREFS.club_events_enabled,achievements_enabled:NOTIF_PREFS.achievements_enabled,updated_at:new Date().toISOString()};
+  const payload={user_id:AU.user.id,in_app_enabled:NOTIF_PREFS.in_app_enabled,push_enabled:NOTIF_PREFS.push_enabled,friend_requests_enabled:NOTIF_PREFS.friend_requests_enabled,club_posts_enabled:NOTIF_PREFS.club_posts_enabled,club_events_enabled:NOTIF_PREFS.club_events_enabled,achievements_enabled:NOTIF_PREFS.achievements_enabled,support_replies_enabled:NOTIF_PREFS.support_replies_enabled,updated_at:new Date().toISOString()};
   const {error}=await sbc.from('profile_notification_preferences').upsert(payload,{onConflict:'user_id'});
   if(error)throw error;
   toast('Preferencias guardadas.');
@@ -1037,6 +1048,7 @@ function vSettings(){const tab=SETTINGS_TAB;
    pref('club_posts_enabled','Publicaciones de clubes','Cuando se publique una noticia en uno de tus clubes.')+
    pref('club_events_enabled','Eventos de clubes','Cuando se anuncie un nuevo evento en uno de tus clubes.')+
    pref('achievements_enabled','Logros y medallas','Cuando desbloquees una nueva insignia.')+
+   pref('support_replies_enabled','Respuestas a tus consultas','Cuando el equipo de Pickle&Mix responda a una consulta que hayas abierto.')+
    (NOTIF_PREFS.saving?'<p class="settings-pref-saving">Guardando preferencias…</p>':'<p class="settings-pref-autosave">Los cambios se guardan automáticamente.</p>')+'</section>'+
    '<section class="card settings-pref-card"><div class="settings-pref-section-head"><div><b>Notificaciones push</b><small>Recibe avisos del dispositivo aunque Pickle&amp;Mix esté cerrada.</small></div><span class="settings-pref-status">DISPONIBLE</span></div>'+
    '<label class="settings-pref-master"><span><b>Activar notificaciones push</b><small>Necesitas permitir las notificaciones en este dispositivo. Puedes desactivarlas cuando quieras.</small></span><input type="checkbox" data-notification-pref="push_enabled" '+(NOTIF_PREFS.push_enabled?'checked':'')+(NOTIF_PREFS.saving?' disabled':'')+' aria-label="Activar notificaciones push"></label>'+
@@ -1499,7 +1511,7 @@ document.addEventListener('click',e=>{
   if(t.hasAttribute('data-club-request-cancel')){cancelClubJoinRequest();return}
   if(d.clubInvitation){respondClubInvite(d.id,d.clubInvitation==='accept');return}
   if(t.hasAttribute('data-club-member-menu')){const row=t.closest('.club-member-item'),open=!row.classList.contains('menu-open');document.querySelectorAll('.club-member-item.menu-open').forEach(x=>{x.classList.remove('menu-open');const b=x.querySelector('[data-club-member-menu]'),m=x.querySelector('.club-member-menu-popover');if(b)b.setAttribute('aria-expanded','false');if(m)m.setAttribute('aria-hidden','true')});if(open){row.classList.add('menu-open');t.setAttribute('aria-expanded','true');const m=row.querySelector('.club-member-menu-popover');if(m)m.setAttribute('aria-hidden','false')}return}
-  if(d.notificationOpen){if(d.notificationOpen==='friend_request_received')openFriendRequestNotification(d.id);else openClubNotification(d.notificationOpen,d.id);return}
+  if(d.notificationOpen){if(d.notificationOpen==='friend_request_received')openFriendRequestNotification(d.id);else if(d.notificationOpen==='support_reply_received')openSupportReplyNotification(d.id);else openClubNotification(d.notificationOpen,d.id);return}
   if(d.clubMemberAction){const row=t.closest('.club-member-item');if(row){row.classList.remove('menu-open');const b=row.querySelector('[data-club-member-menu]'),m=row.querySelector('.club-member-menu-popover');if(b)b.setAttribute('aria-expanded','false');if(m)m.setAttribute('aria-hidden','true')}manageClubMember(d.id,d.clubMemberAction);return}
   if(t.hasAttribute('data-club-post-toggle')){CL.postOpen=!CL.postOpen;CL.eventOpen=false;paintClubs();return}
   if(t.hasAttribute('data-club-post-menu')){const box=t.closest('.club-post-actions'),open=!box.classList.contains('menu-open');document.querySelectorAll('.club-post-actions.menu-open').forEach(x=>{x.classList.remove('menu-open');const b=x.querySelector('[data-club-post-menu]'),m=x.querySelector('.club-post-menu-popover');if(b)b.setAttribute('aria-expanded','false');if(m)m.setAttribute('aria-hidden','true')});if(open){box.classList.add('menu-open');t.setAttribute('aria-expanded','true');const m=box.querySelector('.club-post-menu-popover');if(m)m.setAttribute('aria-hidden','false')}return}
@@ -1767,7 +1779,7 @@ if(typeof window!=='undefined'&&typeof document!=='undefined'){
       if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))AU.profileLoading=true;
       if(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'){if(view==='home'||view==='setup')render();else paintAuth();if(view==='settings'&&SETTINGS_TAB==='notifications')loadNotificationPreferences();setTimeout(checkAdminAccess,0)}
       if(u&&(ch||ev==='INITIAL_SESSION')){watchFriendships(u.id);watchProfileNotifications(u.id)}
-      if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))setTimeout(()=>{loadProfile(u.id);loadMyHistory();loadFriends();loadMyAchievements();if(view==='clubs'||view==='club-detail')loadClubs();if(view==='activity'){ACT.loaded=false;loadActivity(true)}if(view==='user-profile'&&PUB.id)openUserProfile(PUB.id);redeemClubInviteFromUrl()},0);
+      if(u&&(ch||ev==='INITIAL_SESSION'||ev==='USER_UPDATED'))setTimeout(()=>{loadProfile(u.id);loadMyHistory();loadFriends();loadMyAchievements();const supportTicket=new URLSearchParams(location.search).get('support_ticket');if(supportTicket)openSupportReplyNotification(supportTicket,true);if(view==='clubs'||view==='club-detail')loadClubs();if(view==='activity'){ACT.loaded=false;loadActivity(true)}if(view==='user-profile'&&PUB.id)openUserProfile(PUB.id);redeemClubInviteFromUrl()},0);
       if(u&&ch&&AU.oauth&&ev==='SIGNED_IN'){AU.oauth=false;toast('Sesión iniciada como '+auName(u))}});
     setTimeout(()=>{if(!AU.ready){AU.ready=true;paintAuth();if(view==='settings'&&SETTINGS_TAB==='notifications')loadNotificationPreferences()}},4000)}
   catch(e){sbc=null;console.warn('[auth] onAuthStateChange:',e&&e.message)}}
