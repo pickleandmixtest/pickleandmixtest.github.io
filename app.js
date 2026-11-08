@@ -1221,7 +1221,7 @@ function storyCanvas(){
   if(top.length){
     card(48,y,W-96,236,LIME);x.fillStyle=INK;x.font=`800 30px ${BF}`;x.fillText(top.length>1?(en?'TIED WINNERS':'GANADORES (EMPATE)'):(en?'WINNER':'GANADOR/A'),92,y+54);
     const t=fit(names(top),W-96-44-240,`900 #px ${HF}`,84,40);x.fillText(t,92,y+138);
-    x.font=`700 32px ${BF}`;x.fillText(`${top[0].w} victorias · diferencia ${sg(top[0].pf-top[0].pa)}`,92,y+194);
+    x.font=`700 32px ${BF}`;x.fillText(`${top[0].w} ${en?'wins':'victorias'} · ${en?'point difference':'diferencia'} ${sg(top[0].pf-top[0].pa)}`,92,y+194);
     /* copa */
     x.font=`400 120px ${BF}`;x.textAlign='center';x.textBaseline='middle';x.fillText('🏆',W-48-110,y+122);x.textAlign='left';x.textBaseline='alphabetic';
     y+=236+26;}
@@ -1245,7 +1245,7 @@ function storyCanvas(){
   if(FX()){
     /* Parejas fijas: en lugar de la tabla, esquema del torneo en vertical (grupos ▼ eliminatorias ▼ campeón). Tamaños base grandes; solo se reducen si no caben. */
     const T=S.teams.length,{G,Q}=fxPlan(T),AV=1800-y-70-30,IW=W-96-40,X0=68,GAP=16,LAB=48,GH=78,GR=54,MB=128,CH=112,CG=22,
-      tn=id=>{const t=S.teams.find(q=>q.id===id);return t?t.p.map(nameOf).join(' / '):'por definir'},
+      tn=id=>{const t=S.teams.find(q=>q.id===id);return t?t.p.map(nameOf).join(' / ') :(en?'To be decided':'por definir')},
       st=stats(),gl=Array.from({length:G},(_,g)=>st.filter(s=>(S.teams.find(t=>t.id===s.p.id).g||0)===g).sort((a,b)=>rate(b)-rate(a)||dif(b)-dif(a))),
       rounds=[],PL=en?{1:'Final',2:'Semi-finals',4:'Quarter-finals'}:{1:'Final',2:'Semifinales',4:'Cuartos de final'},gcols=G>1?2:1,gic=G===1?2:1,mxg=Math.max(1,...gl.map(l=>l.length)),rg=Math.ceil(mxg/gic),rowsG=Math.ceil(G/gcols);
     for(let n=Q/2;n>=1;n/=2)rounds.push(n);
@@ -1256,7 +1256,7 @@ function storyCanvas(){
     let cy=y+24*k;
     const lab=(t,ar)=>{x.textAlign='center';x.textBaseline='middle';x.fillStyle=NAVY;x.font=`900 ${F(28,14)}px ${BF}`;x.fillText((ar?'▼  ':'')+t.toUpperCase(),W/2,cy+LAB*k/2);cy+=LAB*k};
     /* grupos */
-    lab(G>1?'Fase de grupos':'Fase de grupos · todos contra todos');
+    lab(G>1?(en?'Group stage':'Fase de grupos'):(en?'Round robin':'Fase de grupos · todos contra todos'));
     const gw=(IW-GAP*(gcols-1))/gcols,gh=(GH+GR*rg)*k,cw0=(gw-40)/gic;
     gl.forEach((l,g)=>{const gx=X0+(g%gcols)*(gw+GAP),gy=cy+Math.floor(g/gcols)*(gh+GAP*k);
       rr(gx,gy,gw,gh,22,'#f3f7fb');x.textAlign='left';x.textBaseline='middle';x.fillStyle=NAVY;x.font=`900 ${F(32,16)}px ${HF}`;x.fillText((en?'GROUP ':'GRUPO ')+String.fromCharCode(65+(g||0)),gx+20,gy+GH*k/2);
@@ -1272,14 +1272,14 @@ function storyCanvas(){
         [[m&&m.ta,m&&m.sa,m&&m.sa>m.sb],[m&&m.tb,m&&m.sb,m&&m.sb>m.sa]].forEach(([t,s,w],j)=>{const ly=by+j*hh,done=m&&m.status==='done',win=done&&w;
           if(win)rr(bx+6,ly+(j?3:6),cw-12,hh-9,14,LIME);
           x.textBaseline='middle';x.textAlign='left';x.fillStyle=m?INK:MUT;x.font=`${win?900:700} ${F(32,15)}px ${BF}`;
-          x.fillText(fit(m?tn(t):'por definir',cw-32-70*k,`${win?900:700} #px ${BF}`,F(32,15),12),bx+18,ly+hh/2+(j?1:2));
+          x.fillText(fit(m?tn(t):(en?'To be decided':'por definir'),cw-32-70*k,`${win?900:700} #px ${BF}`,F(32,15),12),bx+18,ly+hh/2+(j?1:2));
           if(done){x.textAlign='right';x.font=`900 ${F(36,16)}px ${HF}`;x.fillText(s,bx+cw-20,ly+hh/2+(j?1:2))}});
         x.fillStyle='#cdd8e6';x.fillRect(bx+10,by+hh-1,cw-20,2)}
       cy+=Math.ceil(n/cols)*(bh+GAP*k)});
     /* campeón */
     if(Q){cy+=CG*k;const fm=S.matches.find(m=>m.ph==='ko'&&m.ko===1&&m.status==='done'),nm=fm?tn(fm.sa>fm.sb?fm.ta:fm.tb):null,cw=Math.min(IW,760),ch=CH*k,bx=(W-cw)/2;
       rr(bx,cy,cw,ch,26,nm?LIME:'#f3f7fb');x.textAlign='center';x.textBaseline='middle';x.fillStyle=nm?INK:MUT;
-      x.font=`900 ${F(44,18)}px ${HF}`;x.fillText(fit('🏆 '+(nm||'Campeón por definir'),cw-40,`900 #px ${HF}`,F(44,18),12),W/2,cy+ch/2+2)}
+      x.font=`900 ${F(44,18)}px ${HF}`;x.fillText(fit('🏆 '+(nm||(en?'Champion to be decided':'Campeón por definir')),cw-40,`900 #px ${HF}`,F(44,18),12),W/2,cy+ch/2+2)}
     x.textBaseline='alphabetic';x.textAlign='left';
     y+=th+20;
   }else{
