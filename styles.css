@@ -1996,3 +1996,41 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
   -webkit-overflow-scrolling:touch;
   scrollbar-gutter:stable;
 }
+
+/* Corrección definitiva del desplegable: anclado a la campanita */
+.notification-anchor{position:relative!important}
+.notification-popover{
+  position:absolute!important;
+  top:calc(100% + 10px)!important;
+  left:auto!important;
+  right:0!important;
+  width:min(340px,calc(100vw - 24px))!important;
+  max-width:calc(100vw - 24px)!important;
+  max-height:min(65vh,460px)!important;
+  height:auto!important;
+  min-height:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  overflow:hidden!important;
+  z-index:1000!important;
+}
+.notification-popover-head,
+.notification-popover-foot{flex:0 0 auto!important}
+.notification-popover-list{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+@media(max-width:520px){
+  .notification-popover{
+    top:calc(100% + 9px)!important;
+    right:-4px!important;
+    left:auto!important;
+    width:min(340px,calc(100vw - 24px))!important;
+    max-height:min(65vh,460px)!important;
+  }
+}
