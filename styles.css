@@ -2121,3 +2121,12 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .support-admin-message.support-admin-open:hover{border-color:var(--accent,#49621a)}
 .support-admin-status.status-awaiting_user{background:#e8f1ff;color:#285b9a}
 .support-admin-status.status-awaiting_admin{background:#fff0df;color:#a65b12}
+
+
+/* Perfil público: categorías de clubes y vista compacta */
+.profile-club-tabs{margin:12px 0 8px}
+.profile-club-tabs button{min-height:48px;padding:7px 10px}
+.profile-club-tabs b{font-size:13px}
+.profile-club-tabs small{font-size:11px}
+.profile-clubs-more{width:100%;margin-top:8px}
+.profile-clubs-footnote{margin-top:7px;color:var(--mut);font-size:10px;text-align:center}
