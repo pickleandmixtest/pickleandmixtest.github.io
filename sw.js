@@ -1,5 +1,5 @@
 /* Pickle&Mix TEST · app-shell cache. Supabase data always remains network-only. */
-const CACHE_NAME = 'pickle-mix-shell-v47';
+const CACHE_NAME = 'pickle-mix-shell-v48';
 const APP_SHELL = [
   './',
   './index.html',
@@ -7,7 +7,8 @@ const APP_SHELL = [
   './i18n.js?v=14',
   './app.js?v=158',
   './manifest.webmanifest',
-  './favicon.svg'
+  './favicon.svg',
+  './icons/pickle-mix-192.jpg'
 ];
 
 self.addEventListener('install', event => {
