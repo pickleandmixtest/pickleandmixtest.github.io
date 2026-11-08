@@ -985,12 +985,15 @@ async function setPushEnabled(enabled){
  if(!AU.user||!sbc){toast('Inicia sesión para activar las notificaciones push.');render();return}
  try{
   if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))throw new Error('Este navegador no admite notificaciones push.');
-  const reg=await navigator.serviceWorker.ready;
-  let subscription=await reg.pushManager.getSubscription();
+  if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))throw new Error('Este navegador no admite notificaciones push.');
   if(enabled){
    let permission=Notification.permission;
    if(permission==='default')permission=await Notification.requestPermission();
    if(permission!=='granted')throw new Error('No se ha concedido permiso para mostrar notificaciones.');
+  }
+  const reg=await navigator.serviceWorker.ready;
+  let subscription=await reg.pushManager.getSubscription();
+  if(enabled){
    if(!subscription)subscription=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:pushBase64ToBytes(PUSH_VAPID_PUBLIC_KEY)});
    const data=subscription.toJSON(),keys=data.keys||{};
    if(!data.endpoint||!keys.p256dh||!keys.auth)throw new Error('No se ha podido registrar este dispositivo.');
