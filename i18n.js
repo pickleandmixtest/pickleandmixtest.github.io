@@ -3,6 +3,14 @@
 (function(){
 'use strict';
 const ES_EN={
+"Notificaciones push":"Push notifications",
+"Recibe avisos del dispositivo aunque Pickle&Mix esté cerrada.":"Get device notifications even when Pickle&Mix is closed.",
+"Activar notificaciones push":"Enable push notifications",
+"Necesitas permitir las notificaciones en este dispositivo. Puedes desactivarlas cuando quieras.":"Allow notifications on this device. You can turn them off at any time.",
+"Solo para cuentas registradas. En iPhone, la app debe estar añadida a la pantalla de inicio.":"For registered accounts only. On iPhone, the app must be added to your Home Screen.",
+"Correo electrónico":"Email",
+"Recibir novedades en tu dirección de email.":"Receive updates at your email address.",
+"PRÓXIMAMENTE":"COMING SOON",
 "CONFIGURACIÓN":"SETTINGS",
 "Ajustes":"Settings",
 "Gestiona tu cuenta y personaliza tu experiencia en Pickle&Mix.":"Manage your account and customize your Pickle&Mix experience.",
