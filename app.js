@@ -205,17 +205,24 @@ function ranking(){return stats().sort((x,y)=>(x.lv||0)-(y.lv||0)||rate(y)-rate(
 const bar=()=>{const t=S.matches.length,d=S.matches.filter(m=>m.status!=='pending').length;return`<div class="bar"><i style="width:${t?d/t*100:0}%"></i></div><span class="mut">${d} de ${t} partidos resueltos</span>`};
 /* Pie de página: visible en todas las pestañas */
 const foot=()=>`<p class="mut foot">Plataforma para pickleballers creada por <a href="https://kikebarcelodg.github.io/" target="_blank" rel="noopener">KBDG</a></p>`;
-let routeInitialized=false;
+let routeInitialized=false,lastRenderedRoute=null;
 function render(){
   if(view==='user-profile'&&PUB.id){try{sessionStorage.setItem('pickleMix.publicProfileRoute',PUB.id)}catch(e){}}
   else{try{sessionStorage.removeItem('pickleMix.publicProfileRoute')}catch(e){}}
   const SETTINGS_TAB_TO_ROUTE={privacy:'privacidad',notifications:'notificaciones',account:'cuenta',help:'ayuda',about:'acerca'};
   const route=view==='club-detail'&&CL.selectedId?'#clubes/'+encodeURIComponent(CL.selectedId):view==='user-profile'&&PUB.id?'#jugadores/'+encodeURIComponent(PUB.id):view==='settings'&&SETTINGS_TAB!=='main'?'#ajustes/'+(SETTINGS_TAB_TO_ROUTE[SETTINGS_TAB]||'privacidad'):'#'+(VIEW_TO_ROUTE[view]||'inicio');
-  if(location.hash!==route){
+  const routeChanged=lastRenderedRoute!==null&&lastRenderedRoute!==route;
+  const internalRouteChange=location.hash!==route;
+  if(internalRouteChange){
     const url=location.pathname+location.search+route;
-    if(!routeInitialized){history.replaceState(null,'',url);routeInitialized=true}
-    else history.pushState(null,'',url);
+    if(!routeInitialized){history.replaceState({__pmScrollY:0},'',url);routeInitialized=true}
+    else{
+      try{history.replaceState({...history.state,__pmScrollY:window.scrollY},'',location.href)}catch(e){}
+      history.pushState({__pmScrollY:0},'',url);
+    }
   }else routeInitialized=true;
+  if(routeChanged&&internalRouteChange&&typeof window!=='undefined')window.scrollTo(0,0);
+  lastRenderedRoute=route;
   const f={home:vHome,activity:vActivity,setup:vSetup,game:vGame,more:vMore,final:vFinal,profile:vProfile,settings:vSettings,friends:vFriends,history:vHistory,sessions:vSessions,'session-detail':vSessionDetail,'user-profile':vUserProfile,clubs:vClubs,'club-detail':vClubDetail,admin:vAdmin}[view];
   $('#app').innerHTML=header()+f()+(err?`<div class="err">${esc(err)}</div>`:'')+bottomNavigation();translateDOM();err='';nerr='';if(view==='home')initPong('pong',null,true);
   if(view==='activity'&&AU.user&&!ACT.loading&&!ACT.loaded)loadActivity(true);
@@ -1696,11 +1703,13 @@ if(typeof window!=='undefined'&&typeof document!=='undefined'){
   /* Si la foto de Google no carga, se muestra la inicial */
   document.addEventListener('error',e=>{const t=e.target;if(t&&t.tagName==='IMG'&&t.classList.contains('av')){const s=document.createElement('span');s.className='av';s.setAttribute('aria-hidden','true');s.textContent=t.dataset.i||'?';t.replaceWith(s)}},true);
 }
-function syncRouteFromLocation(){
+function syncRouteFromLocation(event){
   const route=location.hash.replace(/^#\/?/,'').toLowerCase(),clubId=route.startsWith('clubes/')?decodeURIComponent(route.slice(7)):null,profileId=route.startsWith('jugadores/')?decodeURIComponent(route.slice(10)):null,settingsRoute=route.startsWith('ajustes/')?route.split('/')[1]:null,next=clubId?'club-detail':profileId?'user-profile':settingsRoute?'settings':ROUTE_TO_VIEW[route];
   if(next&&(next!==view||(next==='club-detail'&&clubId!==CL.selectedId)||(next==='user-profile'&&profileId!==PUB.id)||(next==='settings'&&SETTINGS_TAB!==(SETTINGS_ROUTE_TO_TAB[settingsRoute]||'main')))){
     if(next==='settings')SETTINGS_TAB=SETTINGS_ROUTE_TO_TAB[settingsRoute]||'main';
     view=next;ed=null;CL.selectedId=clubId||null;if(next==='user-profile')PUB.id=profileId;routeInitialized=true;render();
+    const savedY=event&&event.state&&Number.isFinite(event.state.__pmScrollY)?event.state.__pmScrollY:0;
+    requestAnimationFrame(()=>window.scrollTo(0,savedY));
     if((next==='clubs'||next==='club-detail')&&AU.user){if(!CL.items.length)loadClubs();else if(clubId)loadClubData(clubId)}
     if(next==='user-profile'&&profileId&&AU.user)openUserProfile(profileId);
     if(next==='activity'&&AU.user)loadActivity(true);
