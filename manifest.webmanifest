@@ -7,21 +7,24 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "any",
   "background_color": "#12325e",
   "theme_color": "#12325e",
   "icons": [
     {
       "src": "https://woolozllrvabjrflmqec.supabase.co/storage/v1/object/public/club-assets/8deab5b6-1012-404b-8985-84741b939204/avatar.png?v=1793918097145",
-      "sizes": "any",
+      "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "https://woolozllrvabjrflmqec.supabase.co/storage/v1/object/public/club-assets/8deab5b6-1012-404b-8985-84741b939204/avatar.png?v=1793918097145",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any"
     }
   ]
