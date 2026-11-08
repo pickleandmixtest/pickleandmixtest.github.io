@@ -2034,3 +2034,107 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
     max-height:min(65vh,460px)!important;
   }
 }
+
+
+/* === Notificaciones: estilos unificados y definitivos === */
+.notification-anchor{
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  flex:0 0 auto!important;
+}
+.notification-popover{
+  position:absolute!important;
+  inset:auto 0 auto auto!important;
+  top:calc(100% + 9px)!important;
+  box-sizing:border-box!important;
+  width:min(340px,calc(100vw - 24px))!important;
+  min-width:0!important;
+  max-width:calc(100vw - 24px)!important;
+  height:auto!important;
+  max-height:min(62vh,440px)!important;
+  margin:0!important;
+  padding:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  overflow:hidden!important;
+  border:1px solid #e1e8f0!important;
+  border-radius:16px!important;
+  background:#fff!important;
+  color:#173454!important;
+  box-shadow:0 14px 38px rgba(5,20,42,.24)!important;
+  z-index:1000!important;
+  text-align:left!important;
+}
+.notification-popover-head{
+  box-sizing:border-box!important;
+  flex:0 0 auto!important;
+  min-height:58px!important;
+  padding:12px 14px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:12px!important;
+  background:#fff!important;
+  border-bottom:1px solid #edf1f5!important;
+}
+.notification-popover-head b{font-size:14px!important;line-height:1.25!important;color:#12325e!important}
+.notification-popover-head small{font-size:10px!important;line-height:1.3!important;color:#7a8796!important}
+.notification-popover-head>button{
+  flex:0 0 30px!important;
+  width:30px!important;height:30px!important;
+  display:grid!important;place-items:center!important;
+  border:0!important;border-radius:50%!important;
+  background:#f0f3f7!important;color:#536579!important;
+  font-size:20px!important;line-height:1!important;
+}
+.notification-popover-list{
+  box-sizing:border-box!important;
+  flex:1 1 auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  padding:2px 13px!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+.notification-popover-list .notification-item{
+  box-sizing:border-box!important;
+  width:100%!important;
+  min-width:0!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  gap:9px!important;
+  padding:12px 2px!important;
+  margin:0!important;
+  border-bottom:1px solid #edf1f5!important;
+  border-radius:0!important;
+  background:transparent!important;
+  text-align:left!important;
+}
+.notification-popover-list .notification-item:last-child{border-bottom:0!important}
+.notification-popover-list .notification-item>div{flex:1 1 auto!important;min-width:0!important;gap:4px!important}
+.notification-popover-list .notification-symbol{flex:0 0 29px!important;width:29px!important;height:29px!important}
+.notification-popover-list .notification-item b{font-size:12px!important;line-height:1.35!important;overflow-wrap:anywhere!important}
+.notification-popover-list .notification-item p{font-size:11px!important;line-height:1.45!important;overflow-wrap:anywhere!important}
+.notification-popover-list .notification-item small{font-size:10px!important}
+.notification-popover-list .notification-open-arrow{flex:0 0 auto!important}
+.notification-empty{padding:22px 8px!important;font-size:12px!important;line-height:1.5!important}
+.notification-popover-foot{
+  box-sizing:border-box!important;
+  flex:0 0 auto!important;
+  padding:10px 14px!important;
+  border-top:1px solid #edf1f5!important;
+  background:#fbfcfe!important;
+}
+.notification-popover-foot button{font-size:11px!important}
+@media(max-width:520px){
+  .notification-popover{
+    top:calc(100% + 8px)!important;
+    right:0!important;
+    width:min(320px,calc(100vw - 24px))!important;
+    max-width:calc(100vw - 24px)!important;
+    max-height:min(60vh,420px)!important;
+  }
+}
