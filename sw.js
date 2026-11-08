@@ -5,7 +5,7 @@ const APP_SHELL = [
   './index.html',
   './styles.css?v=94',
   './i18n.js?v=14',
-  './app.js?v=158',
+  './app.js?v=159',
   './manifest.webmanifest',
   './favicon.svg',
   './icons/pickle-mix-192.jpg'
