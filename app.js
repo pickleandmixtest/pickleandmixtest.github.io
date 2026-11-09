@@ -774,7 +774,7 @@ function vActivity(){
   const list=ACT.items.length?ACT.items.map(activityCard).join(''):'';
   return '<section class="activity-page"><div class="activity-filters" role="tablist" aria-label="'+act('title')+'">'+filters.map(([v,label])=>'<button type="button" role="tab" data-feed-filter="'+v+'" aria-selected="'+(ACT.filter===v)+'">'+label+'</button>').join('')+'</div>'+(ACT.error?'<div class="err">'+esc(ACT.error)+'</div>':'')+(ACT.loading&&!ACT.items.length?'<div class="card activity-empty"><span class="activity-loader"></span><b>'+act('loading')+'</b></div>':list?'<div class="activity-list">'+list+'</div>':'<div class="card activity-empty"><span class="activity-empty-mark">↗</span><b>'+act('emptyTitle')+'</b><p>'+act('emptyText')+'</p></div>')+(ACT.hasMore?'<button type="button" class="btn ghost activity-more" data-feed-more '+(ACT.loading?'disabled':'')+'>'+(ACT.loading?act('loadingMore'):act('more'))+'</button>':'')+'</section>';
 }
-function paintActivity(){if(view==='activity'){const root=document.querySelector('#app');if(root){root.innerHTML=header()+vActivity()+bottomNavigation();translateDOM(root)}}}
+function paintActivity(){if(view==='activity'){const page=document.querySelector('#app .activity-page');if(page){page.outerHTML=vActivity();translateDOM(document.querySelector('#app'))}}}
 let activityRequestId=0;
 async function loadActivity(reset){
   if(!sbc||!AU.user)return;
@@ -785,9 +785,16 @@ async function loadActivity(reset){
   try{
     const {data,error}=await sbc.rpc('get_activity_feed',{p_filter:filterAtRequest,p_before:last?last.created_at:null,p_before_id:last?last.id:null,p_limit:20});
     if(error)throw error;
-    let rows=Array.isArray(data)?data:(typeof data==='string'?JSON.parse(data):[]);
+    let rows=data;
+    if(typeof rows==='string'){try{rows=JSON.parse(rows)}catch(_){rows=[]}}
+    if(!Array.isArray(rows)&&rows&&typeof rows==='object'){
+      const nested=rows.items||rows.rows||rows.data||rows.get_activity_feed;
+      if(Array.isArray(nested))rows=nested;
+      else{const values=Object.values(rows);rows=values.length&&values.every(v=>v&&typeof v==='object'&&!Array.isArray(v))?values:[]}
+    }
     if(!Array.isArray(rows))rows=[];
     if(requestId!==activityRequestId||filterAtRequest!==ACT.filter)return;
+    console.info('[activity] filter:',filterAtRequest,'items:',rows.length);
     ACT.hasMore=rows.length>20;
     const page=rows.slice(0,20);
     ACT.items=reset?page:ACT.items.concat(page);
