@@ -467,6 +467,14 @@ function clubMember(clubId,userId){return CL.members.find(m=>m.club_id===clubId&
 function clubAdmin(id){const m=clubMember(id,AU.user&&AU.user.id);return !!m&&m.role==='admin'}
 function clubDate(v){return v?new Date(v).toLocaleString(APP_LANG==='en'?'en-US':'es-ES',{dateStyle:'medium',timeStyle:'short'}):''}
 function clubEventType(t){return t==='training'?'Entrenamiento':t==='tournament'?'Torneo':'Quedada'}
+async function openActivityClubItem(kind,itemId,clubId){
+  if(!sbc||!AU.user||!clubId||!itemId)return;
+  CL.selectedId=clubId;CL.tab=kind==='event'?'events':'posts';CL.openPostId=null;CL.openEventId=null;CL.settingsOpen=false;CL.eventOpen=false;CL.postOpen=false;CL.inviteUrl='';view='club-detail';render();
+  await loadClubData(clubId);
+  if(CL.selectedId!==clubId)return;
+  if(kind==='event'){if(CL.events.some(x=>x.id===itemId)){CL.openEventId=itemId;paintClubs()}else toast('Este evento ya no está disponible.');}
+  else if(kind==='post'){if(CL.posts.some(x=>x.id===itemId)){CL.openPostId=itemId;paintClubs()}else toast('Esta publicación ya no está disponible.');}
+}
 async function loadClubData(id){
  if(!sbc||!AU.user)return;const mine=clubMember(id,AU.user.id);
  try{const [req,inv,events,links,posts]=await Promise.all([
@@ -746,7 +754,7 @@ function activityCard(item){
   const event=item.kind==='club_event';
   const kindLabel=event?act('newEvent'):act('newPost');
   const meta=event&&item.details&&item.details.starts_at?'<span class="activity-card-meta"><span aria-hidden="true">◷</span>'+activityDate(item.details.starts_at)+(item.details.location?'<span class="activity-meta-separator">·</span>'+esc(item.details.location):'')+'</span>':'';
-  return '<button type="button" class="activity-card activity-card--club '+(event?'activity-card--event':'activity-card--post')+'" data-club-open="'+esc(item.club_id)+'"><span class="activity-card-top">'+avatar+identity+when+'</span><span class="activity-card-kind"><span class="activity-kind-icon">'+(event?'◷':'✎')+'</span>'+kindLabel+'<span class="activity-kind-club">'+esc(item.club_name||act('club'))+'</span></span><span class="activity-card-title">'+esc(item.title||'')+'</span>'+(item.summary?'<span class="activity-card-summary">'+esc(item.summary)+'</span>':'')+meta+'<span class="activity-card-open">'+(APP_LANG==='en'?'Open club':'Ver club')+' <span aria-hidden="true">↗</span></span></button>';
+  return '<button type="button" class="activity-card activity-card--club '+(event?'activity-card--event':'activity-card--post')+'" data-activity-club-item="'+(event?'event':'post')+'" data-item-id="'+esc(event?(item.details||{}).event_id:(item.details||{}).post_id)||''+'" data-club-open="'+esc(item.club_id)+'"><span class="activity-card-top">'+avatar+identity+when+'</span><span class="activity-card-kind"><span class="activity-kind-icon">'+(event?'◷':'✎')+'</span>'+kindLabel+'<span class="activity-kind-club">'+esc(item.club_name||act('club'))+'</span></span><span class="activity-card-title">'+esc(item.title||'')+'</span>'+(item.summary?'<span class="activity-card-summary">'+esc(item.summary)+'</span>':'')+meta+'<span class="activity-card-open">'+(APP_LANG==='en'?'Open club':'Ver club')+' <span aria-hidden="true">↗</span></span></button>';
 }
 function vActivity(){
   if(!AU.user)return vAuthLanding();
@@ -1501,6 +1509,7 @@ document.addEventListener('click',e=>{
   if(t.hasAttribute('data-support-open')){SUPPORT.selected=t.dataset.supportOpen;SUPPORT.replies=[];loadSupportThread(SUPPORT.selected,false);render();return}if(t.hasAttribute('data-support-back')){SUPPORT.selected=null;SUPPORT.replies=[];render();return}if(t.hasAttribute('data-support-refresh')){SUPPORT.loaded=false;loadMySupport();return}if(t.hasAttribute('data-support-admin-open')){SUPPORT.adminSelected=t.dataset.supportAdminOpen;SUPPORT.adminReplies=[];render();loadSupportThread(SUPPORT.adminSelected,true);return}if(t.hasAttribute('data-support-admin-back')){SUPPORT.adminSelected=null;SUPPORT.adminReplies=[];render();return}if(t.hasAttribute('data-admin')){adminAction(t.dataset.admin,t.dataset.id,t.dataset.extra);return}
   if(t.hasAttribute('data-match-club-toggle')){MATCH_CLUBS.open=!MATCH_CLUBS.open;render();if(MATCH_CLUBS.open&&!MATCH_CLUBS.loaded)loadMatchClubs();return}
   if(t.hasAttribute('data-match-club-import')){importMatchClub();return}
+  if(t.hasAttribute('data-activity-club-item')){openActivityClubItem(t.dataset.activityClubItem,t.dataset.itemId,t.dataset.clubOpen);return}
   if(d.clubOpen){CL.selectedId=d.clubOpen;view='club-detail';CL.tab='info';CL.openPostId=null;CL.openEventId=null;CL.settingsOpen=false;CL.eventOpen=false;CL.postOpen=false;CL.inviteUrl='';render();loadClubData(d.clubOpen);return}
   if(d.clubJoin){joinClub(d.clubJoin);return}
   if(d.clubLeave){leaveClub(d.clubLeave);return}
