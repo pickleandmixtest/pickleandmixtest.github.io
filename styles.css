@@ -2138,3 +2138,5 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .profile-point-balance b{font-size:14px;color:var(--court)}
 .profile-point-balance small{font-size:11px;line-height:1.35;color:var(--mut)}
 .profile-point-balance strong{flex:none;font:900 25px/1 "Arial Black",Impact,sans-serif;color:var(--court)}
+
+.admin-clickable-row{cursor:pointer;transition:background .15s ease}.admin-clickable-row:hover{background:#f7f9fc}.admin-clickable-row:focus-visible{outline:2px solid #7c9cc8;outline-offset:2px;border-radius:8px}
