@@ -469,11 +469,23 @@ function clubDate(v){return v?new Date(v).toLocaleString(APP_LANG==='en'?'en-US'
 function clubEventType(t){return t==='training'?'Entrenamiento':t==='tournament'?'Torneo':'Quedada'}
 async function openActivityClubItem(kind,itemId,clubId){
   if(!sbc||!AU.user||!clubId||!itemId)return;
-  CL.selectedId=clubId;CL.tab=kind==='event'?'events':'posts';CL.openPostId=null;CL.openEventId=null;CL.settingsOpen=false;CL.eventOpen=false;CL.postOpen=false;CL.inviteUrl='';view='club-detail';render();
-  await loadClubData(clubId);
+  if(kind!=='event'&&kind!=='post')return;
+  // Primero carga el directorio y las membresías: la vista de detalle depende de ambos.
+  CL.selectedId=clubId;CL.tab=kind==='event'?'events':'posts';CL.openPostId=null;CL.openEventId=null;CL.settingsOpen=false;CL.eventOpen=false;CL.postOpen=false;CL.inviteUrl='';
+  view='clubs';render();
+  await loadClubs();
   if(CL.selectedId!==clubId)return;
-  if(kind==='event'){if(CL.events.some(x=>x.id===itemId)){CL.openEventId=itemId;paintClubs()}else toast('Este evento ya no está disponible.');}
-  else if(kind==='post'){if(CL.posts.some(x=>x.id===itemId)){CL.openPostId=itemId;paintClubs()}else toast('Esta publicación ya no está disponible.');}
+  if(!CL.items.some(c=>c.id===clubId)){CL.selectedId=null;toast('Este club ya no está disponible.');return;}
+  view='club-detail';render();
+  await loadClubData(clubId);
+  if(CL.selectedId!==clubId||view!=='club-detail')return;
+  if(kind==='event'){
+    if(CL.events.some(x=>x.id===itemId)){CL.openEventId=itemId;paintClubs()}
+    else toast('Este evento ya no está disponible.');
+  }else{
+    if(CL.posts.some(x=>x.id===itemId)){CL.openPostId=itemId;paintClubs()}
+    else toast('Esta publicación ya no está disponible.');
+  }
 }
 async function loadClubData(id){
  if(!sbc||!AU.user)return;const mine=clubMember(id,AU.user.id);
