@@ -2140,3 +2140,31 @@ table{width:100%;border-collapse:collapse}td,th{padding:8px 4px;text-align:left;
 .profile-point-balance strong{flex:none;font:900 25px/1 "Arial Black",Impact,sans-serif;color:var(--court)}
 
 .admin-clickable-row{cursor:pointer;transition:background .15s ease}.admin-clickable-row:hover{background:#f7f9fc}.admin-clickable-row:focus-visible{outline:2px solid #7c9cc8;outline-offset:2px;border-radius:8px}
+
+/* Perfil público: misma identidad visual que el perfil propio */
+.profile-public-hero{gap:15px}
+.profile-public-hero .profile-hero-main{flex:1}
+.profile-public-hero .profile-avatar-large{display:flex;align-items:center}
+.profile-public-avatar{flex:none}
+.profile-public-avatar .av{display:grid;place-items:center;width:76px;height:76px;border-radius:50%;object-fit:cover;font-size:28px;font-weight:900;color:var(--court);background:var(--ball);box-shadow:0 0 0 3px rgba(212,255,58,.9)}
+.profile-public-hero .profile-hero-copy>b{overflow-wrap:anywhere;white-space:normal}
+.profile-public-hero .profile-hero-actions{flex-wrap:wrap}
+.profile-public-hero .profile-friend-count{cursor:default;user-select:none}
+.profile-public-hero .profile-public-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.profile-public-hero .profile-public-actions .btn{width:auto;margin:0;background:var(--ball);border-color:var(--ball);color:var(--court);font-weight:800}
+.profile-public-hero .profile-public-actions .btn.ghost{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.4);color:#fff}
+.profile-public-hero .profile-public-actions .profile-friend-status{display:inline-flex;align-items:center;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.12);color:#fff;font-size:12px;font-weight:800;white-space:nowrap}
+.profile-public-hero .profile-public-actions .profile-friend-status.is-friend{border:1px solid rgba(255,255,255,.35)}
+.profile-public-hero .profile-public-actions .profile-remove-friend{color:#fff;border-color:rgba(255,255,255,.35)}
+@media(max-width:599px){
+ .profile-public-hero{flex-direction:column;align-items:stretch}
+ .profile-public-hero .profile-hero-actions{justify-content:space-between;align-items:center;gap:9px}
+ .profile-public-hero .profile-friend-count{padding:6px 9px 6px 6px;gap:6px}
+ .profile-public-hero .profile-friend-count-icon{width:30px;height:30px;flex-basis:30px}
+ .profile-public-hero .profile-public-actions{justify-content:flex-end}
+}
+@media(max-width:380px){
+ .profile-public-avatar .av{width:66px;height:66px}
+ .profile-public-hero .profile-hero-actions{gap:6px}
+ .profile-public-hero .profile-public-actions .btn{padding:7px 9px;font-size:12px}
+}
