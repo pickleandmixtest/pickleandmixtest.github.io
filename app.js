@@ -775,21 +775,31 @@ function vActivity(){
   return '<section class="activity-page"><div class="activity-filters" role="tablist" aria-label="'+act('title')+'">'+filters.map(([v,label])=>'<button type="button" role="tab" data-feed-filter="'+v+'" aria-selected="'+(ACT.filter===v)+'">'+label+'</button>').join('')+'</div>'+(ACT.error?'<div class="err">'+esc(ACT.error)+'</div>':'')+(ACT.loading&&!ACT.items.length?'<div class="card activity-empty"><span class="activity-loader"></span><b>'+act('loading')+'</b></div>':list?'<div class="activity-list">'+list+'</div>':'<div class="card activity-empty"><span class="activity-empty-mark">↗</span><b>'+act('emptyTitle')+'</b><p>'+act('emptyText')+'</p></div>')+(ACT.hasMore?'<button type="button" class="btn ghost activity-more" data-feed-more '+(ACT.loading?'disabled':'')+'>'+(ACT.loading?act('loadingMore'):act('more'))+'</button>':'')+'</section>';
 }
 function paintActivity(){if(view==='activity'){const root=document.querySelector('#app');if(root){root.innerHTML=header()+vActivity()+bottomNavigation();translateDOM(root)}}}
+let activityRequestId=0;
 async function loadActivity(reset){
-  if(!sbc||!AU.user||ACT.loading)return;
+  if(!sbc||!AU.user)return;
+  const requestId=++activityRequestId,filterAtRequest=ACT.filter;
   if(reset){ACT.items=[];ACT.hasMore=false;ACT.error='';ACT.loaded=false}
   const last=reset?null:ACT.items[ACT.items.length-1];
   ACT.loading=true;paintActivity();
   try{
-    const {data,error}=await sbc.rpc('get_activity_feed',{p_filter:ACT.filter,p_before:last?last.created_at:null,p_before_id:last?last.id:null,p_limit:20});
+    const {data,error}=await sbc.rpc('get_activity_feed',{p_filter:filterAtRequest,p_before:last?last.created_at:null,p_before_id:last?last.id:null,p_limit:20});
     if(error)throw error;
-    const rows=Array.isArray(data)?data:[];
+    let rows=Array.isArray(data)?data:(typeof data==='string'?JSON.parse(data):[]);
+    if(!Array.isArray(rows))rows=[];
+    if(requestId!==activityRequestId||filterAtRequest!==ACT.filter)return;
     ACT.hasMore=rows.length>20;
     const page=rows.slice(0,20);
     ACT.items=reset?page:ACT.items.concat(page);
     ACT.loaded=true;
-  }catch(error){console.warn('[activity] load:',error&&error.message);ACT.error=APP_LANG==='en'?'Could not load activity. Please try again.':'No se ha podido cargar la actividad. Inténtalo de nuevo.';ACT.hasMore=false;ACT.loaded=true}
-  finally{ACT.loading=false;paintActivity()}
+  }catch(error){
+    if(requestId!==activityRequestId)return;
+    console.warn('[activity] load:',error&&error.message);
+    ACT.error=APP_LANG==='en'?'Could not load activity. Please try again.':'No se ha podido cargar la actividad. Inténtalo de nuevo.';
+    ACT.hasMore=false;ACT.loaded=true;
+  }finally{
+    if(requestId===activityRequestId){ACT.loading=false;paintActivity()}
+  }
 }
 function friendActivityRow(item){
   return '<div class="history-row"><div><b>'+esc(item.friendName)+' · '+esc(item.session_title||'Quedada')+'</b><span class="mut">'+new Date(item.played_at).toLocaleDateString(APP_LANG==='en'?'en-US':'es-ES')+' · '+(item.won?'Victoria':'Derrota')+'</span><small>'+esc((item.teammates||[]).join(' / '))+' vs '+esc((item.opponents||[]).join(' / '))+'</small></div><strong class="'+(item.won?'win':'loss')+'">'+item.own_score+'–'+item.opponent_score+'</strong></div>';
@@ -1500,7 +1510,7 @@ document.addEventListener('click',e=>{
   const t=e.target.closest('[data-a],[data-feed-filter],[data-feed-more],[data-atab],[data-admin],[data-support-open],[data-support-back],[data-support-refresh],[data-support-admin-open],[data-support-admin-back],[data-admin-range],[data-activity-club-item],[data-match-club-toggle],[data-match-club-import],[data-community-panel],[data-fa],[data-up],[data-linkplayer],[data-addself],[data-session-response],[data-session-open],[data-club-section],[data-club-directory],[data-club-directory-back],[data-profile-club-tab],[data-profile-club-more],[data-club-tab],[data-club-post-open],[data-club-post-close],[data-club-event-open],[data-club-event-close],[data-club-open],[data-club-join],[data-club-leave],[data-club-delete],[data-club-create-toggle],[data-club-settings-toggle],[data-club-link-create],[data-club-link-copy],[data-club-copy-current],[data-club-link-revoke],[data-club-invite-revoke],[data-club-request],[data-club-request-cancel],[data-club-invitation],[data-club-member-menu],[data-club-member-action],[data-club-event-toggle],[data-club-post-toggle],[data-club-post-menu],[data-club-post-edit],[data-club-post-edit-cancel],[data-club-post-delete],[data-club-post-comments],[data-club-comment-menu],[data-club-comment-delete],[data-club-event-register],[data-image-editor-action],[data-club-event-cancel],[data-club-event-delete],[data-notification-open],[data-sc],[data-ct],[data-del],[data-st],[data-pd],[data-edit],[data-mode],[data-pm]');if(!e.target.closest('.club-member-item'))document.querySelectorAll('.club-member-item.menu-open').forEach(x=>{x.classList.remove('menu-open');const b=x.querySelector('[data-club-member-menu]'),m=x.querySelector('.club-member-menu-popover');if(b)b.setAttribute('aria-expanded','false');if(m)m.setAttribute('aria-hidden','true')});if(!e.target.closest('.club-comment-admin-actions'))document.querySelectorAll('.club-comment-admin-actions.menu-open').forEach(x=>{x.classList.remove('menu-open');const b=x.querySelector('[data-club-comment-menu]'),m=x.querySelector('.club-comment-menu-popover');if(b)b.setAttribute('aria-expanded','false');if(m)m.setAttribute('aria-hidden','true')});if(!e.target.closest('.club-post-actions'))document.querySelectorAll('.club-post-actions.menu-open').forEach(x=>{x.classList.remove('menu-open');const b=x.querySelector('[data-club-post-menu]'),m=x.querySelector('.club-post-menu-popover');if(b)b.setAttribute('aria-expanded','false');if(m)m.setAttribute('aria-hidden','true')});if(!t)return;const d=t.dataset;if(d.a==='achievementsClose'&&e.target.closest('[data-achievement-modal]')&&!e.target.closest('.achievement-modal-close'))return;
   // Navegación explícita: no depende de las acciones genéricas del resto de la app.
   if(t.hasAttribute('data-image-editor-action')){if(d.imageEditorAction==='apply')applyImageEditor();else closeImageEditor();return}
-  if(t.hasAttribute('data-feed-filter')){if(ACT.loading)return;const next=t.dataset.feedFilter;if(['all','friends','clubs'].includes(next)&&next!==ACT.filter){ACT.filter=next;loadActivity(true)}return}
+  if(t.hasAttribute('data-feed-filter')){const next=t.dataset.feedFilter;if(['all','friends','clubs'].includes(next)&&next!==ACT.filter){ACT.filter=next;loadActivity(true)}return}
   if(t.hasAttribute('data-feed-more')){loadActivity(false);return}
   if(d.a==='friends'){view='friends';FR.error='';render();loadFriends();return}
   if(d.a==='profile'){view='profile';AU.profileSettingsOpen=false;render();if(AU.user){loadMyHistory();loadFriends()}return}
